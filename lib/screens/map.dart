@@ -148,7 +148,7 @@ class _MapState extends State<MapScreen> {
                     );
                   },
                 ),
-                homeMarkerWidget,
+                //  homeMarkerWidget,
                 ...markerWidgets,
                 // centerMarkerWidget,
               ],

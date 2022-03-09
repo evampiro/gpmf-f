@@ -10,20 +10,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 
-final DataListProvider = StateProvider<List<GeoFile>?>((ref) {
-  return;
+final DataListProvider = StateProvider<List<GeoFile>>((ref) {
+  return [];
 });
 
 class GeoFile {
-  GeoFile({this.file, this.geoData});
-  File? file;
-  List<GeoData>? geoData;
+  GeoFile({required this.file, required this.geoData});
+  File file;
+  List<GeoData> geoData;
 }
 
 class GeoData {
-  GeoData({this.lat, this.lon, this.time});
-  double? lon, lat;
-  DateTime? time;
+  GeoData({required this.lat, required this.lon, required this.time});
+  double lon, lat;
+  DateTime time;
 }
 
 class Home extends ConsumerWidget {
@@ -77,8 +77,8 @@ class Home extends ConsumerWidget {
       },
       child: Column(
         children: [
-          Expanded(
-            flex: 1,
+          Visibility(
+            visible: false,
             child: Container(
               width: double.infinity,
               color: _dragging ? Colors.blue.withOpacity(0.4) : Colors.blueGrey,
@@ -92,15 +92,21 @@ class Home extends ConsumerWidget {
                   Expanded(
                     flex: 1,
                     child: ListView.builder(
-                        itemCount: list?.length ?? 0,
+                        itemCount: list.length,
                         itemBuilder: (context, index) {
                           return ListTile(
                             onTap: () {},
-                            title: Text("${list?[index].file!.path}"),
-                            leading: CircleAvatar(
+                            title: Text(list[index].file.path),
+                            leading: const CircleAvatar(
                               backgroundColor: Colors.red,
                             ),
-                            // subtitle: Text("${list?[index].lon}"),
+                            subtitle: Slider(
+                              value: 128,
+                              onChanged: (v) {},
+                              min: 0,
+                              max: 128,
+                              label: '128',
+                            ),
                             // trailing: Text("${list?[index].time}"),
                           );
                         }),
@@ -108,30 +114,30 @@ class Home extends ConsumerWidget {
                   Expanded(
                     flex: 3,
                     child: Container(
-                      color: Colors.grey,
-                      child: list != null
-                          ? MapScreen(
-                              mapController: MapController(
-                                zoom: 17,
-                                location: LatLng(list[0].geoData![0].lat!,
-                                    list[0].geoData![0].lon!),
-                              ),
-                              markers: getMarkers(list[0].geoData!),
-                              // markers: [
-                              //   LatLng(list[0].lat!, list[0].lon!),
-                              //   LatLng(list[(list.length - 1) ~/ 2].lat!,
-                              //       list[(list.length - 1) ~/ 2].lon!),
-                              //   LatLng(list[list.length - 1].lat!,
-                              //       list[list.length - 1].lon!)
-                              // ],
-                              // markers: list
-                              //     .map((e) => LatLng(e.lat!, e.lon!))
-                              //     .toList(),
-                            )
-                          : const Center(
-                              child: Text('Load Data to visualize'),
-                            ),
-                    ),
+                        color: Colors.grey,
+                        child: list.isNotEmpty
+                            ? MapScreen(
+                                mapController: MapController(
+                                  zoom: 17,
+                                  location: LatLng(list[0].geoData[0].lat,
+                                      list[0].geoData[0].lon),
+                                ),
+                                markers: getMarkers(list[0].geoData),
+
+                                // markers: [
+                                //   LatLng(list[0].lat!, list[0].lon!),
+                                //   LatLng(list[(list.length - 1) ~/ 2].lat!,
+                                //       list[(list.length - 1) ~/ 2].lon!),
+                                //   LatLng(list[list.length - 1].lat!,
+                                //       list[list.length - 1].lon!)
+                                // ],
+                                // markers: list
+                                //     .map((e) => LatLng(e.lat!, e.lon!))
+                                //     .toList(),
+                              )
+                            : const Center(
+                                child: Text('Load Data to visualize'),
+                              )),
                   )
                 ],
               ))
@@ -142,21 +148,19 @@ class Home extends ConsumerWidget {
 
   List<LatLng> getMarkers(List<GeoData> data) {
     List<LatLng> temp = [];
-    for (int i = 0; i < data.length; i += 1) {
-      temp.add(LatLng(data[i].lat!, data[i].lon!));
-    }
+    temp = data.map((e) => LatLng(e.lat, e.lon)).toList();
 
     var c = temp.toList();
-    temp.forEach((element) {
+    for (var element in temp) {
       c.removeWhere((e) =>
           element.latitude == e.latitude || element.longitude == e.longitude);
       c.add(element);
-    });
+    }
     temp.clear();
     for (int i = 0; i < c.length; i += 128) {
-      temp.add(LatLng(data[i].lat!, data[i].lon!));
+      temp.add(LatLng(data[i].lat, data[i].lon));
     }
-    print(temp.length);
+    // print(temp.length);
     return temp;
   }
 }
