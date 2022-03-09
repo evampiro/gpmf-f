@@ -1,15 +1,24 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+
 import 'package:gpmf/screens/map.dart';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 
-final DataListProvider = StateProvider<List<GeoData>?>((ref) {
+final DataListProvider = StateProvider<List<GeoFile>?>((ref) {
   return;
 });
+
+class GeoFile {
+  GeoFile({this.file, this.geoData});
+  File? file;
+  List<GeoData>? geoData;
+}
 
 class GeoData {
   GeoData({this.lat, this.lon, this.time});
@@ -23,7 +32,7 @@ class Home extends ConsumerWidget {
     return 0;
   });
   final bool _dragging = false;
-  final MapController _controller = MapController(location: LatLng(30, 30));
+  // final MapController _controller = MapController(location: LatLng(30, 30));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,6 +41,8 @@ class Home extends ConsumerWidget {
     return Scaffold(
         body: DropTarget(
       onDragDone: (detail) async {
+        ref.read(DataListProvider.state).state = [];
+        List<GeoFile> geoData = [];
         for (final file in detail.files) {
           debugPrint('  ${file.path} ${file.name}'
               '  ${await file.lastModified()}'
@@ -41,7 +52,6 @@ class Home extends ConsumerWidget {
           try {
             var dat = await file.readAsString();
             var json = jsonDecode(dat);
-            ref.read(DataListProvider.state).state = [];
 
             List<GeoData> data = [];
 
@@ -51,11 +61,12 @@ class Home extends ConsumerWidget {
                   lon: json[i]["value"][1],
                   time: DateTime.parse(json[i]["date"].toString())));
             }
-            ref.read(DataListProvider.state).state = data.toList();
+            geoData.add(GeoFile(file: File(file.path), geoData: data));
           } catch (e, s) {
             print(e);
           }
         }
+        ref.read(DataListProvider.state).state = geoData.toList();
         // detail.files.
       },
       onDragEntered: (detail) {
@@ -84,9 +95,13 @@ class Home extends ConsumerWidget {
                         itemCount: list?.length ?? 0,
                         itemBuilder: (context, index) {
                           return ListTile(
-                            title: Text("${list?[index].lat}"),
-                            subtitle: Text("${list?[index].lon}"),
-                            trailing: Text("${list?[index].time}"),
+                            onTap: () {},
+                            title: Text("${list?[index].file!.path}"),
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.red,
+                            ),
+                            // subtitle: Text("${list?[index].lon}"),
+                            // trailing: Text("${list?[index].time}"),
                           );
                         }),
                   ),
@@ -97,12 +112,21 @@ class Home extends ConsumerWidget {
                       child: list != null
                           ? MapScreen(
                               mapController: MapController(
-                                location: LatLng(list[0].lat!, list[0].lon!),
+                                zoom: 17,
+                                location: LatLng(list[0].geoData![0].lat!,
+                                    list[0].geoData![0].lon!),
                               ),
-                              // markers: [],
-                              markers: list
-                                  .map((e) => LatLng(e.lat!, e.lon!))
-                                  .toList(),
+                              markers: getMarkers(list[0].geoData!),
+                              // markers: [
+                              //   LatLng(list[0].lat!, list[0].lon!),
+                              //   LatLng(list[(list.length - 1) ~/ 2].lat!,
+                              //       list[(list.length - 1) ~/ 2].lon!),
+                              //   LatLng(list[list.length - 1].lat!,
+                              //       list[list.length - 1].lon!)
+                              // ],
+                              // markers: list
+                              //     .map((e) => LatLng(e.lat!, e.lon!))
+                              //     .toList(),
                             )
                           : const Center(
                               child: Text('Load Data to visualize'),
@@ -114,5 +138,25 @@ class Home extends ConsumerWidget {
         ],
       ),
     ));
+  }
+
+  List<LatLng> getMarkers(List<GeoData> data) {
+    List<LatLng> temp = [];
+    for (int i = 0; i < data.length; i += 1) {
+      temp.add(LatLng(data[i].lat!, data[i].lon!));
+    }
+
+    var c = temp.toList();
+    temp.forEach((element) {
+      c.removeWhere((e) =>
+          element.latitude == e.latitude || element.longitude == e.longitude);
+      c.add(element);
+    });
+    temp.clear();
+    for (int i = 0; i < c.length; i += 128) {
+      temp.add(LatLng(data[i].lat!, data[i].lon!));
+    }
+    print(temp.length);
+    return temp;
   }
 }

@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:latlng/latlng.dart';
@@ -59,6 +62,19 @@ class _MapState extends State<MapScreen> {
     );
   }
 
+  Widget _buildDotWidget(Offset pos, Color color, {Offset? prev}) {
+    if (prev != null) print('${pos} ${prev}');
+    return Positioned(
+      left: pos.dx - 16,
+      top: pos.dy - 16,
+      width: 4,
+      height: 4,
+      child: Container(
+        color: color,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MapLayoutBuilder(
@@ -67,9 +83,11 @@ class _MapState extends State<MapScreen> {
         final markerPositions =
             widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
 
-        final markerWidgets = markerPositions?.map(
-          (pos) => _buildMarkerWidget(pos, Colors.red),
-        );
+        final markerWidgets = [
+          CustomPaint(
+            painter: Painter(data: markerPositions),
+          )
+        ];
 
         final homeLocation =
             transformer.fromLatLngToXYCoords(LatLng(35.68, 51.412));
@@ -124,17 +142,49 @@ class _MapState extends State<MapScreen> {
                     // final url =
                     //     'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/$z/$x/$y?access_token=YOUR_MAPBOX_ACCESS_TOKEN';
 
-                    return Image.network(darkUrl);
+                    return CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                    );
                   },
                 ),
                 homeMarkerWidget,
-                ...markerWidgets!,
-                centerMarkerWidget,
+                ...markerWidgets,
+                // centerMarkerWidget,
               ],
             ),
           ),
         );
       },
     );
+  }
+}
+
+class Painter extends CustomPainter {
+  Painter({this.data});
+  List<Offset>? data;
+  final _random = Random();
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint();
+    paint.color = Colors.amber;
+    paint.strokeWidth = 5;
+
+    for (int i = 0; i < data!.length; i++) {
+      if (i < data!.length - 1) {
+        // paint.color = Color.fromRGBO(_random.nextInt(256), _random.nextInt(256),
+        //     _random.nextInt(256), _random.nextDouble());
+        canvas.drawLine(
+          data![i],
+          data![i + 1],
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }
