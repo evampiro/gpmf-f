@@ -36,6 +36,10 @@ dependencies:
  # latlng: ^0.1.0
   cached_network_image: ^3.2.0
   latlng: ^0.1.0
+  dart_vlc: ^0.1.6
+  draggable_widget: ^2.0.0
+  resizable_widget: ^1.0.5
+  cross_file: ^0.3.2
 
 
   # The following adds the Cupertino Icons font to your application.

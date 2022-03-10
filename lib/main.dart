@@ -1,8 +1,10 @@
+import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/home.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
+  DartVLC.initialize();
   runApp(const MyApp());
 }
 
