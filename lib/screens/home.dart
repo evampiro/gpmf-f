@@ -42,8 +42,13 @@ class Home extends ConsumerWidget {
   final refreshProvider = StateProvider<int?>((ref) {
     return 0;
   });
-  final player =
-      Player(id: 69420, videoDimensions: const VideoDimensions(1920, 1080));
+  final mediaControllerProvider = Provider<Player>((ref) {
+    return Player(
+      id: 69420,
+      videoDimensions: const VideoDimensions(1920, 1080),
+    );
+  });
+
   final bool _dragging = false;
   // final MapController _controller = MapController(location: LatLng(30, 30));
 
@@ -52,6 +57,7 @@ class Home extends ConsumerWidget {
     final list = ref.watch(DataListProvider.state).state;
     final refresh = ref.watch(DataListProvider.state).state;
     final _controller = ref.watch(MapControllerProvider);
+    final player = ref.watch(mediaControllerProvider);
     return Scaffold(
         body: DropTarget(
       onDragDone: (detail) async {
@@ -84,11 +90,15 @@ class Home extends ConsumerWidget {
         ref.read(MapControllerProvider).center =
             LatLng(geoData[0].geoData[0].lat, geoData[0].geoData[0].lon);
         ref.read(DataListProvider.state).state = geoData.toList();
-        player.open(
-            Media.file(File('D:/Projects/Backend/sample/long-new-sample.mp4')));
-        player.positionStream.listen((event) {
-          // print(event.);
-        });
+        Media media = Media.file(
+          File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+          parse: true,
+
+          // Media.file(File('D:/Projects/Backend/sample/long-new-sample.mp4')
+        );
+        print(media.metas["duration"]);
+        //player.open(media);
+        ref.read(mediaControllerProvider).open(media, autoStart: false);
         // Navigator.pop(context);
 
         // detail.files.
@@ -198,6 +208,7 @@ class Home extends ConsumerWidget {
                                     return MapScreen(
                                       mapController: _controller,
                                       markers: getMarkers(list[0]),
+                                      playerController: mediaControllerProvider,
 
                                       // markers: [
                                       //   LatLng(list[0].lat!, list[0].lon!),
@@ -258,5 +269,10 @@ class Home extends ConsumerWidget {
     }
     // print(temp.length);
     return temp;
+  }
+
+  int map(int x, int in_min, int in_max, int out_min, int out_max) {
+    return ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+        .toInt();
   }
 }
