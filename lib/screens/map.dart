@@ -22,6 +22,9 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapState extends State<MapScreen> {
+  int index = 0;
+  bool isAnimation = true;
+  int counter = 0;
   void _gotoDefault() {
     widget.mapController?.center = LatLng(35.68, 51.41);
     setState(() {});
@@ -37,6 +40,11 @@ class _MapState extends State<MapScreen> {
   }
 
   void _onDoubleTap() {
+    isAnimation = false;
+    Future.delayed(Duration(seconds: 1)).then((_) {
+      isAnimation = true;
+    });
+    print(isAnimation);
     widget.mapController?.zoom += 0.5;
     setState(() {});
   }
@@ -44,11 +52,19 @@ class _MapState extends State<MapScreen> {
   Offset? _dragStart;
   double _scaleStart = 1.0;
   void _onScaleStart(ScaleStartDetails details) {
+    isAnimation = false;
+    Future.delayed(Duration(seconds: 1)).then((_) {
+      isAnimation = true;
+    });
     _dragStart = details.focalPoint;
     _scaleStart = 1.0;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    isAnimation = false;
+    Future.delayed(Duration(seconds: 1)).then((_) {
+      isAnimation = true;
+    });
     final scaleDiff = details.scale - _scaleStart;
     _scaleStart = details.scale;
 
@@ -98,8 +114,11 @@ class _MapState extends State<MapScreen> {
 
         player.positionStream.listen(
           (event) {
-            var index = map(event.position!.inMilliseconds, 0, 707712, 0,
+            var localIndex = map(event.position!.inMilliseconds, 0, 707712, 0,
                 widget.markers!.length);
+            setState(() {
+              index = localIndex;
+            });
             // print(
             //     '$index ${widget.markers![index].latitude} ${widget.markers![index].longitude}');
           },
@@ -107,16 +126,29 @@ class _MapState extends State<MapScreen> {
         return MapLayoutBuilder(
           controller: widget.mapController!,
           builder: (context, transformer) {
+            // if (counter == 0 && isAnimation == false) {
+            //   counter++;
+            // }
+            // if (counter == 1 && isAnimation == false) {
+            //   counter = 0;
+            //   isAnimation = true;
+            // }
+            print(transformer.controller.projection);
             final markerPositions =
                 widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
 
             final markerWidgets = [
               ClipRRect(
-                child: CustomPaint(
-                  size: Size(constraint.maxWidth, constraint.maxHeight),
-                  painter: Painter(
-                    data: markerPositions!,
-                  ),
+                child: Column(
+                  children: [
+                    CustomPaint(
+                      size: Size(constraint.maxWidth, constraint.maxHeight),
+                      painter: Painter(
+                        currentIndex: index,
+                        data: markerPositions!,
+                      ),
+                    ),
+                  ],
                 ),
               )
             ];
@@ -185,6 +217,17 @@ class _MapState extends State<MapScreen> {
                     ),
                     //  homeMarkerWidget,
                     ...markerWidgets,
+                    AnimatedPositioned(
+                        duration: isAnimation
+                            ? Duration(milliseconds: 200)
+                            : Duration(microseconds: 0),
+                        left: markerPositions[index].dx,
+                        top: markerPositions[index].dy,
+                        child: Container(
+                          height: 10,
+                          width: 10,
+                          color: Colors.blue,
+                        )),
                     // centerMarkerWidget,
                   ],
                 ),

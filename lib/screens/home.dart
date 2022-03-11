@@ -81,7 +81,7 @@ class Home extends ConsumerWidget {
                   lon: json[i]["value"][1],
                   time: DateTime.parse(json[i]["date"].toString())));
             }
-            geoData.add(GeoFile(file: file, geoData: data, sample: 128));
+            geoData.add(GeoFile(file: file, geoData: data, sample: 1));
           } catch (e, s) {
             print(e);
             // Navigator.pop(context);
@@ -90,13 +90,17 @@ class Home extends ConsumerWidget {
         ref.read(MapControllerProvider).center =
             LatLng(geoData[0].geoData[0].lat, geoData[0].geoData[0].lon);
         ref.read(DataListProvider.state).state = geoData.toList();
+
+        File file = File('D:/Projects/Backend/sample/long-sample.mp4');
+        print("last modified: ${await file.lastModified()}");
         Media media = Media.file(
-          File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+          // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+          file,
           parse: true,
 
-          // Media.file(File('D:/Projects/Backend/sample/long-new-sample.mp4')
+          // Media.file(
         );
-        print(media.metas["duration"]);
+        print(media.metas);
         //player.open(media);
         ref.read(mediaControllerProvider).open(media, autoStart: false);
         // Navigator.pop(context);
@@ -135,69 +139,6 @@ class Home extends ConsumerWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        flex: 1,
-                        child: ListView.builder(
-                            itemCount: list.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                onTap: () {
-                                  var control = ref.read(MapControllerProvider);
-
-                                  control.center = LatLng(
-                                      list[index].geoData[0].lat,
-                                      list[index].geoData[0].lon);
-
-                                  // control.zoom++;
-                                },
-                                title: Text(
-                                    '${list[index].file.name}\nSamples: ${list[index].geoData.length}'),
-                                leading: const CircleAvatar(
-                                  backgroundColor: Colors.red,
-                                ),
-                                trailing: IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.play_arrow)),
-                                subtitle: Consumer(builder: (context, ref, s) {
-                                  final r =
-                                      ref.watch(refreshProvider.state).state;
-
-                                  return Row(
-                                    children: [
-                                      const Text('Quality'),
-                                      Slider(
-                                        value: list[index].sample.toDouble(),
-                                        onChanged: (v) {
-                                          // print(v);
-                                          var tempList = ref
-                                              .read(DataListProvider.state)
-                                              .state;
-
-                                          tempList[index].sample = v.toInt();
-                                          ref
-                                              .read(DataListProvider.state)
-                                              .state = tempList;
-                                          ref
-                                              .read(refreshProvider.state)
-                                              .state = v.toInt();
-                                          var c = _controller.zoom;
-                                          _controller.zoom = c;
-                                        },
-                                        onChangeEnd: (v) {},
-                                        min: 1,
-                                        max: 128,
-                                      ),
-                                      Text(list[index]
-                                          .sample
-                                          .toDouble()
-                                          .toString())
-                                    ],
-                                  );
-                                }),
-                                // trailing: Text("${list?[index].time}"),
-                              );
-                            }),
-                      ),
-                      Expanded(
                         flex: 3,
                         child: Container(
                             color: Colors.grey,
@@ -225,29 +166,106 @@ class Home extends ConsumerWidget {
                                 : const Center(
                                     child: Text('Load Data to visualize'),
                                   )),
-                      )
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 600,
+                              height: 400,
+                              child: Video(
+                                player: player,
+                              ),
+                            ),
+                            Expanded(
+                              child: ListView.builder(
+                                  itemCount: list.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      onTap: () {
+                                        var control =
+                                            ref.read(MapControllerProvider);
+
+                                        control.center = LatLng(
+                                            list[index].geoData[0].lat,
+                                            list[index].geoData[0].lon);
+
+                                        // control.zoom++;
+                                      },
+                                      title: Text(
+                                          '${list[index].file.name}\nSamples: ${list[index].geoData.length}'),
+                                      leading: const CircleAvatar(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      trailing: IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(Icons.play_arrow)),
+                                      subtitle:
+                                          Consumer(builder: (context, ref, s) {
+                                        final r = ref
+                                            .watch(refreshProvider.state)
+                                            .state;
+
+                                        return Row(
+                                          children: [
+                                            const Text('Quality'),
+                                            Slider(
+                                              value:
+                                                  list[index].sample.toDouble(),
+                                              onChanged: (v) {
+                                                // print(v);
+                                                var tempList = ref
+                                                    .read(
+                                                        DataListProvider.state)
+                                                    .state;
+
+                                                tempList[index].sample =
+                                                    v.toInt();
+                                                ref
+                                                    .read(
+                                                        DataListProvider.state)
+                                                    .state = tempList;
+                                                ref
+                                                    .read(refreshProvider.state)
+                                                    .state = v.toInt();
+                                                var c = _controller.zoom;
+                                                _controller.zoom = c;
+                                              },
+                                              onChangeEnd: (v) {},
+                                              min: 1,
+                                              max: 128,
+                                            ),
+                                            Text(list[index]
+                                                .sample
+                                                .toDouble()
+                                                .toString())
+                                          ],
+                                        );
+                                      }),
+                                      // trailing: Text("${list?[index].time}"),
+                                    );
+                                  }),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ))
             ],
           ),
-          DraggableWidget(
-            intialVisibility: true,
-            initialPosition: AnchoringPosition.bottomRight,
-            bottomMargin: 24,
-            topMargin: 12,
-            horizontalSpace: 12,
-            verticalSpace: 12,
-            child: Opacity(
-              opacity: .9,
-              child: SizedBox(
-                width: 600,
-                height: 400,
-                child: Video(
-                  player: player,
-                ),
-              ),
-            ),
-          )
+          // DraggableWidget(
+          //   intialVisibility: true,
+          //   initialPosition: AnchoringPosition.bottomRight,
+          //   bottomMargin: 24,
+          //   topMargin: 12,
+          //   horizontalSpace: 12,
+          //   verticalSpace: 12,
+          //   child: Opacity(
+          //     opacity: .9,
+          //     child: ,
+          //   ),
+          // )
         ],
       ),
     ));
@@ -260,7 +278,7 @@ class Home extends ConsumerWidget {
     var c = temp.toList();
     for (var element in temp) {
       c.removeWhere((e) =>
-          element.latitude == e.latitude || element.longitude == e.longitude);
+          element.latitude == e.latitude && element.longitude == e.longitude);
       c.add(element);
     }
     temp.clear();
