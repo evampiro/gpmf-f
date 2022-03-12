@@ -1,30 +1,42 @@
+import 'dart:math' as math;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/home.dart';
 import 'package:gpmf/screens/paintpath.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 
+class CompareOffset {
+  CompareOffset({required this.offset, required this.distance});
+  Offset offset;
+  double distance;
+}
+
 class MapScreen extends StatefulWidget {
   MapScreen(
       {Key? key,
       this.mapController,
-      this.markers,
+      required this.geoFile,
       required this.playerController})
       : super(key: key);
   final MapController? mapController;
-  final List<LatLng>? markers;
+  //final List<GeoFile>? geoFiles;
   final Provider<Player> playerController;
+  final StateProvider<List<GeoFile>> geoFile;
   @override
   State<MapScreen> createState() => _MapState();
 }
 
 class _MapState extends State<MapScreen> {
   int index = 0;
-  bool isAnimation = true;
+  bool isAnimation = true, follow = false;
   int counter = 0;
+  double angle = 0;
+  Offset marker = Offset(0, 0);
   void _gotoDefault() {
     widget.mapController?.center = LatLng(35.68, 51.41);
     setState(() {});
@@ -111,14 +123,23 @@ class _MapState extends State<MapScreen> {
     return LayoutBuilder(builder: (context, constraint) {
       return Consumer(builder: (context, ref, s) {
         final player = ref.watch(widget.playerController);
+        final geoFiles = ref.watch(widget.geoFile.state).state;
 
         player.positionStream.listen(
           (event) {
             var localIndex = map(event.position!.inMilliseconds, 0, 707712, 0,
-                widget.markers!.length);
+                geoFiles[0].geoData.length);
+
             setState(() {
               index = localIndex;
             });
+
+            // index = localIndex;
+            if (follow) {
+              widget.mapController?.center = LatLng(
+                  geoFiles[0].geoData[index].lat,
+                  geoFiles[0].geoData[index].lon);
+            }
             // print(
             //     '$index ${widget.markers![index].latitude} ${widget.markers![index].longitude}');
           },
@@ -133,21 +154,39 @@ class _MapState extends State<MapScreen> {
             //   counter = 0;
             //   isAnimation = true;
             // }
-            print(transformer.controller.projection);
-            final markerPositions =
-                widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
+            // print(transformer.controller.projection);
+            final markerPositions = geoFiles[0]
+                .geoData
+                .map((e) =>
+                    transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+                .toList();
+            // widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
 
+            if (index > 0 && index < geoFiles[0].geoData.length - 1) {
+              angle = math.atan(
+                  (markerPositions[index + 1].dy - markerPositions[index].dy) /
+                      ((markerPositions[index + 1].dx -
+                          markerPositions[index].dx)));
+            }
             final markerWidgets = [
               ClipRRect(
-                child: Column(
+                child: Stack(
                   children: [
                     CustomPaint(
                       size: Size(constraint.maxWidth, constraint.maxHeight),
                       painter: Painter(
-                        currentIndex: index,
-                        data: markerPositions!,
-                      ),
+                          currentIndex: index,
+                          data: markerPositions,
+                          sample: geoFiles[0].sample),
                     ),
+                    // Transform.rotate(
+                    //   angle: 0.58,
+                    //   child: Container(
+                    //     color: Colors.red,
+                    //     width: 100,
+                    //     height: 100,
+                    //   ),
+                    // )
                   ],
                 ),
               )
@@ -177,10 +216,36 @@ class _MapState extends State<MapScreen> {
 
                 final clicked = transformer.fromLatLngToXYCoords(location);
 
-                print('${location.longitude}, ${location.latitude}');
-                print('${clicked.dx}, ${clicked.dy}');
-                print(
-                    '${details.localPosition.dx}, ${details.localPosition.dy}');
+                // var matchGreat = markerPositions
+                //     .where((e) => e.dx >= clicked.dx && e.dy >= clicked.dy)
+                //     .toList();
+                // var matchLess = markerPositions
+                //     .where((e) => e.dx <= clicked.dx && e.dy <= clicked.dy)
+                //     .toList();
+
+                var indexList = markerPositions
+                    .map((e) => CompareOffset(
+                        offset: e, distance: (e - clicked).distance))
+                    .toList();
+                indexList.sort((a, b) => a.distance.compareTo(b.distance));
+
+                // print('${location.longitude}, ${location.latitude}');
+                // print('${clicked.dx}, ${clicked.dy}');
+                // print(
+                //     '${details.localPosition.dx}, ${details.localPosition.dy}');
+                // // print(
+                // //     "${(clicked - matchGreat[0]).distance} ${(clicked - matchLess.last).distance}");
+                // print("${indexList[0].offset} ${indexList[0].distance}");
+                var i =
+                    markerPositions.indexWhere((e) => indexList[0].offset == e);
+
+                setState(() {
+                  index = i;
+                });
+
+                player.seek(Duration(
+                    milliseconds:
+                        map(i, 0, markerPositions.length, 0, 707712)));
               },
               child: Listener(
                 behavior: HitTestBehavior.opaque,
@@ -217,17 +282,46 @@ class _MapState extends State<MapScreen> {
                     ),
                     //  homeMarkerWidget,
                     ...markerWidgets,
+
                     AnimatedPositioned(
                         duration: isAnimation
-                            ? Duration(milliseconds: 200)
-                            : Duration(microseconds: 0),
-                        left: markerPositions[index].dx,
-                        top: markerPositions[index].dy,
+                            ? const Duration(milliseconds: 500)
+                            : const Duration(microseconds: 0),
+                        left: markerPositions[index].dx - 8,
+                        top: markerPositions[index].dy - 8,
                         child: Container(
-                          height: 10,
-                          width: 10,
-                          color: Colors.blue,
-                        )),
+                            height: 15,
+                            width: 15,
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              boxShadow: const [
+                                BoxShadow(spreadRadius: 0.5, blurRadius: 5)
+                              ],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Container(
+                                height: 6,
+                                width: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            )
+
+                            // Opacity(
+                            //   opacity: 0,
+                            //   child: AnimatedRotation(
+                            //     turns: -math.pi / angle,
+                            //     duration: const Duration(milliseconds: 500),
+                            //     child: const Icon(
+                            //       Icons.arrow_back,
+                            //       size: 15,
+                            //     ),
+                            //   ),
+                            // ),
+                            )),
                     // centerMarkerWidget,
                   ],
                 ),

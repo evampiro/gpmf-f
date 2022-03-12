@@ -4,11 +4,8 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:draggable_widget/draggable_widget.dart';
 import 'package:flutter/material.dart';
-
 import 'package:gpmf/screens/map.dart';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
@@ -91,8 +88,10 @@ class Home extends ConsumerWidget {
             LatLng(geoData[0].geoData[0].lat, geoData[0].geoData[0].lon);
         ref.read(DataListProvider.state).state = geoData.toList();
 
-        File file = File('D:/Projects/Backend/sample/long-sample.mp4');
-        print("last modified: ${await file.lastModified()}");
+        File file =
+            // File('D:/Projects/Backend/sample/long-sample.mp4');
+            File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
+        //print("last modified: ${await file.lastModified()}");
         Media media = Media.file(
           // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
           file,
@@ -100,9 +99,9 @@ class Home extends ConsumerWidget {
 
           // Media.file(
         );
-        print(media.metas);
+        // print(media.metas["duration"]);
         //player.open(media);
-        ref.read(mediaControllerProvider).open(media, autoStart: false);
+        ref.read(mediaControllerProvider).open(media, autoStart: true);
         // Navigator.pop(context);
 
         // detail.files.
@@ -148,7 +147,8 @@ class Home extends ConsumerWidget {
                                     //     ref.watch(refreshProvider.state).state;
                                     return MapScreen(
                                       mapController: _controller,
-                                      markers: getMarkers(list[0]),
+                                      // markers: getMarkers(list[0]),
+                                      geoFile: DataListProvider,
                                       playerController: mediaControllerProvider,
 
                                       // markers: [
@@ -229,8 +229,8 @@ class Home extends ConsumerWidget {
                                                 ref
                                                     .read(refreshProvider.state)
                                                     .state = v.toInt();
-                                                var c = _controller.zoom;
-                                                _controller.zoom = c;
+                                                // var c = _controller.zoom;
+                                                // _controller.zoom = c;
                                               },
                                               onChangeEnd: (v) {},
                                               min: 1,
@@ -275,22 +275,17 @@ class Home extends ConsumerWidget {
     List<LatLng> temp = [];
     temp = data.geoData.map((e) => LatLng(e.lat, e.lon)).toList();
 
-    var c = temp.toList();
-    for (var element in temp) {
-      c.removeWhere((e) =>
-          element.latitude == e.latitude && element.longitude == e.longitude);
-      c.add(element);
-    }
-    temp.clear();
-    for (int i = 0; i < c.length; i += data.sample) {
-      temp.add(LatLng(data.geoData[i].lat, data.geoData[i].lon));
-    }
+    // var c = temp.toList();
+    // for (var element in temp) {
+    //   c.removeWhere((e) =>
+    //       element.latitude == e.latitude && element.longitude == e.longitude);
+    //   c.add(element);
+    // }
+    // temp.clear();
+    // for (int i = 0; i < c.length; i += data.sample) {
+    //   temp.add(LatLng(data.geoData[i].lat, data.geoData[i].lon));
+    // }
     // print(temp.length);
     return temp;
-  }
-
-  int map(int x, int in_min, int in_max, int out_min, int out_max) {
-    return ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
-        .toInt();
   }
 }
