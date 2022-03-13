@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:gpmf/screens/home.dart';
 import 'package:gpmf/screens/paintpath.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,11 +22,12 @@ class MapScreen extends StatefulWidget {
       {Key? key,
       this.mapController,
       required this.geoFile,
-      required this.playerController})
+      required this.leftPlayerController,
+      required this.rightPlayerController})
       : super(key: key);
   final MapController? mapController;
   //final List<GeoFile>? geoFiles;
-  final Provider<Player> playerController;
+  final Provider<Player> leftPlayerController, rightPlayerController;
   final StateProvider<List<GeoFile>> geoFile;
   @override
   State<MapScreen> createState() => _MapState();
@@ -122,11 +123,11 @@ class _MapState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
       return Consumer(builder: (context, ref, s) {
-        final player = ref.watch(widget.playerController);
+        final player = ref.watch(widget.leftPlayerController);
         final geoFiles = ref.watch(widget.geoFile.state).state;
-        var sample = calculateSample(
-            max: 128, min: 1, value: widget.mapController?.zoom);
-        geoFiles[0].sample = sample;
+        // var sample = calculateSample(
+        //     max: 128, min: 1, value: widget.mapController?.zoom);
+        // geoFiles[0].sample = sample;
 
         player.positionStream.listen(
           (event) {
@@ -173,15 +174,17 @@ class _MapState extends State<MapScreen> {
             }
             final markerWidgets = [
               ClipRRect(
-                child: Stack(
-                  children: [
-                    CustomPaint(
-                      size: Size(constraint.maxWidth, constraint.maxHeight),
-                      painter: Painter(
-                          currentIndex: index,
-                          data: markerPositions,
-                          sample: geoFiles[0].sample),
-                    ),
+                child: Stack(children: [
+                  CustomPaint(
+                    size: Size(constraint.maxWidth, constraint.maxHeight),
+                    painter: Painter(
+                        currentIndex: index,
+                        data: geoFiles,
+                        sample: geoFiles[0].sample,
+                        transformer: transformer),
+                  )
+                ]
+
                     // Transform.rotate(
                     //   angle: 0.58,
                     //   child: Container(
@@ -190,8 +193,8 @@ class _MapState extends State<MapScreen> {
                     //     height: 100,
                     //   ),
                     // )
-                  ],
-                ),
+
+                    ),
               )
             ];
 
@@ -248,11 +251,11 @@ class _MapState extends State<MapScreen> {
 
                 var transform =
                     transformer.fromXYCoordsToLatLng(indexList[0].offset);
-                print(Geolocator.distanceBetween(
-                    location.latitude,
-                    location.longitude,
-                    transform.latitude,
-                    transform.longitude));
+                // print(Geolocator.distanceBetween(
+                //     location.latitude,
+                //     location.longitude,
+                //     transform.latitude,
+                //     transform.longitude));
 
                 setState(() {
                   index = i;
@@ -272,8 +275,8 @@ class _MapState extends State<MapScreen> {
                     final delta = event.scrollDelta;
 
                     widget.mapController?.zoom -= delta.dy / 1000.0;
-                    ref.read(widget.geoFile.state).state = geoFiles;
-                    ref.read(refreshProvider.state).state = sample;
+                    // ref.read(widget.geoFile.state).state = geoFiles;
+                    //  ref.read(refreshProvider.state).state = sample;
 
                     Future.delayed(Duration(milliseconds: 1500))
                         .then((value) => setState(() => (isAnimation = true)));
@@ -311,39 +314,42 @@ class _MapState extends State<MapScreen> {
                             : const Duration(microseconds: 0),
                         left: markerPositions[index].dx - 8,
                         top: markerPositions[index].dy - 8,
-                        child: Container(
-                            height: 15,
-                            width: 15,
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              boxShadow: const [
-                                BoxShadow(spreadRadius: 0.5, blurRadius: 5)
-                              ],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Center(
-                              child: Container(
-                                height: 6,
-                                width: 6,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                        child: Opacity(
+                          opacity: 0,
+                          child: Container(
+                              height: 15,
+                              width: 15,
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                boxShadow: const [
+                                  BoxShadow(spreadRadius: 0.5, blurRadius: 5)
+                                ],
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            )
+                              child: Center(
+                                child: Container(
+                                  height: 6,
+                                  width: 6,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              )
 
-                            // Opacity(
-                            //   opacity: 0,
-                            //   child: AnimatedRotation(
-                            //     turns: -math.pi / angle,
-                            //     duration: const Duration(milliseconds: 500),
-                            //     child: const Icon(
-                            //       Icons.arrow_back,
-                            //       size: 15,
-                            //     ),
-                            //   ),
-                            // ),
-                            )),
+                              // Opacity(
+                              //   opacity: 0,
+                              //   child: AnimatedRotation(
+                              //     turns: -math.pi / angle,
+                              //     duration: const Duration(milliseconds: 500),
+                              //     child: const Icon(
+                              //       Icons.arrow_back,
+                              //       size: 15,
+                              //     ),
+                              //   ),
+                              // ),
+                              ),
+                        )),
                     // centerMarkerWidget,
                   ],
                 ),

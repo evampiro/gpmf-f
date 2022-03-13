@@ -26,11 +26,15 @@ final refreshProvider = StateProvider<int?>((ref) {
 });
 
 class GeoFile {
-  GeoFile({required this.file, required this.geoData, required this.sample});
+  GeoFile(
+      {required this.file,
+      required this.geoData,
+      required this.sample,
+      required this.duration});
   XFile file;
 
   List<GeoData> geoData;
-  int sample;
+  int sample, duration;
 }
 
 class GeoData {
@@ -42,7 +46,14 @@ class GeoData {
 class Home extends ConsumerWidget {
   Home({Key? key}) : super(key: key);
 
-  final mediaControllerProvider = Provider<Player>((ref) {
+  final sampleDivisor = 3;
+  final mediaControllerProviderLeft = Provider<Player>((ref) {
+    return Player(
+      id: 69420,
+      videoDimensions: const VideoDimensions(1920, 1080),
+    );
+  });
+  final mediaControllerProviderRight = Provider<Player>((ref) {
     return Player(
       id: 69420,
       videoDimensions: const VideoDimensions(1920, 1080),
@@ -57,7 +68,8 @@ class Home extends ConsumerWidget {
     final list = ref.watch(DataListProvider.state).state;
     final refresh = ref.watch(DataListProvider.state).state;
     final _controller = ref.watch(MapControllerProvider);
-    final player = ref.watch(mediaControllerProvider);
+    final leftPlayer = ref.watch(mediaControllerProviderLeft);
+    final rightPlayer = ref.watch(mediaControllerProviderRight);
     return Scaffold(
         body: DropTarget(
       onDragDone: (detail) async {
@@ -81,9 +93,24 @@ class Home extends ConsumerWidget {
                   lon: json[i]["value"][1],
                   time: DateTime.parse(json[i]["date"].toString())));
             }
-            geoData.add(GeoFile(file: file, geoData: data, sample: 1));
+
+            File filel = File(file.path.replaceAll(".json", ".mp4"));
+            // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
+            //print("last modified: ${await file.lastModified()}");
+            Media media = Media.file(
+              // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+              filel,
+              parse: true,
+
+              // Media.file(
+            );
+            geoData.add(GeoFile(
+                file: file,
+                geoData: data,
+                sample: data.length ~/ sampleDivisor,
+                duration: int.parse(media.metas["duration"]!)));
           } catch (e, s) {
-            print(e);
+            print('error $e $s');
             // Navigator.pop(context);
           }
         }
@@ -92,8 +119,8 @@ class Home extends ConsumerWidget {
         ref.read(DataListProvider.state).state = geoData.toList();
 
         //File file = File('D:/Projects/Backend/sample/long-new-sample.mp4');
-        File file =
-            File('D:\\Projects\\Backend\\gpmf\\sample\\GOPR0001-small.mp4');
+
+        File file = File(geoData[0].file.path.replaceAll(".json", ".mp4"));
         // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
         //print("last modified: ${await file.lastModified()}");
         Media media = Media.file(
@@ -105,7 +132,8 @@ class Home extends ConsumerWidget {
         );
         // print(media.metas["duration"]);
         //player.open(media);
-        ref.read(mediaControllerProvider).open(media, autoStart: false);
+        ref.read(mediaControllerProviderLeft).open(media, autoStart: true);
+
         // Navigator.pop(context);
 
         // detail.files.
@@ -153,7 +181,10 @@ class Home extends ConsumerWidget {
                                       mapController: _controller,
                                       // markers: getMarkers(list[0]),
                                       geoFile: DataListProvider,
-                                      playerController: mediaControllerProvider,
+                                      leftPlayerController:
+                                          mediaControllerProviderLeft,
+                                      rightPlayerController:
+                                          mediaControllerProviderLeft,
 
                                       // markers: [
                                       //   LatLng(list[0].lat!, list[0].lon!),
@@ -177,9 +208,16 @@ class Home extends ConsumerWidget {
                           children: [
                             SizedBox(
                               width: 600,
-                              height: 400,
+                              height: 350,
                               child: Video(
-                                player: player,
+                                player: leftPlayer,
+                              ),
+                            ),
+                            SizedBox(
+                              width: 600,
+                              height: 350,
+                              child: Video(
+                                player: rightPlayer,
                               ),
                             ),
                             ElevatedButton(
@@ -245,7 +283,8 @@ class Home extends ConsumerWidget {
                                               },
                                               onChangeEnd: (v) {},
                                               min: 1,
-                                              max: 128,
+                                              max: list[index].geoData.length /
+                                                  sampleDivisor,
                                             ),
                                             Text(list[index]
                                                 .sample

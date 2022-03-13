@@ -1,51 +1,66 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:gpmf/screens/home.dart';
+import 'package:latlng/latlng.dart';
+import 'package:map/map.dart';
+
 class Painter extends CustomPainter {
   Painter(
-      {required this.data, required this.currentIndex, required this.sample});
-  List<Offset> data;
+      {required this.data,
+      required this.currentIndex,
+      required this.sample,
+      required this.transformer});
+  List<GeoFile> data;
   int currentIndex;
   int sample;
+  MapTransformer transformer;
   final _random = Random();
   @override
   void paint(Canvas canvas, size) {
     var paint = Paint();
-    paint.color = Colors.amber;
+
     paint.strokeWidth = 5;
     var lPaint = Paint();
     lPaint.color = Colors.red;
     lPaint.strokeWidth = 2;
+    paint.color = Colors.amber;
+    for (int j = 0; j < data.length; j++) {
+      final offset = data[j]
+          .geoData
+          .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+          .toList();
+      // print(offset);
 
-    for (int i = 0; i < data.length; i += sample) {
-      if (i < data.length - sample) {
-        // paint.color = Color.fromRGBO(_random.nextInt(256), _random.nextInt(256),
-        //     _random.nextInt(256), _random.nextDouble());
-        canvas.drawLine(
-          data[i],
-          data[i + sample],
-          paint,
-        );
+      for (int i = 0; i < data[j].geoData.length; i += sample) {
+        if (i < offset.length - sample) {
+          // paint.color = Color.fromRGBO(_random.nextInt(256), _random.nextInt(256),
+          //     _random.nextInt(256), _random.nextDouble());
+          canvas.drawLine(
+            offset[i],
+            offset[i + sample],
+            paint,
+          );
+          // var a = boundingBox(offset);
+          // canvas.drawLine(a.topLeft, a.topRight, lPaint);
+          // canvas.drawLine(a.topRight, a.bottomRight, lPaint);
+          // canvas.drawLine(a.topLeft, a.bottomLeft, lPaint);
+          // canvas.drawLine(a.bottomLeft, a.bottomRight, lPaint);
+          // if (i % 12 == 0) {
+          //   canvas.drawCircle(data[i], 1, lPaint);
+          //   // canvas.drawLine(
+          //   //     data[i], Offset(data[i].dx + 10, data[i].dy - 10), lPaint);
+          //   // canvas.drawLine(
+          //   //     data[i], Offset(data[i].dx - 10, data[i].dy - 10), lPaint);
+          // }
 
-        // if (i % 12 == 0) {
-        //   canvas.drawCircle(data[i], 1, lPaint);
-        //   // canvas.drawLine(
-        //   //     data[i], Offset(data[i].dx + 10, data[i].dy - 10), lPaint);
-        //   // canvas.drawLine(
-        //   //     data[i], Offset(data[i].dx - 10, data[i].dy - 10), lPaint);
-        // }
-
+        }
       }
     }
+
     //canvas.drawRect(boundingBox(data), lPaint);
-    var a = boundingBox(data);
 
     //canvas..drawRect(a, lPaint);
-
-    canvas.drawLine(a.topLeft, a.topRight, lPaint);
-    canvas.drawLine(a.topRight, a.bottomRight, lPaint);
-    canvas.drawLine(a.topLeft, a.bottomLeft, lPaint);
-    canvas.drawLine(a.bottomLeft, a.bottomRight, lPaint);
 
     // canvas.drawCircle(centroid(data), 5, lPaint);
 
