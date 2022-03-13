@@ -9,6 +9,7 @@ import 'package:gpmf/screens/map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
+import 'package:process_run/shell.dart';
 
 final DataListProvider = StateProvider<List<GeoFile>>((ref) {
   return [];
@@ -18,6 +19,10 @@ final MapControllerProvider = Provider<MapController>((ref) {
     zoom: 17,
     location: LatLng(0, 0),
   );
+});
+
+final refreshProvider = StateProvider<int?>((ref) {
+  return 0;
 });
 
 class GeoFile {
@@ -36,9 +41,7 @@ class GeoData {
 
 class Home extends ConsumerWidget {
   Home({Key? key}) : super(key: key);
-  final refreshProvider = StateProvider<int?>((ref) {
-    return 0;
-  });
+
   final mediaControllerProvider = Provider<Player>((ref) {
     return Player(
       id: 69420,
@@ -88,9 +91,10 @@ class Home extends ConsumerWidget {
             LatLng(geoData[0].geoData[0].lat, geoData[0].geoData[0].lon);
         ref.read(DataListProvider.state).state = geoData.toList();
 
+        //File file = File('D:/Projects/Backend/sample/long-new-sample.mp4');
         File file =
-            // File('D:/Projects/Backend/sample/long-sample.mp4');
-            File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
+            File('D:\\Projects\\Backend\\gpmf\\sample\\GOPR0001-small.mp4');
+        // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
         //print("last modified: ${await file.lastModified()}");
         Media media = Media.file(
           // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
@@ -101,7 +105,7 @@ class Home extends ConsumerWidget {
         );
         // print(media.metas["duration"]);
         //player.open(media);
-        ref.read(mediaControllerProvider).open(media, autoStart: true);
+        ref.read(mediaControllerProvider).open(media, autoStart: false);
         // Navigator.pop(context);
 
         // detail.files.
@@ -178,6 +182,13 @@ class Home extends ConsumerWidget {
                                 player: player,
                               ),
                             ),
+                            ElevatedButton(
+                                onPressed: () {
+                                  var shell = Shell();
+                                  shell.run(
+                                      "ffmpeg.exe -i D:\\videofiles\\MAHARAJGUNJ\\1\\R\\07_04_2021_16_30_53_PROJOM01109.mp4 -vf scale=320:-1 -map 0:0 -map 0:1 -map 0:3 -codec:v mpeg2video -codec:d copy -codec:a copy -y D:\\videofiles\\MAHARAJGUNJ\\1\\R\\07_04_2021_16_30_53_PROJOM01109-small.MP4");
+                                },
+                                child: Text('asd')),
                             Expanded(
                               child: ListView.builder(
                                   itemCount: list.length,

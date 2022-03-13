@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:gpmf/screens/home.dart';
 import 'package:gpmf/screens/paintpath.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -53,8 +54,10 @@ class _MapState extends State<MapScreen> {
 
   void _onDoubleTap() {
     isAnimation = false;
-    Future.delayed(Duration(seconds: 1)).then((_) {
-      isAnimation = true;
+    Future.delayed(Duration(milliseconds: 50)).then((_) {
+      setState(() {
+        isAnimation = true;
+      });
     });
     print(isAnimation);
     widget.mapController?.zoom += 0.5;
@@ -64,19 +67,16 @@ class _MapState extends State<MapScreen> {
   Offset? _dragStart;
   double _scaleStart = 1.0;
   void _onScaleStart(ScaleStartDetails details) {
-    isAnimation = false;
-    Future.delayed(Duration(seconds: 1)).then((_) {
-      isAnimation = true;
-    });
     _dragStart = details.focalPoint;
     _scaleStart = 1.0;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    isAnimation = false;
-    Future.delayed(Duration(seconds: 1)).then((_) {
-      isAnimation = true;
+    setState(() {
+      isAnimation = false;
     });
+    Future.delayed(Duration(seconds: 3))
+        .then((value) => setState(() => (isAnimation = true)));
     final scaleDiff = details.scale - _scaleStart;
     _scaleStart = details.scale;
 
@@ -124,6 +124,9 @@ class _MapState extends State<MapScreen> {
       return Consumer(builder: (context, ref, s) {
         final player = ref.watch(widget.playerController);
         final geoFiles = ref.watch(widget.geoFile.state).state;
+        var sample = calculateSample(
+            max: 128, min: 1, value: widget.mapController?.zoom);
+        geoFiles[0].sample = sample;
 
         player.positionStream.listen(
           (event) {
@@ -211,6 +214,9 @@ class _MapState extends State<MapScreen> {
               onScaleStart: _onScaleStart,
               onScaleUpdate: _onScaleUpdate,
               onTapUp: (details) {
+                setState(() {
+                  isAnimation = true;
+                });
                 final location =
                     transformer.fromXYCoordsToLatLng(details.localPosition);
 
@@ -238,6 +244,15 @@ class _MapState extends State<MapScreen> {
                 // print("${indexList[0].offset} ${indexList[0].distance}");
                 var i =
                     markerPositions.indexWhere((e) => indexList[0].offset == e);
+                // print(indexList[0].distance);
+
+                var transform =
+                    transformer.fromXYCoordsToLatLng(indexList[0].offset);
+                print(Geolocator.distanceBetween(
+                    location.latitude,
+                    location.longitude,
+                    transform.latitude,
+                    transform.longitude));
 
                 setState(() {
                   index = i;
@@ -251,10 +266,17 @@ class _MapState extends State<MapScreen> {
                 behavior: HitTestBehavior.opaque,
                 onPointerSignal: (event) {
                   if (event is PointerScrollEvent) {
+                    setState(() {
+                      isAnimation = false;
+                    });
                     final delta = event.scrollDelta;
 
                     widget.mapController?.zoom -= delta.dy / 1000.0;
-                    setState(() {});
+                    ref.read(widget.geoFile.state).state = geoFiles;
+                    ref.read(refreshProvider.state).state = sample;
+
+                    Future.delayed(Duration(milliseconds: 1500))
+                        .then((value) => setState(() => (isAnimation = true)));
                   }
                 },
                 child: Stack(
@@ -336,5 +358,33 @@ class _MapState extends State<MapScreen> {
   int map(int x, int in_min, int in_max, int out_min, int out_max) {
     return ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
         .toInt();
+  }
+
+  double mapDouble(
+      {required double x,
+      required double in_min,
+      required double in_max,
+      required double out_min,
+      required double out_max}) {
+    var calc =
+        ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+    if (calc > out_max) {
+      return out_max;
+    } else if (calc < out_min) {
+      return out_min;
+    } else {
+      return calc;
+    }
+  }
+
+  int calculateSample({required int max, required int min, required value}) {
+    var calc = mapDouble(
+        x: value,
+        in_min: 17,
+        in_max: 18,
+        out_min: min.toDouble(),
+        out_max: max.toDouble());
+
+    return ((max - calc) + 1).toInt();
   }
 }
