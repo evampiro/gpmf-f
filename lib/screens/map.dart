@@ -17,6 +17,12 @@ class CompareOffset {
   double distance;
 }
 
+class SelectorCompare {
+  SelectorCompare({required this.compareOffset, required this.file});
+  CompareOffset compareOffset;
+  GeoFile file;
+}
+
 class MapScreen extends StatefulWidget {
   MapScreen(
       {Key? key,
@@ -34,11 +40,10 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapState extends State<MapScreen> {
-  int index = 0;
+  int index = 0, selectedFileIndex = 0;
   bool isAnimation = true, follow = false;
   int counter = 0;
-  double angle = 0;
-  Offset marker = Offset(0, 0);
+
   void _gotoDefault() {
     widget.mapController?.center = LatLng(35.68, 51.41);
     setState(() {});
@@ -123,7 +128,7 @@ class _MapState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
       return Consumer(builder: (context, ref, s) {
-        final player = ref.watch(widget.leftPlayerController);
+        final player = ref.watch(widget.rightPlayerController);
         final geoFiles = ref.watch(widget.geoFile.state).state;
         // var sample = calculateSample(
         //     max: 128, min: 1, value: widget.mapController?.zoom);
@@ -131,9 +136,13 @@ class _MapState extends State<MapScreen> {
 
         player.positionStream.listen(
           (event) {
-            var localIndex = map(event.position!.inMilliseconds, 0,
-                geoFiles[0].duration, 0, geoFiles[0].geoData.length);
-
+            var localIndex = map(
+                event.position!.inMilliseconds,
+                0,
+                geoFiles[selectedFileIndex].duration,
+                0,
+                geoFiles[selectedFileIndex].geoData.length);
+            // print(localIndex);
             setState(() {
               index = localIndex;
             });
@@ -141,8 +150,8 @@ class _MapState extends State<MapScreen> {
             // index = localIndex;
             if (follow) {
               widget.mapController?.center = LatLng(
-                  geoFiles[0].geoData[index].lat,
-                  geoFiles[0].geoData[index].lon);
+                  geoFiles[selectedFileIndex].geoData[index].lat,
+                  geoFiles[selectedFileIndex].geoData[index].lon);
             }
             // print(
             //     '$index ${widget.markers![index].latitude} ${widget.markers![index].longitude}');
@@ -159,19 +168,19 @@ class _MapState extends State<MapScreen> {
             //   isAnimation = true;
             // }
             // print(transformer.controller.projection);
-            final markerPositions = geoFiles[0]
+            final markerPositions = geoFiles[selectedFileIndex]
                 .geoData
                 .map((e) =>
                     transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
                 .toList();
             // widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
 
-            if (index > 0 && index < geoFiles[0].geoData.length - 1) {
-              angle = math.atan(
-                  (markerPositions[index + 1].dy - markerPositions[index].dy) /
-                      ((markerPositions[index + 1].dx -
-                          markerPositions[index].dx)));
-            }
+            // if (index > 0 && index < geoFiles[0].geoData.length - 1) {
+            //   angle = math.atan(
+            //       (markerPositions[index + 1].dy - markerPositions[index].dy) /
+            //           ((markerPositions[index + 1].dx -
+            //               markerPositions[index].dx)));
+            // }
             final markerWidgets = [
               ClipRRect(
                 child: Stack(children: [
@@ -180,8 +189,9 @@ class _MapState extends State<MapScreen> {
                     painter: Painter(
                         currentIndex: index,
                         data: geoFiles,
-                        sample: geoFiles[0].sample,
-                        transformer: transformer),
+                        sample: geoFiles[selectedFileIndex].sample,
+                        transformer: transformer,
+                        selectedIndex: selectedFileIndex),
                   )
                 ]
 
@@ -198,18 +208,18 @@ class _MapState extends State<MapScreen> {
               )
             ];
 
-            final homeLocation =
-                transformer.fromLatLngToXYCoords(LatLng(35.68, 51.412));
+            // final homeLocation =
+            //     transformer.fromLatLngToXYCoords(LatLng(35.68, 51.412));
 
-            final homeMarkerWidget =
-                _buildMarkerWidget(homeLocation, Colors.black);
+            // final homeMarkerWidget =
+            //     _buildMarkerWidget(homeLocation, Colors.black);
 
-            final centerLocation = Offset(
-                transformer.constraints.biggest.width / 2,
-                transformer.constraints.biggest.height / 2);
+            // final centerLocation = Offset(
+            //     transformer.constraints.biggest.width / 2,
+            //     transformer.constraints.biggest.height / 2);
 
-            final centerMarkerWidget =
-                _buildMarkerWidget(centerLocation, Colors.purple);
+            // final centerMarkerWidget =
+            //     _buildMarkerWidget(centerLocation, Colors.purple);
 
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -223,6 +233,16 @@ class _MapState extends State<MapScreen> {
                 final location =
                     transformer.fromXYCoordsToLatLng(details.localPosition);
 
+                List<GeoFile> selected = [];
+                geoFiles.forEach(
+                  (element) {
+                    if (element.boundingBox!.contains(
+                        Offset(location.latitude, location.longitude))) {
+                      selected.add(element);
+                    }
+                  },
+                );
+
                 final clicked = transformer.fromLatLngToXYCoords(location);
 
                 // var matchGreat = markerPositions
@@ -232,11 +252,27 @@ class _MapState extends State<MapScreen> {
                 //     .where((e) => e.dx <= clicked.dx && e.dy <= clicked.dy)
                 //     .toList();
 
-                var indexList = markerPositions
-                    .map((e) => CompareOffset(
-                        offset: e, distance: (e - clicked).distance))
-                    .toList();
-                indexList.sort((a, b) => a.distance.compareTo(b.distance));
+                List<SelectorCompare> selection = [];
+                selected.forEach((element) {
+                  final markerPositions = element.geoData
+                      .map((e) => transformer
+                          .fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+                      .toList();
+                  var indexList = markerPositions
+                      .map((e) => CompareOffset(
+                          offset: e, distance: (e - clicked).distance))
+                      .toList();
+                  indexList.sort((a, b) => a.distance.compareTo(b.distance));
+                  selection.add(SelectorCompare(
+                      compareOffset: indexList[0], file: element));
+                });
+
+                selection.sort(((a, b) => a.compareOffset.distance
+                    .compareTo(b.compareOffset.distance)));
+                setState(() {
+                  selectedFileIndex = geoFiles
+                      .indexWhere((element) => selection[0].file == element);
+                });
 
                 // print('${location.longitude}, ${location.latitude}');
                 // print('${clicked.dx}, ${clicked.dy}');
@@ -245,25 +281,29 @@ class _MapState extends State<MapScreen> {
                 // // print(
                 // //     "${(clicked - matchGreat[0]).distance} ${(clicked - matchLess.last).distance}");
                 // print("${indexList[0].offset} ${indexList[0].distance}");
-                var i =
-                    markerPositions.indexWhere((e) => indexList[0].offset == e);
+                //-----------//
+                // var i =
+                //     markerPositions.indexWhere((e) => indexList[0].offset == e);
+//--------------//
+
                 // print(indexList[0].distance);
 
-                var transform =
-                    transformer.fromXYCoordsToLatLng(indexList[0].offset);
+                // var transform =
+                //     transformer.fromXYCoordsToLatLng(indexList[0].offset);
+
                 // print(Geolocator.distanceBetween(
                 //     location.latitude,
                 //     location.longitude,
                 //     transform.latitude,
                 //     transform.longitude));
 
-                setState(() {
-                  index = i;
-                });
+                // setState(() {
+                //   index = i;
+                // });
 
-                player.seek(Duration(
-                    milliseconds:
-                        map(i, 0, markerPositions.length, 0, 707712)));
+                // player.seek(Duration(
+                //     milliseconds: map(i, 0, markerPositions.length, 0,
+                //         geoFiles[selectedFileIndex].duration)));
               },
               child: Listener(
                 behavior: HitTestBehavior.opaque,
@@ -278,7 +318,7 @@ class _MapState extends State<MapScreen> {
                     // ref.read(widget.geoFile.state).state = geoFiles;
                     //  ref.read(refreshProvider.state).state = sample;
 
-                    Future.delayed(Duration(milliseconds: 1500))
+                    Future.delayed(const Duration(milliseconds: 500))
                         .then((value) => setState(() => (isAnimation = true)));
                   }
                 },
@@ -307,15 +347,13 @@ class _MapState extends State<MapScreen> {
                     ),
                     //  homeMarkerWidget,
                     ...markerWidgets,
-
-                    AnimatedPositioned(
-                        duration: isAnimation
-                            ? const Duration(milliseconds: 500)
-                            : const Duration(microseconds: 0),
-                        left: markerPositions[index].dx - 8,
-                        top: markerPositions[index].dy - 8,
-                        child: Opacity(
-                          opacity: 0,
+                    if (selectedFileIndex == 0)
+                      AnimatedPositioned(
+                          duration: isAnimation
+                              ? const Duration(milliseconds: 500)
+                              : const Duration(microseconds: 0),
+                          left: markerPositions[index].dx - 8,
+                          top: markerPositions[index].dy - 8,
                           child: Container(
                               height: 15,
                               width: 15,
@@ -348,8 +386,7 @@ class _MapState extends State<MapScreen> {
                               //     ),
                               //   ),
                               // ),
-                              ),
-                        )),
+                              )),
                     // centerMarkerWidget,
                   ],
                 ),

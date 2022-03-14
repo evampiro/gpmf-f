@@ -9,10 +9,11 @@ class Painter extends CustomPainter {
   Painter(
       {required this.data,
       required this.currentIndex,
+      required this.selectedIndex,
       required this.sample,
       required this.transformer});
   List<GeoFile> data;
-  int currentIndex;
+  int currentIndex, selectedIndex;
   int sample;
   MapTransformer transformer;
   final _random = Random();
@@ -22,39 +23,78 @@ class Painter extends CustomPainter {
 
     paint.strokeWidth = 5;
     var lPaint = Paint();
-    lPaint.color = Colors.red;
-    lPaint.strokeWidth = 2;
-    paint.color = Colors.amber;
+
+    lPaint.strokeWidth = 1;
+
     for (int j = 0; j < data.length; j++) {
-      final offset = data[j]
-          .geoData
-          .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
-          .toList();
-      // print(offset);
+      // if (j == selectedIndex)
+      {
+        final offset = data[j]
+            .geoData
+            .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+            .toList();
+        // print(offset);
+        if (selectedIndex != j)
+          paint.color = data[j].color;
+        else
+          paint.color = Colors.black;
+        lPaint.color = data[j].color;
+        for (int i = 0; i < data[j].geoData.length; i += sample) {
+          if (i < offset.length - sample) {
+            // paint.color = Color.fromRGBO(_random.nextInt(256), _random.nextInt(256),
+            //     _random.nextInt(256), _random.nextDouble());
+            canvas.drawLine(
+              offset[i],
+              offset[i + sample],
+              paint,
+            );
+            // var a = boundingBoxOffset(offset);
 
-      for (int i = 0; i < data[j].geoData.length; i += sample) {
-        if (i < offset.length - sample) {
-          // paint.color = Color.fromRGBO(_random.nextInt(256), _random.nextInt(256),
-          //     _random.nextInt(256), _random.nextDouble());
-          canvas.drawLine(
-            offset[i],
-            offset[i + sample],
-            paint,
-          );
-          // var a = boundingBox(offset);
-          // canvas.drawLine(a.topLeft, a.topRight, lPaint);
-          // canvas.drawLine(a.topRight, a.bottomRight, lPaint);
-          // canvas.drawLine(a.topLeft, a.bottomLeft, lPaint);
-          // canvas.drawLine(a.bottomLeft, a.bottomRight, lPaint);
-          // if (i % 12 == 0) {
-          //   canvas.drawCircle(data[i], 1, lPaint);
-          //   // canvas.drawLine(
-          //   //     data[i], Offset(data[i].dx + 10, data[i].dy - 10), lPaint);
-          //   // canvas.drawLine(
-          //   //     data[i], Offset(data[i].dx - 10, data[i].dy - 10), lPaint);
-          // }
+            // canvas.drawLine(a.topRight, a.bottomRight, lPaint);
+            // canvas.drawLine(a.topLeft, a.bottomLeft, lPaint);
+            // canvas.drawLine(a.bottomLeft, a.bottomRight, lPaint);
+            // if (i % 12 == 0) {
+            //   canvas.drawCircle(data[i], 1, lPaint);
+            //   // canvas.drawLine(
+            //   //     data[i], Offset(data[i].dx + 10, data[i].dy - 10), lPaint);
+            //   // canvas.drawLine(
+            //   //     data[i], Offset(data[i].dx - 10, data[i].dy - 10), lPaint);
+            // }
 
+          }
         }
+        // canvas.drawLine(
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.topLeft.dx,
+        //         data[j].boundingBox!.topLeft.dy)),
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.topRight.dx,
+        //         data[j].boundingBox!.topRight.dy)),
+        //     lPaint);
+        // canvas.drawLine(
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.topRight.dx,
+        //         data[j].boundingBox!.topRight.dy)),
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.bottomRight.dx,
+        //         data[j].boundingBox!.bottomRight.dy)),
+        //     lPaint);
+        // canvas.drawLine(
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.topLeft.dx,
+        //         data[j].boundingBox!.topLeft.dy)),
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.bottomLeft.dx,
+        //         data[j].boundingBox!.bottomLeft.dy)),
+        //     lPaint);
+        // canvas.drawLine(
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.bottomLeft.dx,
+        //         data[j].boundingBox!.bottomLeft.dy)),
+        //     transformer.fromLatLngToXYCoords(LatLng(
+        //         data[j].boundingBox!.bottomRight.dx,
+        //         data[j].boundingBox!.bottomRight.dy)),
+        //     lPaint);
       }
     }
 
@@ -74,7 +114,7 @@ class Painter extends CustomPainter {
     return false;
   }
 
-  Rect boundingBox(List<Offset> list) {
+  Rect boundingBoxOffset(List<Offset> list) {
     double minX = double.infinity;
     double maxX = 0;
     double minY = double.infinity;

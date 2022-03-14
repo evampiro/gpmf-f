@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cross_file/cross_file.dart';
 import 'package:dart_vlc/dart_vlc.dart';
@@ -11,6 +12,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 import 'package:process_run/shell.dart';
+import 'package:random_color/random_color.dart';
 
 final DataListProvider = StateProvider<List<GeoFile>>((ref) {
   return [];
@@ -27,15 +29,36 @@ final refreshProvider = StateProvider<int?>((ref) {
 });
 
 class GeoFile {
-  GeoFile(
-      {required this.file,
-      required this.geoData,
-      required this.sample,
-      required this.duration});
+  GeoFile({
+    required this.file,
+    required this.geoData,
+    required this.sample,
+    required this.duration,
+    required this.color,
+  });
   XFile file;
 
   List<GeoData> geoData;
   int sample, duration;
+  Color color;
+  Rect? boundingBox;
+  Rect boundingBoxLatLng() {
+    double minX = double.infinity;
+    double maxX = 0;
+    double minY = double.infinity;
+    double maxY = 0;
+    for (int i = 0; i < geoData.length; i++) {
+      minX = min(minX, geoData[i].lat);
+      minY = min(minY, geoData[i].lon);
+      maxX = max(maxX, geoData[i].lat);
+      maxY = max(maxY, geoData[i].lon);
+    }
+
+    var rec = Rect.fromLTWH(minX, minY, (maxX - minX), (maxY - minY));
+    boundingBox = rec;
+    //print(rec);
+    return rec;
+  }
 }
 
 class GeoData {
@@ -47,7 +70,7 @@ class GeoData {
 class Home extends ConsumerWidget {
   Home({Key? key}) : super(key: key);
 
-  final sampleDivisor = 3;
+  final sampleDivisor = 10;
   final mediaControllerProviderLeft = Provider<Player>((ref) {
     return Player(
       id: 69420,
@@ -56,7 +79,7 @@ class Home extends ConsumerWidget {
   });
   final mediaControllerProviderRight = Provider<Player>((ref) {
     return Player(
-      id: 69420,
+      id: 69421,
       videoDimensions: const VideoDimensions(1920, 1080),
     );
   });
@@ -105,11 +128,20 @@ class Home extends ConsumerWidget {
 
               // Media.file(
             );
-            geoData.add(GeoFile(
+            var geof = GeoFile(
                 file: file,
                 geoData: data,
                 sample: data.length ~/ sampleDivisor,
-                duration: int.parse(media.metas["duration"]!)));
+                duration: int.parse(media.metas["duration"]!),
+                color: RandomColor().randomColor(
+                    colorSaturation: ColorSaturation.highSaturation,
+                    colorHue: ColorHue.multiple(colorHues: [
+                      ColorHue.red,
+                      ColorHue.orange,
+                      ColorHue.blue
+                    ])));
+            geof.boundingBoxLatLng();
+            geoData.add(geof);
           } catch (e, s) {
             print('error $e $s');
             // Navigator.pop(context);
@@ -250,8 +282,8 @@ class Home extends ConsumerWidget {
                                       },
                                       title: Text(
                                           '${list[index].file.name}\nSamples: ${list[index].geoData.length}'),
-                                      leading: const CircleAvatar(
-                                        backgroundColor: Colors.red,
+                                      leading: CircleAvatar(
+                                        backgroundColor: list[index].color,
                                       ),
                                       trailing: IconButton(
                                           onPressed: () {},
