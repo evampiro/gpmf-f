@@ -21,7 +21,6 @@ class Painter extends CustomPainter {
   void paint(Canvas canvas, size) {
     var paint = Paint();
 
-    paint.strokeWidth = 5;
     var lPaint = Paint();
 
     lPaint.strokeWidth = 1;
@@ -34,10 +33,13 @@ class Painter extends CustomPainter {
             .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
             .toList();
         // print(offset);
-        if (selectedIndex != j)
+        if (selectedIndex != j) {
+          paint.color = data[j].color.withOpacity(0.3);
+          paint.strokeWidth = 2.5;
+        } else {
           paint.color = data[j].color;
-        else
-          paint.color = Colors.black;
+          paint.strokeWidth = 5;
+        }
         lPaint.color = data[j].color;
         for (int i = 0; i < data[j].geoData.length; i += sample) {
           if (i < offset.length - sample) {
