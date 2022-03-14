@@ -5,6 +5,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/compress.dart';
 import 'package:gpmf/screens/map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
@@ -206,27 +207,32 @@ class Home extends ConsumerWidget {
                         flex: 1,
                         child: Column(
                           children: [
-                            SizedBox(
-                              width: 600,
-                              height: 350,
-                              child: Video(
-                                player: leftPlayer,
-                              ),
+                            videoPlayer(leftPlayer),
+                            videoPlayer(rightPlayer, left: false),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (_) => AlertDialog(
+                                              backgroundColor:
+                                                  Colors.transparent,
+                                              content: SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      .8,
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height *
+                                                      .8,
+                                                  child: CompressScreen()),
+                                            ));
+                                  },
+                                  child: const Text('Tools')),
                             ),
-                            SizedBox(
-                              width: 600,
-                              height: 350,
-                              child: Video(
-                                player: rightPlayer,
-                              ),
-                            ),
-                            ElevatedButton(
-                                onPressed: () {
-                                  var shell = Shell();
-                                  shell.run(
-                                      "ffmpeg.exe -i D:\\videofiles\\MAHARAJGUNJ\\1\\R\\07_04_2021_16_30_53_PROJOM01109.mp4 -vf scale=320:-1 -map 0:0 -map 0:1 -map 0:3 -codec:v mpeg2video -codec:d copy -codec:a copy -y D:\\videofiles\\MAHARAJGUNJ\\1\\R\\07_04_2021_16_30_53_PROJOM01109-small.MP4");
-                                },
-                                child: Text('asd')),
                             Expanded(
                               child: ListView.builder(
                                   itemCount: list.length,
@@ -319,6 +325,24 @@ class Home extends ConsumerWidget {
         ],
       ),
     ));
+  }
+
+  Stack videoPlayer(Player leftPlayer, {bool left = true}) {
+    return Stack(
+      children: [
+        SizedBox(
+          width: 600,
+          height: 350,
+          child: Video(
+            player: leftPlayer,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(left ? "Left" : "Right"),
+        )
+      ],
+    );
   }
 
   List<LatLng> getMarkers(GeoFile data) {

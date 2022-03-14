@@ -131,8 +131,8 @@ class _MapState extends State<MapScreen> {
 
         player.positionStream.listen(
           (event) {
-            var localIndex = map(event.position!.inMilliseconds, 0, 707712, 0,
-                geoFiles[0].geoData.length);
+            var localIndex = map(event.position!.inMilliseconds, 0,
+                geoFiles[0].duration, 0, geoFiles[0].geoData.length);
 
             setState(() {
               index = localIndex;
