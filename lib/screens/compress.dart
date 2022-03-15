@@ -76,14 +76,18 @@ class CompressScreen extends ConsumerWidget {
 
                           //   // Media.file(
                           // );
-                          files.add(
-                            FileThumb(
-                              file: element,
-                              thumbnail: thumb,
-                              size: length,
-                              filename: element.path.split('\\').toList().last,
-                            ),
-                          );
+
+                          if (element.path.contains(".MP4")) {
+                            files.add(
+                              FileThumb(
+                                file: element,
+                                thumbnail: thumb,
+                                size: length,
+                                filename:
+                                    element.path.split('\\').toList().last,
+                              ),
+                            );
+                          }
                           // player.open(media);
                           // player.seek(const Duration(milliseconds: 0));
                         });
@@ -132,31 +136,31 @@ class CompressScreen extends ConsumerWidget {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          Shell().run(
-                              "ffmpeg.exe -i ${files[0].file.path} -vf scale=320:-1 -map 0:0 -map 0:1 -map 0:3 -codec:v mpeg2video -codec:d copy -codec:a copy -y ${files[0].file.path.replaceAll(files[0].filename, "com-${files[0].filename}")}",
-                              onProcess: (process) {
-                            var stream = process.outLines.asBroadcastStream;
-                            stream(
-                              onListen: (subscription) {
-                                subscription.onData((data) {
-                                  print("data: $data");
-                                  var l = ref
-                                      .read(statusStringProvider.state)
-                                      .state;
-                                  l.add(data);
-                                  ref.read(statusStringProvider.state).state =
-                                      l;
-                                });
-                              },
-                            );
+                          files.forEach((element) {
+                            // if (!element.filename.contains("-small"))
+                            {
+                              Shell().run(
+                                "ffmpeg.exe -i ${element.file.path} -vf scale=320:-1 -map 0:0 -map 0:1 -map 0:3 -codec:v mpeg2video -codec:d copy -codec:a copy -y ${element.file.path.replaceAll(element.filename, "${element.filename.split(".")[0]}-small.${element.filename.split(".")[1]}")}",
+                                //     onProcess: (process) {
+                                //   var stream = process.outLines.asBroadcastStream;
+                                //   stream(
+                                //     onListen: (subscription) {
+                                //       subscription.onData((data) {
+                                //         print("data: $data");
+                                //         var l = ref
+                                //             .read(statusStringProvider.state)
+                                //             .state;
+                                //         l.add(data);
+                                //         ref
+                                //             .read(statusStringProvider.state)
+                                //             .state = l;
+                                //       });
+                                //     },
+                                //   );
+                                // }
+                              );
+                            }
                           });
-                          // files.forEach((element) {
-                          //   Shell().run(
-                          //       "ffmpeg.exe -i ${element.file.path} -vf scale=320:-1 -map 0:0 -map 0:1 -map 0:3 -codec:v mpeg2video -codec:d copy -codec:a copy -y ${element.file.path.replaceAll(element.filename, "com-${element.filename}")}",
-                          //       onProcess: (process) {
-                          //     print(process);
-                          //   });
-                          // });
                         },
                         child: const Text("Compress All")),
                     const SizedBox(
@@ -164,15 +168,23 @@ class CompressScreen extends ConsumerWidget {
                     ),
                     ElevatedButton(
                         onPressed: () async {
-                          List<String> paths = [];
+                          List<Map> paths = [];
                           files.forEach((element) {
-                            if (element.filename.contains("com-")) {
-                              paths.add(element.file.path);
+                            if (element.filename.contains("-small")) {
+                              paths.add({
+                                "path": element.file.path
+                                    .replaceAll(element.filename, ''),
+                                "name": element.filename.split(".")[0],
+                                "mime": "MP4"
+                              });
                             }
                           });
+
                           var status = await http.post(
-                              Uri.parse("http://localhost:4000/api/telemetry"),
-                              body: jsonEncode(paths));
+                            Uri.parse("http://localhost:4000/api/telemetry"),
+                            body: jsonEncode(paths),
+                            headers: {"Content-Type": "application/json"},
+                          );
                           print(status);
                         },
                         child: const Text("Generate Telemery"))

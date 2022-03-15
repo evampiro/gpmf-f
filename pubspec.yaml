@@ -41,7 +41,7 @@ dependencies:
   draggable_widget: ^2.0.0
   resizable_widget: ^1.0.5
   cross_file: ^0.3.2
-  #geolocator:
+  geolocator:
   process_run: ^0.12.3+2
   file_picker: ^4.5.1
   random_color: ^1.0.6-nullsafety
