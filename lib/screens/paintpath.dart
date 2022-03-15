@@ -41,32 +41,18 @@ class Painter extends CustomPainter {
         // } else {
 
         // }
-
+        Path path = Path();
         for (int i = 0; i < data[j].geoData.length; i += sample) {
           if (i < offset.length - sample) {
-            // paint.color = Color.fromRGBO(_random.nextInt(256), _random.nextInt(256),
-            //     _random.nextInt(256), _random.nextDouble());
+            ///  path.addPath(path, offset[i]);
             canvas.drawLine(
               offset[i],
               offset[i + sample],
               paint,
             );
-            // var a = boundingBoxOffset(offset);
-
-            // canvas.drawLine(a.topRight, a.bottomRight, lPaint);
-            // canvas.drawLine(a.topLeft, a.bottomLeft, lPaint);
-            // canvas.drawLine(a.bottomLeft, a.bottomRight, lPaint);
-            // if (i % 12 == 0) {
-            //   canvas.drawCircle(data[i], 1, lPaint);
-            //   // canvas.drawLine(
-            //   //     data[i], Offset(data[i].dx + 10, data[i].dy - 10), lPaint);
-            //   // canvas.drawLine(
-            //   //     data[i], Offset(data[i].dx - 10, data[i].dy - 10), lPaint);
-            // }
-
           }
         }
-
+        //  canvas.drawPath(path, paint);
         // var rect = Rect.fromLTRB(
         //   transformer
         //       .fromLatLngToXYCoords(LatLng(data[j].boundingBox!.left, 0))

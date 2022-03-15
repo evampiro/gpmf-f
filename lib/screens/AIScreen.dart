@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 
 class AIScreen extends StatefulWidget {
   const AIScreen({Key? key}) : super(key: key);
@@ -47,13 +47,13 @@ class _AIScreenState extends State<AIScreen> {
     for (int i = 0; i < locations.length; i++) {
       for (int j = 0; j < locations.length; j++) {
         if (i != j && !toRemove.contains(i) && !toRemove.contains(j)) {
-          if (locations[i].timeStamp.difference(locations[j].timeStamp) <
-                  constantTimeDifference &&
-              Geolocator.distanceBetween(locations[i].lat, locations[i].lng,
-                      locations[j].lat, locations[j].lng) <
-                  constantDistance) {
-            toRemove.add(i);
-          }
+          // if (locations[i].timeStamp.difference(locations[j].timeStamp) <
+          //         constantTimeDifference &&
+          //     Geolocator.distanceBetween(locations[i].lat, locations[i].lng,
+          //             locations[j].lat, locations[j].lng) <
+          //         constantDistance) {
+          //   toRemove.add(i);
+          // }
         }
       }
       if (i % 1000 == 0) {

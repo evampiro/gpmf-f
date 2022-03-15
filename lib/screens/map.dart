@@ -282,8 +282,23 @@ class _MapState extends State<MapScreen> {
                 // //     "${(clicked - matchGreat[0]).distance} ${(clicked - matchLess.last).distance}");
                 // print("${indexList[0].offset} ${indexList[0].distance}");
                 //-----------//
-                // var i =
-                //     markerPositions.indexWhere((e) => indexList[0].offset == e);
+                if (selectedFileIndex == 0) {
+                  var indexList = markerPositions
+                      .map((e) => CompareOffset(
+                          offset: e, distance: (e - clicked).distance))
+                      .toList();
+                  indexList.sort((a, b) => a.distance.compareTo(b.distance));
+                  var i = markerPositions
+                      .indexWhere((e) => indexList[0].offset == e);
+                  setState(() {
+                    index = i;
+                  });
+
+                  player.seek(Duration(
+                      milliseconds: map(i, 0, markerPositions.length, 0,
+                          geoFiles[selectedFileIndex].duration)));
+                }
+
 //--------------//
 
                 // print(indexList[0].distance);
@@ -296,14 +311,6 @@ class _MapState extends State<MapScreen> {
                 //     location.longitude,
                 //     transform.latitude,
                 //     transform.longitude));
-
-                // setState(() {
-                //   index = i;
-                // });
-
-                // player.seek(Duration(
-                //     milliseconds: map(i, 0, markerPositions.length, 0,
-                //         geoFiles[selectedFileIndex].duration)));
               },
               child: Listener(
                 behavior: HitTestBehavior.opaque,
