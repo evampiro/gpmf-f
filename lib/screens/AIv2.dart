@@ -48,7 +48,7 @@ class _AIScreenState extends State<AIScreen2> {
     List<Location> nearestList = [];
     //2157 2441
     for (int i = 0; i < locations.length; i++) {
-      //print(i);
+      print(i);
       if (!toRemove.contains(
           locations.indexWhere((element) => element == locations[i]))) {
         for (int y = i; y < locations.length; y++) {
@@ -71,7 +71,7 @@ class _AIScreenState extends State<AIScreen2> {
           //print();
           if (j.timeStamp.difference(locations[i].timeStamp).inSeconds >
               constantTimeDifference.inSeconds) {
-            if (!toRemove.contains(j)) {
+            if (!toRemove.contains(locations.indexOf(j))) {
               toRemove.add(locations.indexWhere((element) => element == j));
             }
           }
