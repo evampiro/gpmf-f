@@ -7,6 +7,7 @@ import 'package:dart_vlc/dart_vlc.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/AIScreen.dart';
+import 'package:gpmf/screens/AIv2.dart';
 import 'package:gpmf/screens/compress.dart';
 import 'package:gpmf/screens/map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -99,7 +100,7 @@ class Home extends ConsumerWidget {
         floatingActionButton: GestureDetector(
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) {
-              return AIScreen();
+              return AIScreen2();
             }));
           },
           child: Container(

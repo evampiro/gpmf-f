@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 // import 'package:geolocator/geolocator.dart';
 
-class AIScreen extends StatefulWidget {
-  const AIScreen({Key? key}) : super(key: key);
+class AIScreen2 extends StatefulWidget {
+  const AIScreen2({Key? key}) : super(key: key);
 
   @override
-  State<AIScreen> createState() => _AIScreenState();
+  State<AIScreen2> createState() => _AIScreenState();
 }
 
 class Location {
@@ -21,7 +21,7 @@ class Location {
   Location(this.lat, this.lng, this.timeStamp, this.completeString);
 }
 
-class _AIScreenState extends State<AIScreen> {
+class _AIScreenState extends State<AIScreen2> {
   List<String> consoleText = ["console started"];
   String? file;
 
@@ -34,7 +34,7 @@ class _AIScreenState extends State<AIScreen> {
   execute(String jsonPath) async {
     DateTime startedAt = DateTime.now();
     double constantDistance = 50;
-    Duration constantTimeDifference = const Duration(minutes: 1);
+    Duration constantTimeDifference = const Duration(seconds: 5);
 
     List<Location> locations = [];
     List<int> toRemove = [];
@@ -44,53 +44,80 @@ class _AIScreenState extends State<AIScreen> {
       locations.add(
           Location(e["value"][0], e["value"][1], DateTime.parse(e["date"]), e));
     });
-    print(locations.length);
+
+    List<Location> nearestList = [];
+    //2157 2441
     for (int i = 0; i < locations.length; i++) {
-      for (int j = 0; j < locations.length; j++) {
-        if (i != j && !toRemove.contains(i) && !toRemove.contains(j)) {
-          if (locations[i].timeStamp.difference(locations[j].timeStamp) >
-                  constantTimeDifference &&
-              Geolocator.distanceBetween(locations[i].lat, locations[i].lng,
-                      locations[j].lat, locations[j].lng) <
-                  constantDistance) {
-            toRemove.add(i);
+      //print(i);
+      if (!toRemove.contains(
+          locations.indexWhere((element) => element == locations[i]))) {
+        for (int y = i; y < locations.length; y++) {
+          // print(y);
+          var distance = Geolocator.distanceBetween(locations[i].lat,
+              locations[i].lng, locations[y].lat, locations[y].lng);
+          //print(distance);
+          if (distance < 20) {
+            // if (!nearestList.contains(locations[y]))
+            {
+              nearestList.add(locations[y]);
+            }
+          } else if (distance > 20) {
+            // print("stopped & index is: $y");
+            break;
+          }
+        }
+
+        for (var j in nearestList) {
+          //print();
+          if (j.timeStamp.difference(locations[i].timeStamp).inSeconds >
+              constantTimeDifference.inSeconds) {
+            if (!toRemove.contains(j)) {
+              toRemove.add(locations.indexWhere((element) => element == j));
+            }
           }
         }
       }
-      if (i % 1000 == 0) {
-        print("$i, ${toRemove.length}");
-        setState(() {
-          consoleText.add(
-              "$i completed out of ${locations.length}, ${toRemove.length} duplicates");
-        });
-      }
+      nearestList = [];
     }
+    //
+    print("${locations.length} ${toRemove.length}");
 
-    for (int i = locations.length - 1; i > -1; i--) {
-      if (toRemove.contains(i)) {
-        locations.removeAt(i);
-      }
-    }
-    print("\n\n length is coming");
-    print(
-        "${locations.length}, ${toRemove.length} duplicates in ${DateTime.now().difference(startedAt).inMinutes}");
+    // for (int i = 0; i < locations.length; i++) {
+    //   for (int j = 0; j < locations.length; j++) {}
+    //   if (i % 1000 == 0) {
+    //     print("$i, ${toRemove.length}");
+    //     setState(() {
+    //       consoleText.add(
+    //           "$i completed out of ${locations.length}, ${toRemove.length} duplicates");
+    //     });
+    //   }
+    // }
 
-    setState(() {
-      consoleText.add("All completed");
-      consoleText.add(
-          "${locations.length}, ${toRemove.length} duplicates in ${DateTime.now().difference(startedAt).inMinutes}m");
-    });
+    // for (int i = locations.length - 1; i > -1; i--) {
+    //   if (toRemove.contains(i)) {
+    //     locations.removeAt(i);
+    //   }
+    // }
+    // print("\n\n length is coming");
+    // print(
+    //     "${locations.length}, ${toRemove.length} duplicates in ${DateTime.now().difference(startedAt).inMinutes}");
 
-    String exportable = "[\n";
-    for (int i = 0; i < locations.length; i++) {
-      exportable += jsonEncode(locations[i].completeString) + ",\n";
-    }
-    exportable += "\n]";
-    File(jsonPath.substring(0, jsonPath.length - 5) + "_output.json")
-        .writeAsString(exportable);
-    setState(() {
-      consoleText.add("Exported");
-    });
+    // setState(() {
+    //   consoleText.add("All completed");
+    //   consoleText.add(
+    //       "${locations.length}, ${toRemove.length} duplicates in ${DateTime.now().difference(startedAt).inMinutes}m");
+    // });
+
+    // String exportable = "[\n";
+    // for (int i = 0; i < locations.length; i++) {
+    //   exportable += jsonEncode(locations[i].completeString) + ",\n";
+    // }
+    // exportable += "\n]";
+    // File(jsonPath.substring(0, jsonPath.length - 5) + "_output.json")
+    //     .writeAsString(exportable);
+    // setState(() {
+    //   consoleText.add("Exported");
+    // });
   }
 
   @override

@@ -293,7 +293,7 @@ class _MapState extends State<MapScreen> {
                   setState(() {
                     index = i;
                   });
-
+                  print(i);
                   player.seek(Duration(
                       milliseconds: map(i, 0, markerPositions.length, 0,
                           geoFiles[selectedFileIndex].duration)));
@@ -361,39 +361,56 @@ class _MapState extends State<MapScreen> {
                               : const Duration(microseconds: 0),
                           left: markerPositions[index].dx - 8,
                           top: markerPositions[index].dy - 8,
-                          child: Container(
-                              height: 15,
-                              width: 15,
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                boxShadow: const [
-                                  BoxShadow(spreadRadius: 0.5, blurRadius: 5)
-                                ],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Center(
-                                child: Container(
-                                  height: 6,
-                                  width: 6,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                  height: 15,
+                                  width: 15,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.blue,
+                                    boxShadow: const [
+                                      BoxShadow(
+                                          spreadRadius: 0.5, blurRadius: 5)
+                                    ],
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                ),
-                              )
+                                  child: Center(
+                                    child: Container(
+                                      height: 6,
+                                      width: 6,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  )
 
-                              // Opacity(
-                              //   opacity: 0,
-                              //   child: AnimatedRotation(
-                              //     turns: -math.pi / angle,
-                              //     duration: const Duration(milliseconds: 500),
-                              //     child: const Icon(
-                              //       Icons.arrow_back,
-                              //       size: 15,
-                              //     ),
-                              //   ),
-                              // ),
-                              )),
+                                  // Opacity(
+                                  //   opacity: 0,
+                                  //   child: AnimatedRotation(
+                                  //     turns: -math.pi / angle,
+                                  //     duration: const Duration(milliseconds: 500),
+                                  //     child: const Icon(
+                                  //       Icons.arrow_back,
+                                  //       size: 15,
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  ),
+                              Positioned(
+                                  top: -30,
+                                  left: 15,
+                                  child: Container(
+                                    padding: EdgeInsets.all(5),
+                                    height: 25,
+                                    color: Colors.grey,
+                                    child: FittedBox(
+                                        child: Center(
+                                            child: Text(index.toString()))),
+                                  ))
+                            ],
+                          )),
                     // centerMarkerWidget,
                   ],
                 ),
