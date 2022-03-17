@@ -5,7 +5,6 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   dart_vlc
   desktop_drop
-  geolocator_windows
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

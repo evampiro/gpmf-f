@@ -58,6 +58,7 @@ class GeoFile {
 
     var rec = Rect.fromLTWH(minX, minY, (maxX - minX), (maxY - minY));
     boundingBox = rec;
+
     //print(rec);
     return rec;
   }
@@ -386,24 +387,6 @@ class Home extends ConsumerWidget {
         ));
   }
 
-  Stack videoPlayer(Player leftPlayer, {bool left = true}) {
-    return Stack(
-      children: [
-        SizedBox(
-          width: 600,
-          height: 350,
-          child: Video(
-            player: leftPlayer,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(left ? "Left" : "Right"),
-        )
-      ],
-    );
-  }
-
   List<LatLng> getMarkers(GeoFile data) {
     List<LatLng> temp = [];
     temp = data.geoData.map((e) => LatLng(e.lat, e.lon)).toList();
@@ -421,4 +404,22 @@ class Home extends ConsumerWidget {
     // print(temp.length);
     return temp;
   }
+}
+
+Stack videoPlayer(Player leftPlayer, {bool left = true}) {
+  return Stack(
+    children: [
+      SizedBox(
+        width: 600,
+        height: 350,
+        child: Video(
+          player: leftPlayer,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(left ? "Left" : "Right"),
+      )
+    ],
+  );
 }

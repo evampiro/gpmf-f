@@ -11,21 +11,28 @@
 
 import 'package:flutter/material.dart';
 
-class Painter extends CustomPainter {
-  Painter({
-    required this.data,
-  });
+class Custompaint extends CustomPainter {
+  Custompaint({required this.data, required this.isLine});
   List<Offset> data;
+  bool isLine;
   @override
   void paint(Canvas canvas, size) {
     Paint paint = Paint();
     paint.color = Colors.blue;
     paint.strokeWidth = 5;
     Path path = Path();
-    data.forEach((element) {
-      path.addPath(path, element);
-    });
-    canvas.drawPath(path, paint);
+    for (int i = 0; i < data.length; i += 1) {
+      if (isLine) {
+        paint.strokeWidth = 2;
+        if (i < data.length - 1) {
+          canvas.drawLine(data[i], data[i + 1], paint);
+        }
+      } else {
+        paint.color = Colors.red;
+        paint.strokeWidth = 1;
+        canvas.drawCircle(data[i], 1, paint);
+      }
+    }
   }
 
   @override

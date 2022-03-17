@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 // import 'package:geolocator/geolocator.dart';
 
 class AIScreen extends StatefulWidget {
@@ -46,11 +46,11 @@ class _AIScreenState extends State<AIScreen> {
     });
     print(locations.length);
     for (int i = 0; i < locations.length; i++) {
-      for (int j = 0; j < locations.length; j++) {
+      for (int j = i; j < locations.length; j++) {
         if (i != j && !toRemove.contains(i) && !toRemove.contains(j)) {
           if (locations[i].timeStamp.difference(locations[j].timeStamp) >
                   constantTimeDifference &&
-              Geolocator.distanceBetween(locations[i].lat, locations[i].lng,
+              calculateDistance(locations[i].lat, locations[i].lng,
                       locations[j].lat, locations[j].lng) <
                   constantDistance) {
             toRemove.add(i);
@@ -163,5 +163,15 @@ class _AIScreenState extends State<AIScreen> {
         ),
       ]),
     );
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    var f = ((12742 * asin(sqrt(a))) * 1000);
+    return f;
   }
 }

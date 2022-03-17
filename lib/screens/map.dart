@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -39,10 +40,13 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapState();
 }
 
-class _MapState extends State<MapScreen> {
-  int index = 0, selectedFileIndex = 0;
+class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
+  int index = 0, selectedFileIndex = 0, previousIndex = 0;
   bool isAnimation = true, follow = false;
   int counter = 0;
+  double angle = 186;
+  late MapTransformer mainTransformer;
+  late AnimationController _controller;
 
   void _gotoDefault() {
     widget.mapController?.center = LatLng(35.68, 51.41);
@@ -56,6 +60,10 @@ class _MapState extends State<MapScreen> {
     widget.mapController?.addListener(() {
       setState(() {});
     });
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
   }
 
   void _onDoubleTap() {
@@ -81,7 +89,7 @@ class _MapState extends State<MapScreen> {
     setState(() {
       isAnimation = false;
     });
-    Future.delayed(Duration(seconds: 3))
+    Future.delayed(Duration(milliseconds: 500))
         .then((value) => setState(() => (isAnimation = true)));
     final scaleDiff = details.scale - _scaleStart;
     _scaleStart = details.scale;
@@ -128,7 +136,7 @@ class _MapState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
       return Consumer(builder: (context, ref, s) {
-        final player = ref.watch(widget.rightPlayerController);
+        final player = ref.watch(widget.leftPlayerController);
         final geoFiles = ref.watch(widget.geoFile.state).state;
         // var sample = calculateSample(
         //     max: 128, min: 1, value: widget.mapController?.zoom);
@@ -144,15 +152,27 @@ class _MapState extends State<MapScreen> {
                 geoFiles[selectedFileIndex].geoData.length);
             // print(localIndex);
             setState(() {
+              previousIndex = index;
               index = localIndex;
             });
 
+            // player.takeSnapshot(file, 200, 200);
             // index = localIndex;
             if (follow) {
               widget.mapController?.center = LatLng(
                   geoFiles[selectedFileIndex].geoData[index].lat,
                   geoFiles[selectedFileIndex].geoData[index].lon);
             }
+
+            // Offset previous = mainTransformer.fromLatLngToXYCoords(LatLng(
+            //     geoFiles[selectedFileIndex].geoData[index - 1].lat,
+            //     geoFiles[selectedFileIndex].geoData[index - 1].lon));
+            // Offset current = mainTransformer.fromLatLngToXYCoords(LatLng(
+            //     geoFiles[selectedFileIndex].geoData[index].lat,
+            //     geoFiles[selectedFileIndex].geoData[index].lon));
+
+            // widget.mapController?.drag(
+            //     -(current.dx - previous.dx), -(current.dy - previous.dy));
             // print(
             //     '$index ${widget.markers![index].latitude} ${widget.markers![index].longitude}');
           },
@@ -160,6 +180,7 @@ class _MapState extends State<MapScreen> {
         return MapLayoutBuilder(
           controller: widget.mapController!,
           builder: (context, transformer) {
+            mainTransformer = transformer;
             // if (counter == 0 && isAnimation == false) {
             //   counter++;
             // }
@@ -175,12 +196,22 @@ class _MapState extends State<MapScreen> {
                 .toList();
             // widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
 
-            // if (index > 0 && index < geoFiles[0].geoData.length - 1) {
-            //   angle = math.atan(
-            //       (markerPositions[index + 1].dy - markerPositions[index].dy) /
-            //           ((markerPositions[index + 1].dx -
-            //               markerPositions[index].dx)));
-            // }
+            if (index > 0 && index < geoFiles[0].geoData.length) {
+              // angle = math.atan(
+              //     (markerPositions[index + 9].dy - markerPositions[index].dy) /
+              //         ((markerPositions[index + 9].dx -
+              //             markerPositions[index].dx)));
+              angle = (57.2958 *
+                  math.atan2(
+                      (markerPositions[index + 1].dy -
+                          markerPositions[index].dy),
+                      ((markerPositions[index + 1].dx -
+                          markerPositions[index].dx))));
+
+              // angle = (angle - pangle);
+
+            }
+
             final markerWidgets = [
               ClipRRect(
                 child: Stack(children: [
@@ -227,6 +258,7 @@ class _MapState extends State<MapScreen> {
               onScaleStart: _onScaleStart,
               onScaleUpdate: _onScaleUpdate,
               onTapUp: (details) {
+                _controller.reset();
                 setState(() {
                   isAnimation = true;
                 });
@@ -274,7 +306,7 @@ class _MapState extends State<MapScreen> {
                       .indexWhere((element) => selection[0].file == element);
                 });
 
-                // print('${location.longitude}, ${location.latitude}');
+                print('${location.longitude}, ${location.latitude}');
                 // print('${clicked.dx}, ${clicked.dy}');
                 // print(
                 //     '${details.localPosition.dx}, ${details.localPosition.dy}');
@@ -290,10 +322,13 @@ class _MapState extends State<MapScreen> {
                   indexList.sort((a, b) => a.distance.compareTo(b.distance));
                   var i = markerPositions
                       .indexWhere((e) => indexList[0].offset == e);
+
                   setState(() {
+                    previousIndex = index;
                     index = i;
                   });
-                  print(i);
+                  _controller.forward();
+
                   player.seek(Duration(
                       milliseconds: map(i, 0, markerPositions.length, 0,
                           geoFiles[selectedFileIndex].duration)));
@@ -355,16 +390,18 @@ class _MapState extends State<MapScreen> {
                     //  homeMarkerWidget,
                     ...markerWidgets,
                     if (selectedFileIndex == 0)
-                      AnimatedPositioned(
-                          duration: isAnimation
-                              ? const Duration(milliseconds: 500)
-                              : const Duration(microseconds: 0),
-                          left: markerPositions[index].dx - 8,
-                          top: markerPositions[index].dy - 8,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
+                      Visibility(
+                        visible: true,
+                        child: AnimatedPositioned(
+                            duration: isAnimation
+                                ? const Duration(milliseconds: 500)
+                                : const Duration(microseconds: 0),
+                            left: markerPositions[index].dx - 8,
+                            top: markerPositions[index].dy - 8,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
                                   height: 15,
                                   width: 15,
                                   decoration: BoxDecoration(
@@ -376,41 +413,84 @@ class _MapState extends State<MapScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Center(
-                                    child: Container(
-                                      height: 6,
-                                      width: 6,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(10),
+                                    child: Opacity(
+                                      opacity: 1,
+                                      child: Transform.rotate(
+                                        angle: (angle) * 0.0174533,
+                                        child: Stack(
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            Transform.rotate(
+                                              angle: 180 * 0.0174533,
+                                              child: const Icon(
+                                                Icons.arrow_back,
+                                                size: 13,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  )
-
-                                  // Opacity(
-                                  //   opacity: 0,
-                                  //   child: AnimatedRotation(
-                                  //     turns: -math.pi / angle,
-                                  //     duration: const Duration(milliseconds: 500),
-                                  //     child: const Icon(
-                                  //       Icons.arrow_back,
-                                  //       size: 15,
-                                  //     ),
-                                  //   ),
-                                  // ),
                                   ),
-                              Positioned(
-                                  top: -30,
-                                  left: 15,
-                                  child: Container(
-                                    padding: EdgeInsets.all(5),
-                                    height: 25,
-                                    color: Colors.grey,
-                                    child: FittedBox(
-                                        child: Center(
-                                            child: Text(index.toString()))),
-                                  ))
-                            ],
-                          )),
+                                ),
+                                Positioned(
+                                    top: -105,
+                                    left: 15,
+                                    child: Transform.rotate(
+                                      angle: 0 * 0.0174533,
+                                      child: Container(
+                                        padding: EdgeInsets.all(5),
+                                        height: 100,
+                                        color: Colors.grey,
+                                        child: FittedBox(
+                                            child: Center(
+                                          child: Stack(
+                                            // clipBehavior: Clip.antiAlias,
+                                            children: [
+                                              Text(index.toString()),
+                                              videoPlayer(player)
+                                            ],
+                                          ),
+                                        )),
+                                      ),
+                                    ))
+                              ],
+                            )),
+                      ),
+                    // AnimatedBuilder(
+                    //     child: Container(
+                    //       width: 15,
+                    //       height: 15,
+                    //       color: Colors.red,
+                    //     ),
+                    //     animation: _controller,
+                    //     builder: (context, child) {
+                    //       //print(_controller.value * 10);
+                    //       print('$index $previousIndex');
+                    //       var current = mapDouble(
+                    //               x: _controller.value * 10,
+                    //               in_min: 0,
+                    //               in_max: 10,
+                    //               out_min: index > previousIndex
+                    //                   ? previousIndex.toDouble()
+                    //                   : index.toDouble(),
+                    //               out_max: index > previousIndex
+                    //                   ? index.toDouble()
+                    //                   : previousIndex.toDouble())
+                    //           .toInt();
+                    //       print(current);
+                    //       // if (index < previousIndex) {
+                    //       //   current = (previousIndex + index) - current;
+                    //       //   // print(markerPositions[current]);
+                    //       // }
+
+                    //       return AnimatedPositioned(
+                    //           duration: Duration(milliseconds: 50),
+                    //           left: markerPositions[current].dx - 8,
+                    //           top: markerPositions[current].dy - 8,
+                    //           child: child!);
+                    //     })
                     // centerMarkerWidget,
                   ],
                 ),
