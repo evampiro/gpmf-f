@@ -56,8 +56,12 @@ class _AIScreenState extends State<AIScreen2> {
     });
     List<Location> nearestList = [];
     //2157 2441
-    for (int i = 0; i < locations.length; i++) {
+    // for (int q = 0; q < locations.length; q++) {
+    int i = 2186;
+    if (i > 2157 && i < 2437) {
       if (!toRemove.contains(locations[i])) {
+        int maxError = 0;
+        DateTime? errorTimeStamp;
         for (int y = i; y < locations.length; y++) {
           // print(y);
           var distance = calculateDistance(locations[i].lat, locations[i].lng,
@@ -66,26 +70,41 @@ class _AIScreenState extends State<AIScreen2> {
           if (distance < constantDistance) {
             // if (!nearestList.contains(locations[y]))
             {
-              nearestList.add(locations[y]);
+              if (errorTimeStamp != null) {
+                maxError =
+                    locations[y].timeStamp.difference(errorTimeStamp).inSeconds;
+              }
+              if (locations[y]
+                          .timeStamp
+                          .difference(locations[i].timeStamp)
+                          .inSeconds -
+                      maxError >
+                  constantTimeDifference.inSeconds) {
+                errorTimeStamp ??= locations[y].timeStamp;
+                print(errorTimeStamp);
+                nearestList.add(locations[y]);
+              }
+              print(
+                  "${locations[y].timeStamp.difference(locations[i].timeStamp).inSeconds} ${constantTimeDifference.inSeconds + maxError}");
             }
-          } else if (distance > constantDistance) {
+            // } else if (distance > constantDistance * 8) {
             // print("stopped & index is: $y");
-            break;
+            // break;
           }
         }
 
         for (var j in nearestList) {
           //print();
-          if (j.timeStamp.difference(locations[i].timeStamp).inSeconds >
-              constantTimeDifference.inSeconds) {
-            if (!toRemove.contains(j)) {
-              toRemove.add(j);
-            }
+
+          if (!toRemove.contains(j)) {
+            toRemove.add(j);
           }
         }
       }
-      nearestList = [];
     }
+
+    nearestList = [];
+    // }
     //
     print("${locations.length} ${toRemove.length}");
     int c = 0;

@@ -31,19 +31,20 @@ final refreshProvider = StateProvider<int?>((ref) {
 });
 
 class GeoFile {
-  GeoFile({
-    required this.file,
-    required this.geoData,
-    required this.sample,
-    required this.duration,
-    required this.color,
-  });
+  GeoFile(
+      {required this.file,
+      required this.geoData,
+      required this.sample,
+      required this.duration,
+      required this.color,
+      required this.isLine});
   XFile file;
 
   List<GeoData> geoData;
   int sample, duration;
   Color color;
   Rect? boundingBox;
+  bool isLine;
   Rect boundingBoxLatLng() {
     double minX = double.infinity;
     double maxX = 0;
@@ -154,6 +155,7 @@ class Home extends ConsumerWidget {
                     geoData: data,
                     sample: data.length ~/ sampleDivisor,
                     duration: int.parse(media.metas["duration"]!),
+                    isLine: true,
                     color: RandomColor().randomColor(
                         colorSaturation: ColorSaturation.highSaturation,
                         colorHue: ColorHue.multiple(colorHues: [
@@ -308,10 +310,35 @@ class Home extends ConsumerWidget {
                                           leading: CircleAvatar(
                                             backgroundColor: list[index].color,
                                           ),
-                                          trailing: IconButton(
-                                              onPressed: () {},
-                                              icon:
-                                                  const Icon(Icons.play_arrow)),
+                                          trailing: Consumer(
+                                              builder: (context, ref, s) {
+                                            final r = ref
+                                                .watch(refreshProvider.state)
+                                                .state;
+                                            return Checkbox(
+                                              value: list[index].isLine,
+                                              onChanged: (v) {
+                                                print(v);
+                                                var tempList = ref
+                                                    .read(
+                                                        DataListProvider.state)
+                                                    .state;
+                                                tempList[index].isLine = v!;
+                                                ref
+                                                    .read(
+                                                        DataListProvider.state)
+                                                    .state = tempList;
+                                                var a = Random();
+                                                ref
+                                                    .read(refreshProvider.state)
+                                                    .state = a.nextInt(100);
+                                              },
+                                            );
+                                          }),
+                                          // IconButton(
+                                          //     onPressed: () {},
+                                          //     icon:
+                                          //         const Icon(Icons.play_arrow)),
                                           subtitle: Consumer(
                                               builder: (context, ref, s) {
                                             final r = ref

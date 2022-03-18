@@ -6,15 +6,17 @@ import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 
 class Painter extends CustomPainter {
-  Painter(
-      {required this.data,
-      required this.currentIndex,
-      required this.selectedIndex,
-      required this.sample,
-      required this.transformer});
+  Painter({
+    required this.data,
+    required this.currentIndex,
+    required this.selectedIndex,
+    required this.sample,
+    required this.transformer,
+  });
   List<GeoFile> data;
   int currentIndex, selectedIndex;
   int sample;
+
   MapTransformer transformer;
   final _random = Random();
   @override
@@ -52,14 +54,23 @@ class Painter extends CustomPainter {
             else
               paint.color = data[j].color;
 
-            path.lineTo(offset[i].dx, offset[i].dy);
+            if (data[j].isLine) {
+              path.lineTo(offset[i].dx, offset[i].dy);
 
-            //  path.relativeLineTo(offset[i].dx, offset[i].dy);
-            canvas.drawLine(
-              offset[i],
-              offset[i + sample],
-              paint,
-            );
+              //  path.relativeLineTo(offset[i].dx, offset[i].dy);
+              canvas.drawLine(
+                offset[i],
+                offset[i + sample],
+                paint,
+              );
+            } else {
+              paint.strokeWidth = 2;
+              // path.lineTo(offset[i].dx, offset[i].dy);
+
+              // canvas.drawPath(path, paint);
+
+              canvas.drawCircle(offset[i], 1.5, paint);
+            }
           }
         }
         // print(path.);

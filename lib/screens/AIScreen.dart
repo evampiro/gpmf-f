@@ -34,7 +34,7 @@ class _AIScreenState extends State<AIScreen> {
   execute(String jsonPath) async {
     DateTime startedAt = DateTime.now();
     double constantDistance = 50;
-    Duration constantTimeDifference = const Duration(minutes: 1);
+    Duration constantTimeDifference = const Duration(minutes: 2);
 
     List<Location> locations = [];
     List<int> toRemove = [];
@@ -44,9 +44,9 @@ class _AIScreenState extends State<AIScreen> {
       locations.add(
           Location(e["value"][0], e["value"][1], DateTime.parse(e["date"]), e));
     });
-    print(locations.length);
+
     for (int i = 0; i < locations.length; i++) {
-      for (int j = i; j < locations.length; j++) {
+      for (int j = 0; j < locations.length; j++) {
         if (i != j && !toRemove.contains(i) && !toRemove.contains(j)) {
           if (locations[i].timeStamp.difference(locations[j].timeStamp) >
                   constantTimeDifference &&
@@ -83,7 +83,9 @@ class _AIScreenState extends State<AIScreen> {
 
     String exportable = "[\n";
     for (int i = 0; i < locations.length; i++) {
-      exportable += jsonEncode(locations[i].completeString) + ",\n";
+      if (i != locations.length - 1) {
+        exportable += jsonEncode(locations[i].completeString) + ",\n";
+      }
     }
     exportable += "\n]";
     File(jsonPath.substring(0, jsonPath.length - 5) + "_output.json")

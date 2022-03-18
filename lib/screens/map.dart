@@ -43,7 +43,7 @@ class MapScreen extends StatefulWidget {
 class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
   int index = 0, selectedFileIndex = 0, previousIndex = 0;
   bool isAnimation = true, follow = false;
-  int counter = 0;
+  int counter = 0, animationDouble = 1500;
   double angle = 186;
   late MapTransformer mainTransformer;
   late AnimationController _controller;
@@ -306,7 +306,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                       .indexWhere((element) => selection[0].file == element);
                 });
 
-                print('${location.longitude}, ${location.latitude}');
+                // print('${location.longitude}, ${location.latitude}');
                 // print('${clicked.dx}, ${clicked.dy}');
                 // print(
                 //     '${details.localPosition.dx}, ${details.localPosition.dy}');
@@ -327,7 +327,23 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                     previousIndex = index;
                     index = i;
                   });
+                  var dist =
+                      (markerPositions[index] - markerPositions[previousIndex])
+                          .distance;
+                  animationDouble = map(
+                      dist.toInt(),
+                      0,
+                      (markerPositions.first - markerPositions.last)
+                          .distance
+                          .toInt(),
+                      1000,
+                      2500);
+
+                  _controller.duration =
+                      Duration(milliseconds: animationDouble);
                   _controller.forward();
+                  // print(i);
+                  // print('${markerPositions[i].dx}, ${markerPositions[i].dy}');
 
                   player.seek(Duration(
                       milliseconds: map(i, 0, markerPositions.length, 0,
@@ -391,7 +407,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                     ...markerWidgets,
                     if (selectedFileIndex == 0)
                       Visibility(
-                        visible: true,
+                        visible: false,
                         child: AnimatedPositioned(
                             duration: isAnimation
                                 ? const Duration(milliseconds: 500)
@@ -458,39 +474,46 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                               ],
                             )),
                       ),
-                    // AnimatedBuilder(
-                    //     child: Container(
-                    //       width: 15,
-                    //       height: 15,
-                    //       color: Colors.red,
-                    //     ),
-                    //     animation: _controller,
-                    //     builder: (context, child) {
-                    //       //print(_controller.value * 10);
-                    //       print('$index $previousIndex');
-                    //       var current = mapDouble(
-                    //               x: _controller.value * 10,
-                    //               in_min: 0,
-                    //               in_max: 10,
-                    //               out_min: index > previousIndex
-                    //                   ? previousIndex.toDouble()
-                    //                   : index.toDouble(),
-                    //               out_max: index > previousIndex
-                    //                   ? index.toDouble()
-                    //                   : previousIndex.toDouble())
-                    //           .toInt();
-                    //       print(current);
-                    //       // if (index < previousIndex) {
-                    //       //   current = (previousIndex + index) - current;
-                    //       //   // print(markerPositions[current]);
-                    //       // }
+                    AnimatedBuilder(
+                        child: Container(
+                          width: 15,
+                          height: 15,
+                          color: Colors.red,
+                        ),
+                        animation: _controller,
+                        builder: (context, child) {
+                          print(_controller.duration?.inMilliseconds);
+                          // print('$index $previousIndex');
+                          var current;
+                          if (index >= previousIndex) {
+                            current = mapDouble(
+                                    x: _controller.value * 10,
+                                    in_min: 0,
+                                    in_max: 10,
+                                    out_min: previousIndex.toDouble(),
+                                    out_max: index.toDouble())
+                                .toInt();
+                          } else {
+                            current = mapDouble(
+                                    x: 10 - (_controller.value * 10),
+                                    in_min: 0,
+                                    in_max: 10,
+                                    out_min: index.toDouble(),
+                                    out_max: previousIndex.toDouble())
+                                .toInt();
+                          }
 
-                    //       return AnimatedPositioned(
-                    //           duration: Duration(milliseconds: 50),
-                    //           left: markerPositions[current].dx - 8,
-                    //           top: markerPositions[current].dy - 8,
-                    //           child: child!);
-                    //     })
+                          // if (index < previousIndex) {
+                          //   current = (previousIndex + index) - current;
+                          //   // print(markerPositions[current]);
+                          // }
+
+                          return AnimatedPositioned(
+                              duration: Duration(milliseconds: 10),
+                              left: markerPositions[current].dx - 8,
+                              top: markerPositions[current].dy - 8,
+                              child: child!);
+                        })
                     // centerMarkerWidget,
                   ],
                 ),
