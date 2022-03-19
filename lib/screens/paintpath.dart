@@ -18,7 +18,7 @@ class Painter extends CustomPainter {
   int sample;
 
   MapTransformer transformer;
-  final _random = Random();
+  //final _random = Random();
   @override
   void paint(Canvas canvas, size) {
     var paint = Paint()..style = PaintingStyle.fill;
@@ -49,10 +49,11 @@ class Painter extends CustomPainter {
         path.moveTo(offset[0].dx, offset[0].dy);
         for (int i = 0; i < data[j].geoData.length; i += sample) {
           if (i < offset.length - sample) {
-            if (i < currentIndex)
+            if (i < currentIndex) {
               paint.color = paint.color = Colors.blue;
-            else
+            } else {
               paint.color = data[j].color;
+            }
 
             if (data[j].isLine) {
               path.lineTo(offset[i].dx, offset[i].dy);
@@ -94,8 +95,8 @@ class Painter extends CustomPainter {
 
       }
 
-      Offset left = Offset(
-          data[j].boundingBox!.topLeft.dx, data[j].boundingBox!.topLeft.dy);
+      // Offset left = Offset(
+      //     data[j].boundingBox!.topLeft.dx, data[j].boundingBox!.topLeft.dy);
       // canvas.drawCircle(, 2, paint);
       // canvas.drawLine(
       //     transformer.fromLatLngToXYCoords(LatLng(left.dx, left.dy)),
@@ -157,7 +158,7 @@ class Painter extends CustomPainter {
       maxY = max(maxY, list[i].dy);
     }
 
-    var space = 5;
+    //var space = 5;
     var rec = Rect.fromLTWH(minX, minY, (maxX - minX), (maxY - minY));
 
     //print(rec);

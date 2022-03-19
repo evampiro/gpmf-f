@@ -1,3 +1,5 @@
+// ignore_for_file: file_names, non_constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -5,6 +7,7 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/MapHolder.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 // import 'package:geolocator/geolocator.dart';
@@ -20,26 +23,32 @@ class Location {
   final double lat;
   final double lng;
   final DateTime timeStamp;
+  bool duplicate;
   //final Map<String, dynamic> completeString;
-  Location(this.lat, this.lng, this.timeStamp);
+  Location(this.lat, this.lng, this.timeStamp, this.duplicate);
 }
 
-class _AIScreenState extends State<AIScreen2> {
+class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
   List<String> consoleText = ["console started"];
   String? file;
 
-  List<Location> original = [], processed = [];
+  List<Location> original = [], processed = [], mixed = [];
   double constantDistance = 10;
   Duration constantTimeDifference = const Duration(seconds: 8);
   bool isProcessing = false, showErasedData = true;
   MapController controller = MapController(zoom: 17, location: LatLng(0, 0));
+  late AnimationController _controller;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1000));
   }
 
-  execute(String jsonPath) async {
+  final progressStreamProvider = StateProvider<int>((ref) {
+    return 0;
+  });
+  execute(String jsonPath, WidgetRef ref) async {
     DateTime startedAt = DateTime.now();
 
     List<Location> locations = [];
@@ -47,78 +56,78 @@ class _AIScreenState extends State<AIScreen2> {
     String contents = await File(jsonPath).readAsString();
 
     List<dynamic> jsonContents = jsonDecode(contents);
-    jsonContents.forEach((e) {
-      locations.add(
-          Location(e["value"][0], e["value"][1], DateTime.parse(e["date"])));
-    });
+    for (var e in jsonContents) {
+      locations.add(Location(
+          e["value"][0], e["value"][1], DateTime.parse(e["date"]), false));
+    }
     setState(() {
       original = locations.toList();
     });
     List<Location> nearestList = [];
+    _controller.repeat();
     //2157 2441
-    // for (int q = 0; q < locations.length; q++) {
-    int i = 2186;
-    if (i > 2157 && i < 2437) {
-      if (!toRemove.contains(locations[i])) {
-        int maxError = 0;
-        DateTime? errorTimeStamp;
-        for (int y = i; y < locations.length; y++) {
-          // print(y);
-          var distance = calculateDistance(locations[i].lat, locations[i].lng,
-              locations[y].lat, locations[y].lng);
-          //print(distance);
-          if (distance < constantDistance) {
-            // if (!nearestList.contains(locations[y]))
-            {
-              if (errorTimeStamp != null) {
-                maxError =
-                    locations[y].timeStamp.difference(errorTimeStamp).inSeconds;
-              }
-              if (locations[y]
-                          .timeStamp
-                          .difference(locations[i].timeStamp)
-                          .inSeconds -
-                      maxError >
-                  constantTimeDifference.inSeconds) {
-                errorTimeStamp ??= locations[y].timeStamp;
-                print(errorTimeStamp);
+    for (int i = 0; i < locations.length; i++) {
+      {
+        await Future.delayed(Duration.zero, () {
+          ref.read(progressStreamProvider.state).state =
+              ((i / locations.length) * 100).toInt();
+        });
+        if (!toRemove.contains(locations[i])) {
+          for (int y = i; y < locations.length; y++) {
+            // print(y);
+            var distance = calculateDistance(locations[i].lat, locations[i].lng,
+                locations[y].lat, locations[y].lng);
+            //print(distance);
+            if (distance < constantDistance) {
+              // if (!nearestList.contains(locations[y]))
+              {
                 nearestList.add(locations[y]);
               }
-              print(
-                  "${locations[y].timeStamp.difference(locations[i].timeStamp).inSeconds} ${constantTimeDifference.inSeconds + maxError}");
             }
-            // } else if (distance > constantDistance * 8) {
-            // print("stopped & index is: $y");
-            // break;
+            // else if (distance > constantDistance * 8) {
+            //   print("stopped & index is: $y");
+            //   break;
+            // }
           }
         }
 
         for (var j in nearestList) {
           //print();
-
-          if (!toRemove.contains(j)) {
-            toRemove.add(j);
+          if (j.timeStamp.difference(locations[i].timeStamp).inSeconds >
+              constantTimeDifference.inSeconds) {
+            if (!toRemove.contains(j)) {
+              toRemove.add(j);
+            }
           }
         }
       }
+      nearestList = [];
     }
 
-    nearestList = [];
-    // }
     //
+    // ignore: avoid_print
     print("${locations.length} ${toRemove.length}");
+    // ignore: unused_local_variable
     int c = 0;
     toRemove.forEach(((element) {
-      locations.remove(element);
+      //locations.remove(element);
+
+      var index = locations.indexWhere((e) => e == element);
+      locations[index].duplicate = true;
+
       c++;
     }));
+    mixed = locations.toList();
+    toRemove.forEach((element) {
+      locations.remove(element);
+    });
     controller.center = LatLng(
         original[original.length ~/ 2].lat, original[original.length ~/ 2].lng);
     setState(() {
       processed = locations.toList();
       isProcessing = false;
     });
-
+    ref.read(progressStreamProvider.state).state = 0;
     // for (int i = 0; i < locations.length; i++) {
     //   for (int j = 0; j < locations.length; j++) {}
     //   if (i % 1000 == 0) {
@@ -144,7 +153,8 @@ class _AIScreenState extends State<AIScreen2> {
     //   consoleText.add(
     //       "${locations.length}, ${toRemove.length} duplicates in ${DateTime.now().difference(startedAt).inMinutes}m");
     // });
-
+    // ignore: avoid_print
+    print("took ${DateTime.now().difference(startedAt).inSeconds}");
     // String exportable = "[\n";
     // for (int i = 0; i < locations.length; i++) {
     //   exportable += jsonEncode(locations[i].completeString) + ",\n";
@@ -155,6 +165,8 @@ class _AIScreenState extends State<AIScreen2> {
     // setState(() {
     //   consoleText.add("Exported");
     // });
+    _controller.stop();
+    _controller.reset();
   }
 
   @override
@@ -233,7 +245,7 @@ class _AIScreenState extends State<AIScreen2> {
                     )),
                     Row(
                       children: [
-                        Text("Show Erased Data: "),
+                        const Text("Show Erased Data: "),
                         Checkbox(
                             value: showErasedData,
                             onChanged: (v) {
@@ -248,29 +260,31 @@ class _AIScreenState extends State<AIScreen2> {
               ),
               Expanded(
                 flex: 1,
-                child: GestureDetector(
-                  onTap: (() async {
-                    if (file != null) {
-                      setState(() {
-                        isProcessing = true;
-                      });
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        execute(file!);
-                      });
-                    }
-                  }),
-                  child: Container(
-                    height: 60,
-                    width: 100,
-                    color: Colors.blue,
-                    child: const Center(
-                      child: Text(
-                        "Start",
-                        style: TextStyle(color: Colors.white),
+                child: Consumer(builder: (context, ref, s) {
+                  return GestureDetector(
+                    onTap: (() async {
+                      if (file != null) {
+                        setState(() {
+                          isProcessing = true;
+                        });
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          execute(file!, ref);
+                        });
+                      }
+                    }),
+                    child: Container(
+                      height: 60,
+                      width: 100,
+                      color: Colors.blue,
+                      child: const Center(
+                        child: Text(
+                          "Start",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ),
             ]),
             Expanded(
@@ -279,7 +293,7 @@ class _AIScreenState extends State<AIScreen2> {
                 children: [
                   if (original.isNotEmpty)
                     Expanded(
-                      child: MapWidget(data: original),
+                      child: MapWidget(data: mixed),
                     ),
                   Container(
                     width: 10,
@@ -300,7 +314,7 @@ class _AIScreenState extends State<AIScreen2> {
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: ListView(
-                    children: consoleText
+                    children: consoleText.reversed
                         .map((e) => Text(
                               e.toString(),
                               style: const TextStyle(color: Colors.white),
@@ -313,21 +327,45 @@ class _AIScreenState extends State<AIScreen2> {
           ]),
           Visibility(
             visible: isProcessing,
-            child: Container(
-              color: Colors.black.withOpacity(0.3),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.hourglass_full),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text("Processing"),
-                    )
-                  ],
-                ),
-              ),
-            ),
+            child: Builder(builder: (context) {
+              return Consumer(builder: (context, ref, s) {
+                final progress = ref.watch(progressStreamProvider.state).state;
+
+                return Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AnimatedBuilder(
+                          animation: _controller,
+                          builder: (_, child) {
+                            if (_controller.value > 0.6) {
+                              return const Icon(Icons.hourglass_full);
+                            } else if (_controller.value > 0.3 &&
+                                _controller.value < 0.6) {
+                              return const Icon(Icons.hourglass_top);
+                            } else {
+                              return const Icon(Icons.hourglass_empty);
+                            }
+                          }),
+                      const Divider(),
+                      Center(
+                        child: SizedBox(
+                          width: 200,
+                          child: LinearProgressIndicator(
+                            value: progress / 100,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const Divider(),
+                      const Text("Eliminating Duplicates ...")
+                    ],
+                  ),
+                );
+              });
+            }),
           )
         ],
       ),
@@ -344,9 +382,7 @@ class _AIScreenState extends State<AIScreen2> {
     return Stack(
       children: [
         MapScreenHolder(
-            isLine: isLine,
-            mapController: controller,
-            coordinates: data.map((e) => LatLng(e.lat, e.lng)).toList()),
+            isLine: isLine, mapController: controller, coordinates: data),
         Container(
           // width: double.infinity,
           padding: const EdgeInsets.all(10),

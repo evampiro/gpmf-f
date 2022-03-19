@@ -9,21 +9,31 @@
 // )
 // import 'package:flutter/material.dart';
 
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/AIv2.dart';
 
 class Custompaint extends CustomPainter {
-  Custompaint({required this.data, required this.isLine});
+  Custompaint(
+      {required this.data, required this.isLine, required this.mainData});
   List<Offset> data;
+  List<Location> mainData;
   bool isLine;
   @override
   void paint(Canvas canvas, size) {
     Paint paint = Paint();
     paint.color = Colors.blue;
     paint.strokeWidth = 5;
-    Path path = Path();
+    // Path path = Path();
     for (int i = 0; i < data.length; i += 1) {
       if (isLine) {
-        paint.strokeWidth = 2;
+        paint.strokeWidth = 3;
+        if (mainData[i].duplicate) {
+          paint.color = Colors.red;
+        } else {
+          paint.color = Colors.blue;
+        }
         if (i < data.length - 1) {
           canvas.drawLine(data[i], data[i + 1], paint);
         }

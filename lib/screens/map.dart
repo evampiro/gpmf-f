@@ -1,4 +1,5 @@
-import 'dart:io';
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -25,7 +26,7 @@ class SelectorCompare {
 }
 
 class MapScreen extends StatefulWidget {
-  MapScreen(
+  const MapScreen(
       {Key? key,
       this.mapController,
       required this.geoFile,
@@ -48,14 +49,13 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
   late MapTransformer mainTransformer;
   late AnimationController _controller;
 
-  void _gotoDefault() {
-    widget.mapController?.center = LatLng(35.68, 51.41);
-    setState(() {});
-  }
+  // void _gotoDefault() {
+  //   widget.mapController?.center = LatLng(35.68, 51.41);
+  //   setState(() {});
+  // }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     widget.mapController?.addListener(() {
       setState(() {});
@@ -68,12 +68,12 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
 
   void _onDoubleTap() {
     isAnimation = false;
-    Future.delayed(Duration(milliseconds: 50)).then((_) {
+    Future.delayed(const Duration(milliseconds: 50)).then((_) {
       setState(() {
         isAnimation = true;
       });
     });
-    print(isAnimation);
+    // print(isAnimation);
     widget.mapController?.zoom += 0.5;
     setState(() {});
   }
@@ -89,7 +89,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
     setState(() {
       isAnimation = false;
     });
-    Future.delayed(Duration(milliseconds: 500))
+    Future.delayed(const Duration(milliseconds: 500))
         .then((value) => setState(() => (isAnimation = true)));
     final scaleDiff = details.scale - _scaleStart;
     _scaleStart = details.scale;
@@ -109,28 +109,28 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildMarkerWidget(Offset pos, Color color) {
-    return Positioned(
-      left: pos.dx - 16,
-      top: pos.dy - 16,
-      width: 24,
-      height: 24,
-      child: Icon(Icons.location_on, color: color),
-    );
-  }
+  // Widget _buildMarkerWidget(Offset pos, Color color) {
+  //   return Positioned(
+  //     left: pos.dx - 16,
+  //     top: pos.dy - 16,
+  //     width: 24,
+  //     height: 24,
+  //     child: Icon(Icons.location_on, color: color),
+  //   );
+  // }
 
-  Widget _buildDotWidget(Offset pos, Color color, {Offset? prev}) {
-    if (prev != null) print('${pos} ${prev}');
-    return Positioned(
-      left: pos.dx - 16,
-      top: pos.dy - 16,
-      width: 4,
-      height: 4,
-      child: Container(
-        color: color,
-      ),
-    );
-  }
+  // Widget _buildDotWidget(Offset pos, Color color, {Offset? prev}) {
+  //   //if (prev != null) print('${pos} ${prev}');
+  //   return Positioned(
+  //     left: pos.dx - 16,
+  //     top: pos.dy - 16,
+  //     width: 4,
+  //     height: 4,
+  //     child: Container(
+  //       color: color,
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -266,14 +266,12 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                     transformer.fromXYCoordsToLatLng(details.localPosition);
 
                 List<GeoFile> selected = [];
-                geoFiles.forEach(
-                  (element) {
-                    if (element.boundingBox!.contains(
-                        Offset(location.latitude, location.longitude))) {
-                      selected.add(element);
-                    }
-                  },
-                );
+                for (var element in geoFiles) {
+                  if (element.boundingBox!.contains(
+                      Offset(location.latitude, location.longitude))) {
+                    selected.add(element);
+                  }
+                }
 
                 final clicked = transformer.fromLatLngToXYCoords(location);
 
@@ -285,7 +283,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                 //     .toList();
 
                 List<SelectorCompare> selection = [];
-                selected.forEach((element) {
+                for (var element in selected) {
                   final markerPositions = element.geoData
                       .map((e) => transformer
                           .fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
@@ -297,7 +295,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                   indexList.sort((a, b) => a.distance.compareTo(b.distance));
                   selection.add(SelectorCompare(
                       compareOffset: indexList[0], file: element));
-                });
+                }
 
                 selection.sort(((a, b) => a.compareOffset.distance
                     .compareTo(b.compareOffset.distance)));
@@ -391,9 +389,9 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                         final url =
                             'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
 
-                        final darkUrl =
-                            'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i$z!2i$x!3i$y!4i256!2m3!1e0!2sm!3i556279080!3m17!2sen-US!3sUS!5e18!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcC52Om9uLHMuZTpsfHAudjpvZmZ8cC5zOi0xMDAscy5lOmwudC5mfHAuczozNnxwLmM6I2ZmMDAwMDAwfHAubDo0MHxwLnY6b2ZmLHMuZTpsLnQuc3xwLnY6b2ZmfHAuYzojZmYwMDAwMDB8cC5sOjE2LHMuZTpsLml8cC52Om9mZixzLnQ6MXxzLmU6Zy5mfHAuYzojZmYwMDAwMDB8cC5sOjIwLHMudDoxfHMuZTpnLnN8cC5jOiNmZjAwMDAwMHxwLmw6MTd8cC53OjEuMixzLnQ6NXxzLmU6Z3xwLmM6I2ZmMDAwMDAwfHAubDoyMCxzLnQ6NXxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjV8cy5lOmcuc3xwLmM6I2ZmNGQ2MDU5LHMudDo4MnxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjJ8cy5lOmd8cC5sOjIxLHMudDoyfHMuZTpnLmZ8cC5jOiNmZjRkNjA1OSxzLnQ6MnxzLmU6Zy5zfHAuYzojZmY0ZDYwNTkscy50OjN8cy5lOmd8cC52Om9ufHAuYzojZmY3ZjhkODkscy50OjN8cy5lOmcuZnxwLmM6I2ZmN2Y4ZDg5LHMudDo0OXxzLmU6Zy5mfHAuYzojZmY3ZjhkODl8cC5sOjE3LHMudDo0OXxzLmU6Zy5zfHAuYzojZmY3ZjhkODl8cC5sOjI5fHAudzowLjIscy50OjUwfHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE4LHMudDo1MHxzLmU6Zy5mfHAuYzojZmY3ZjhkODkscy50OjUwfHMuZTpnLnN8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmd8cC5jOiNmZjAwMDAwMHxwLmw6MTYscy50OjUxfHMuZTpnLmZ8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmcuc3xwLmM6I2ZmN2Y4ZDg5LHMudDo0fHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE5LHMudDo2fHAuYzojZmYyYjM2Mzh8cC52Om9uLHMudDo2fHMuZTpnfHAuYzojZmYyYjM2Mzh8cC5sOjE3LHMudDo2fHMuZTpnLmZ8cC5jOiNmZjI0MjgyYixzLnQ6NnxzLmU6Zy5zfHAuYzojZmYyNDI4MmIscy50OjZ8cy5lOmx8cC52Om9mZixzLnQ6NnxzLmU6bC50fHAudjpvZmYscy50OjZ8cy5lOmwudC5mfHAudjpvZmYscy50OjZ8cy5lOmwudC5zfHAudjpvZmYscy50OjZ8cy5lOmwuaXxwLnY6b2Zm!4e0&key=AIzaSyAOqYYyBbtXQEtcHG7hwAwyCPQSYidG8yU&token=31440';
-                        //Mapbox Streets
+                        // final darkUrl =
+                        //     'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i$z!2i$x!3i$y!4i256!2m3!1e0!2sm!3i556279080!3m17!2sen-US!3sUS!5e18!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcC52Om9uLHMuZTpsfHAudjpvZmZ8cC5zOi0xMDAscy5lOmwudC5mfHAuczozNnxwLmM6I2ZmMDAwMDAwfHAubDo0MHxwLnY6b2ZmLHMuZTpsLnQuc3xwLnY6b2ZmfHAuYzojZmYwMDAwMDB8cC5sOjE2LHMuZTpsLml8cC52Om9mZixzLnQ6MXxzLmU6Zy5mfHAuYzojZmYwMDAwMDB8cC5sOjIwLHMudDoxfHMuZTpnLnN8cC5jOiNmZjAwMDAwMHxwLmw6MTd8cC53OjEuMixzLnQ6NXxzLmU6Z3xwLmM6I2ZmMDAwMDAwfHAubDoyMCxzLnQ6NXxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjV8cy5lOmcuc3xwLmM6I2ZmNGQ2MDU5LHMudDo4MnxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjJ8cy5lOmd8cC5sOjIxLHMudDoyfHMuZTpnLmZ8cC5jOiNmZjRkNjA1OSxzLnQ6MnxzLmU6Zy5zfHAuYzojZmY0ZDYwNTkscy50OjN8cy5lOmd8cC52Om9ufHAuYzojZmY3ZjhkODkscy50OjN8cy5lOmcuZnxwLmM6I2ZmN2Y4ZDg5LHMudDo0OXxzLmU6Zy5mfHAuYzojZmY3ZjhkODl8cC5sOjE3LHMudDo0OXxzLmU6Zy5zfHAuYzojZmY3ZjhkODl8cC5sOjI5fHAudzowLjIscy50OjUwfHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE4LHMudDo1MHxzLmU6Zy5mfHAuYzojZmY3ZjhkODkscy50OjUwfHMuZTpnLnN8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmd8cC5jOiNmZjAwMDAwMHxwLmw6MTYscy50OjUxfHMuZTpnLmZ8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmcuc3xwLmM6I2ZmN2Y4ZDg5LHMudDo0fHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE5LHMudDo2fHAuYzojZmYyYjM2Mzh8cC52Om9uLHMudDo2fHMuZTpnfHAuYzojZmYyYjM2Mzh8cC5sOjE3LHMudDo2fHMuZTpnLmZ8cC5jOiNmZjI0MjgyYixzLnQ6NnxzLmU6Zy5zfHAuYzojZmYyNDI4MmIscy50OjZ8cy5lOmx8cC52Om9mZixzLnQ6NnxzLmU6bC50fHAudjpvZmYscy50OjZ8cy5lOmwudC5mfHAudjpvZmYscy50OjZ8cy5lOmwudC5zfHAudjpvZmYscy50OjZ8cy5lOmwuaXxwLnY6b2Zm!4e0&key=AIzaSyAOqYYyBbtXQEtcHG7hwAwyCPQSYidG8yU&token=31440';
+                        // //Mapbox Streets
                         // final url =
                         //     'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/$z/$x/$y?access_token=YOUR_MAPBOX_ACCESS_TOKEN';
 
@@ -407,7 +405,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                     ...markerWidgets,
                     if (selectedFileIndex == 0)
                       Visibility(
-                        visible: false,
+                        visible: true,
                         child: AnimatedPositioned(
                             duration: isAnimation
                                 ? const Duration(milliseconds: 500)
@@ -451,13 +449,13 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                                   ),
                                 ),
                                 Positioned(
-                                    top: -105,
+                                    top: -35,
                                     left: 15,
                                     child: Transform.rotate(
                                       angle: 0 * 0.0174533,
                                       child: Container(
-                                        padding: EdgeInsets.all(5),
-                                        height: 100,
+                                        padding: const EdgeInsets.all(5),
+                                        height: 30,
                                         color: Colors.grey,
                                         child: FittedBox(
                                             child: Center(
@@ -465,7 +463,9 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                                             // clipBehavior: Clip.antiAlias,
                                             children: [
                                               Text(index.toString()),
-                                              videoPlayer(player)
+                                              Visibility(
+                                                  visible: false,
+                                                  child: videoPlayer(player))
                                             ],
                                           ),
                                         )),
@@ -474,46 +474,49 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                               ],
                             )),
                       ),
-                    AnimatedBuilder(
-                        child: Container(
-                          width: 15,
-                          height: 15,
-                          color: Colors.red,
-                        ),
-                        animation: _controller,
-                        builder: (context, child) {
-                          print(_controller.duration?.inMilliseconds);
-                          // print('$index $previousIndex');
-                          var current;
-                          if (index >= previousIndex) {
-                            current = mapDouble(
-                                    x: _controller.value * 10,
-                                    in_min: 0,
-                                    in_max: 10,
-                                    out_min: previousIndex.toDouble(),
-                                    out_max: index.toDouble())
-                                .toInt();
-                          } else {
-                            current = mapDouble(
-                                    x: 10 - (_controller.value * 10),
-                                    in_min: 0,
-                                    in_max: 10,
-                                    out_min: index.toDouble(),
-                                    out_max: previousIndex.toDouble())
-                                .toInt();
-                          }
+                    Visibility(
+                      visible: false,
+                      child: AnimatedBuilder(
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            color: Colors.red,
+                          ),
+                          animation: _controller,
+                          builder: (context, child) {
+                            // print(_controller.duration?.inMilliseconds);
+                            // print('$index $previousIndex');
+                            var current = 0;
+                            if (index >= previousIndex) {
+                              current = mapDouble(
+                                      x: _controller.value * 10,
+                                      in_min: 0,
+                                      in_max: 10,
+                                      out_min: previousIndex.toDouble(),
+                                      out_max: index.toDouble())
+                                  .toInt();
+                            } else {
+                              current = mapDouble(
+                                      x: 10 - (_controller.value * 10),
+                                      in_min: 0,
+                                      in_max: 10,
+                                      out_min: index.toDouble(),
+                                      out_max: previousIndex.toDouble())
+                                  .toInt();
+                            }
 
-                          // if (index < previousIndex) {
-                          //   current = (previousIndex + index) - current;
-                          //   // print(markerPositions[current]);
-                          // }
+                            // if (index < previousIndex) {
+                            //   current = (previousIndex + index) - current;
+                            //   // print(markerPositions[current]);
+                            // }
 
-                          return AnimatedPositioned(
-                              duration: Duration(milliseconds: 10),
-                              left: markerPositions[current].dx - 8,
-                              top: markerPositions[current].dy - 8,
-                              child: child!);
-                        })
+                            return AnimatedPositioned(
+                                duration: const Duration(milliseconds: 10),
+                                left: markerPositions[current].dx - 8,
+                                top: markerPositions[current].dy - 8,
+                                child: child!);
+                          }),
+                    )
                     // centerMarkerWidget,
                   ],
                 ),

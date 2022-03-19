@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, file_names
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -27,7 +29,6 @@ class _AIScreenState extends State<AIScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -40,10 +41,10 @@ class _AIScreenState extends State<AIScreen> {
     List<int> toRemove = [];
     String contents = await File(jsonPath).readAsString();
     List<dynamic> jsonContents = jsonDecode(contents);
-    jsonContents.forEach((e) {
+    for (var e in jsonContents) {
       locations.add(
           Location(e["value"][0], e["value"][1], DateTime.parse(e["date"]), e));
-    });
+    }
 
     for (int i = 0; i < locations.length; i++) {
       for (int j = 0; j < locations.length; j++) {
@@ -119,7 +120,7 @@ class _AIScreenState extends State<AIScreen> {
                 child: Center(
                   child: Text(
                     file ?? "PICK FILE",
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -137,7 +138,7 @@ class _AIScreenState extends State<AIScreen> {
                 height: 60,
                 width: 100,
                 color: Colors.blue,
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Start",
                     style: TextStyle(color: Colors.white),
@@ -156,7 +157,7 @@ class _AIScreenState extends State<AIScreen> {
                 children: consoleText
                     .map((e) => Text(
                           e.toString(),
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ))
                     .toList(),
               ),

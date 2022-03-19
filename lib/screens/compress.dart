@@ -1,14 +1,13 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
 
-import 'package:dart_vlc/dart_vlc.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:process_run/shell.dart';
 import 'package:http/http.dart' as http;
+import 'package:process_run/shell.dart';
 
 class FileThumb {
   FileThumb({
@@ -62,6 +61,7 @@ class CompressScreen extends ConsumerWidget {
                         final List<FileThumb> files = [];
                         final Iterable<File> iterablefiles =
                             entities.whereType<File>();
+                        // ignore: avoid_function_literals_in_foreach_calls
                         iterablefiles.forEach((element) async {
                           var thumb = await getThumbnail(element.path);
                           var length = await element.length();
@@ -136,7 +136,7 @@ class CompressScreen extends ConsumerWidget {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          files.forEach((element) {
+                          for (var element in files) {
                             // if (!element.filename.contains("-small"))
                             {
                               Shell().run(
@@ -160,7 +160,7 @@ class CompressScreen extends ConsumerWidget {
                                 // }
                               );
                             }
-                          });
+                          }
                         },
                         child: const Text("Compress All")),
                     const SizedBox(
@@ -169,7 +169,7 @@ class CompressScreen extends ConsumerWidget {
                     ElevatedButton(
                         onPressed: () async {
                           List<Map> paths = [];
-                          files.forEach((element) {
+                          for (var element in files) {
                             if (element.filename.contains("-small")) {
                               paths.add({
                                 "path": element.file.path
@@ -178,7 +178,7 @@ class CompressScreen extends ConsumerWidget {
                                 "mime": "MP4"
                               });
                             }
-                          });
+                          }
 
                           var status = await http.post(
                             Uri.parse("http://localhost:4000/api/telemetry"),

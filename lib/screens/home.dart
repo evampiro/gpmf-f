@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, non_constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -6,14 +8,12 @@ import 'package:cross_file/cross_file.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/AIScreen.dart';
 import 'package:gpmf/screens/AIv2.dart';
 import 'package:gpmf/screens/compress.dart';
 import 'package:gpmf/screens/map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
-import 'package:process_run/shell.dart';
 import 'package:random_color/random_color.dart';
 
 final DataListProvider = StateProvider<List<GeoFile>>((ref) {
@@ -94,6 +94,7 @@ class Home extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final list = ref.watch(DataListProvider.state).state;
+    // ignore: unused_local_variable
     final refresh = ref.watch(DataListProvider.state).state;
     final _controller = ref.watch(MapControllerProvider);
     final leftPlayer = ref.watch(mediaControllerProviderLeft);
@@ -102,18 +103,18 @@ class Home extends ConsumerWidget {
         floatingActionButton: GestureDetector(
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) {
-              return AIScreen2();
+              return const AIScreen2();
             }));
           },
           child: Container(
-            margin: EdgeInsets.all(12),
+            margin: const EdgeInsets.all(12),
             height: 50,
             width: 50,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.green,
             ),
-            child: Icon(Icons.start),
+            child: const Icon(Icons.start),
           ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
@@ -139,6 +140,8 @@ class Home extends ConsumerWidget {
                       lon: json[i]["value"][1],
                       time: DateTime.parse(json[i]["date"].toString())));
                 }
+
+                print(data[0].time.difference(data.last.time).inMilliseconds);
 
                 File filel = File(file.path.replaceAll(".json", ".mp4"));
                 // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
@@ -312,13 +315,14 @@ class Home extends ConsumerWidget {
                                           ),
                                           trailing: Consumer(
                                               builder: (context, ref, s) {
+                                            // ignore: unused_local_variable
                                             final r = ref
                                                 .watch(refreshProvider.state)
                                                 .state;
                                             return Checkbox(
                                               value: list[index].isLine,
                                               onChanged: (v) {
-                                                print(v);
+                                                // print(v);
                                                 var tempList = ref
                                                     .read(
                                                         DataListProvider.state)
@@ -341,6 +345,7 @@ class Home extends ConsumerWidget {
                                           //         const Icon(Icons.play_arrow)),
                                           subtitle: Consumer(
                                               builder: (context, ref, s) {
+                                            // ignore: unused_local_variable
                                             final r = ref
                                                 .watch(refreshProvider.state)
                                                 .state;
