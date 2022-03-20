@@ -49,33 +49,48 @@ class Painter extends CustomPainter {
         path.moveTo(offset[0].dx, offset[0].dy);
         for (int i = 0; i < data[j].geoData.length; i += sample) {
           if (i < offset.length - sample) {
-            if (i < currentIndex && !data[j].geoData[i].duplicate) {
-              paint.color = paint.color = Colors.blue;
-            } else {
-              paint.color = data[j].color;
-            }
-
-            if (data[j].isLine) {
-              if (data[j].geoData[i].duplicate) {
-                paint.color = Colors.red;
+            if (i < currentIndex) {
+              if (!data[j].geoData[i].duplicate) {
+                paint.color = paint.color = Colors.blue;
+                path.lineTo(offset[i].dx, offset[i].dy);
+                canvas.drawLine(
+                  offset[i],
+                  offset[i + sample],
+                  paint,
+                );
               } else {
-                paint.color = data[j].color;
+                paint.color = paint.color = Colors.red;
+                path.lineTo(offset[i].dx, offset[i].dy);
+                canvas.drawLine(
+                  offset[i],
+                  offset[i + sample],
+                  paint,
+                );
               }
-              path.lineTo(offset[i].dx, offset[i].dy);
-
-              //  path.relativeLineTo(offset[i].dx, offset[i].dy);
-              canvas.drawLine(
-                offset[i],
-                offset[i + sample],
-                paint,
-              );
             } else {
-              paint.strokeWidth = 2;
-              // path.lineTo(offset[i].dx, offset[i].dy);
+              if (data[j].isLine) {
+                if (data[j].geoData[i].duplicate) {
+                  paint.color = Colors.red;
+                } else {
+                  paint.color = data[j].color;
+                  // paint.color = paint.color = Colors.blue;
+                }
+                path.lineTo(offset[i].dx, offset[i].dy);
 
-              // canvas.drawPath(path, paint);
+                //  path.relativeLineTo(offset[i].dx, offset[i].dy);
+                canvas.drawLine(
+                  offset[i],
+                  offset[i + sample],
+                  paint,
+                );
+              } else {
+                paint.strokeWidth = 2;
+                // path.lineTo(offset[i].dx, offset[i].dy);
 
-              canvas.drawCircle(offset[i], 1.5, paint);
+                // canvas.drawPath(path, paint);
+
+                canvas.drawCircle(offset[i], 1.5, paint);
+              }
             }
           }
         }

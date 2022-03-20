@@ -71,6 +71,14 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
     );
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    widget.mapController?.dispose();
+
+    super.dispose();
+  }
+
   void _onDoubleTap() {
     isAnimation = false;
     Future.delayed(const Duration(milliseconds: 50)).then((_) {

@@ -43,6 +43,13 @@ class _MapState extends State<MapScreenHolder> {
     });
   }
 
+  @override
+  void dispose() {
+    widget.mapController?.dispose();
+
+    super.dispose();
+  }
+
   void _onDoubleTap() {
     isAnimation = false;
     Future.delayed(const Duration(milliseconds: 50)).then((_) {
@@ -66,8 +73,9 @@ class _MapState extends State<MapScreenHolder> {
     setState(() {
       isAnimation = false;
     });
-    Future.delayed(const Duration(seconds: 3))
-        .then((value) => setState(() => (isAnimation = true)));
+    Future.delayed(const Duration(seconds: 3)).then((value) {
+      setState(() => (isAnimation = true));
+    });
     final scaleDiff = details.scale - _scaleStart;
     _scaleStart = details.scale;
 
@@ -247,7 +255,7 @@ class _MapState extends State<MapScreenHolder> {
                     ),
                     //  homeMarkerWidget,
                     ...markerWidgets,
-                    if (selectedFileIndex > 0)
+                    if (selectedFileIndex > 0 && widget.coordinates.isNotEmpty)
                       AnimatedPositioned(
                           duration: isAnimation
                               ? const Duration(milliseconds: 500)

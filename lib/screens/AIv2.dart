@@ -59,6 +59,7 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
     }
     setState(() {
       original = locations.toList();
+      controller.center = LatLng(original[0].lat, original[0].lng);
     });
     List<LocationsData> nearestList = [];
     _controller.repeat();
@@ -135,8 +136,10 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
         var mappedLength = map(dataLength, 0, 3000, 28, 60);
         print(mappedLength);
         for (int y = index; y > index - mappedLength; y--) {
-          if (mixed[y].duplicate) {
-            mixed[y].duplicate = false;
+          if (y >= 0) {
+            if (mixed[y].duplicate) {
+              mixed[y].duplicate = false;
+            }
           }
         }
         j = index;

@@ -32,6 +32,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
   void dispose() {
     // TODO: implement dispose
     _controller.dispose();
+    widget.player.dispose();
     super.dispose();
   }
 
@@ -67,7 +68,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
                           border: Border.all(color: Colors.red, width: 8)),
                       child: const Center(
                         child: Text(
-                          'Duplicate',
+                          'Potential Duplicate',
                           style: TextStyle(fontSize: 55, color: Colors.red),
                         ),
                       ),
