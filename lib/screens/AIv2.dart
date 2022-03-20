@@ -6,7 +6,9 @@ import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import "package:gpmf/screens/LocationsClass";
 import 'package:gpmf/screens/MapHolder.dart';
+import 'package:gpmf/screens/exporter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
@@ -19,20 +21,11 @@ class AIScreen2 extends StatefulWidget {
   State<AIScreen2> createState() => _AIScreenState();
 }
 
-class Location {
-  final double lat;
-  final double lng;
-  final DateTime timeStamp;
-  bool duplicate;
-  //final Map<String, dynamic> completeString;
-  Location(this.lat, this.lng, this.timeStamp, this.duplicate);
-}
-
 class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
   List<String> consoleText = ["console started"];
   String? file;
 
-  List<Location> original = [], processed = [], mixed = [];
+  List<LocationsData> original = [], processed = [], mixed = [];
   double constantDistance = 10;
   Duration constantTimeDifference = const Duration(seconds: 8);
   bool isProcessing = false, showErasedData = true;
@@ -51,19 +44,23 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
   execute(String jsonPath, WidgetRef ref) async {
     DateTime startedAt = DateTime.now();
 
-    List<Location> locations = [];
-    List<Location> toRemove = [];
+    List<LocationsData> locations = [];
+    List<LocationsData> toRemove = [];
     String contents = await File(jsonPath).readAsString();
+    // locations = locationsFromMap(contents);
 
     List<dynamic> jsonContents = jsonDecode(contents);
     for (var e in jsonContents) {
-      locations.add(Location(
-          e["value"][0], e["value"][1], DateTime.parse(e["date"]), false));
+      locations.add(LocationsData(
+          lat: e["value"][0],
+          lng: e["value"][1],
+          timeStamp: DateTime.parse(e["date"]),
+          duplicate: false));
     }
     setState(() {
       original = locations.toList();
     });
-    List<Location> nearestList = [];
+    List<LocationsData> nearestList = [];
     _controller.repeat();
     //2157 2441
     for (int i = 0; i < locations.length; i++) {
@@ -123,6 +120,28 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
     });
     controller.center = LatLng(
         original[original.length ~/ 2].lat, original[original.length ~/ 2].lng);
+
+    for (int j = 0; j < mixed.length; j++) {
+      if (mixed[j].duplicate) {
+        var index = 0;
+
+        for (int i = j; i < mixed.length; i++) {
+          if (mixed[i].duplicate == false) {
+            index = i;
+            break;
+          }
+        }
+        var dataLength = index - j;
+        var mappedLength = map(dataLength, 0, 3000, 28, 60);
+        print(mappedLength);
+        for (int y = index; y > index - mappedLength; y--) {
+          if (mixed[y].duplicate) {
+            mixed[y].duplicate = false;
+          }
+        }
+        j = index;
+      }
+    }
     setState(() {
       processed = locations.toList();
       isProcessing = false;
@@ -159,12 +178,12 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
     // for (int i = 0; i < locations.length; i++) {
     //   exportable += jsonEncode(locations[i].completeString) + ",\n";
     // }
-    // exportable += "\n]";
-    // File(jsonPath.substring(0, jsonPath.length - 5) + "_output.json")
-    //     .writeAsString(exportable);
-    // setState(() {
-    //   consoleText.add("Exported");
-    // });
+
+    File(jsonPath.substring(0, jsonPath.length - 5) + "_processed.json")
+        .writeAsString(locationsToMap(mixed));
+    setState(() {
+      consoleText.add("Exported");
+    });
     _controller.stop();
     _controller.reset();
   }
@@ -374,7 +393,7 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
 
   Stack MapWidget(
       {bool isOriginal = true,
-      required List<Location> data,
+      required List<LocationsData> data,
       bool isLine = true}) {
     controller.addListener(() {
       setState(() {});

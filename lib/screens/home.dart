@@ -9,8 +9,12 @@ import 'package:dart_vlc/dart_vlc.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/AIv2.dart';
+import 'package:gpmf/screens/GeofileClass.dart';
+import 'package:gpmf/screens/LocationsClass';
 import 'package:gpmf/screens/compress.dart';
+import 'package:gpmf/screens/exporter.dart';
 import 'package:gpmf/screens/map.dart';
+import 'package:gpmf/screens/videoPlayer.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
@@ -30,47 +34,6 @@ final refreshProvider = StateProvider<int?>((ref) {
   return 0;
 });
 
-class GeoFile {
-  GeoFile(
-      {required this.file,
-      required this.geoData,
-      required this.sample,
-      required this.duration,
-      required this.color,
-      required this.isLine});
-  XFile file;
-
-  List<GeoData> geoData;
-  int sample, duration;
-  Color color;
-  Rect? boundingBox;
-  bool isLine;
-  Rect boundingBoxLatLng() {
-    double minX = double.infinity;
-    double maxX = 0;
-    double minY = double.infinity;
-    double maxY = 0;
-    for (int i = 0; i < geoData.length; i++) {
-      minX = min(minX, geoData[i].lat);
-      minY = min(minY, geoData[i].lon);
-      maxX = max(maxX, geoData[i].lat);
-      maxY = max(maxY, geoData[i].lon);
-    }
-
-    var rec = Rect.fromLTWH(minX, minY, (maxX - minX), (maxY - minY));
-    boundingBox = rec;
-
-    //print(rec);
-    return rec;
-  }
-}
-
-class GeoData {
-  GeoData({required this.lat, required this.lon, required this.time});
-  double lon, lat;
-  DateTime time;
-}
-
 class Home extends ConsumerWidget {
   Home({Key? key}) : super(key: key);
 
@@ -87,10 +50,14 @@ class Home extends ConsumerWidget {
       videoDimensions: const VideoDimensions(1920, 1080),
     );
   });
-
+  final duplicateAlertProvider = StateProvider<bool>((ref) {
+    return false;
+  });
   final bool _dragging = false;
   // final MapController _controller = MapController(location: LatLng(30, 30));
-
+  final skipDuplicateProvider = StateProvider<bool>((ref) {
+    return true;
+  });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final list = ref.watch(DataListProvider.state).state;
@@ -121,6 +88,7 @@ class Home extends ConsumerWidget {
         body: DropTarget(
           onDragDone: (detail) async {
             ref.read(DataListProvider.state).state = [];
+            String replacer = '';
             List<GeoFile> geoData = [];
             for (final file in detail.files) {
               // debugPrint('  ${file.path} ${file.name}'
@@ -132,18 +100,25 @@ class Home extends ConsumerWidget {
                 var dat = await file.readAsString();
                 var json = jsonDecode(dat);
 
-                List<GeoData> data = [];
-
-                for (int i = 0; i < json.length; i++) {
-                  data.add(GeoData(
-                      lat: json[i]["value"][0],
-                      lon: json[i]["value"][1],
-                      time: DateTime.parse(json[i]["date"].toString())));
+                List<LocationsData> data = [];
+                if (file.path.contains("_processed")) {
+                  data = locationsFromMap(dat);
+                  replacer = '_processed.json';
+                } else {
+                  replacer = '.json';
+                  for (int i = 0; i < json.length; i++) {
+                    data.add(LocationsData(
+                        lat: json[i]["value"][0],
+                        lng: json[i]["value"][1],
+                        timeStamp: DateTime.parse(json[i]["date"].toString()),
+                        duplicate: false));
+                  }
                 }
 
-                print(data[0].time.difference(data.last.time).inMilliseconds);
+                //print(data[0].time.difference(data.last.time).inMilliseconds);
 
-                File filel = File(file.path.replaceAll(".json", ".mp4"));
+                File filel = File(file.path.replaceAll(replacer, ".mp4"));
+
                 // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
                 //print("last modified: ${await file.lastModified()}");
                 Media media = Media.file(
@@ -162,7 +137,7 @@ class Home extends ConsumerWidget {
                     color: RandomColor().randomColor(
                         colorSaturation: ColorSaturation.highSaturation,
                         colorHue: ColorHue.multiple(colorHues: [
-                          ColorHue.red,
+                          ColorHue.yellow,
                           ColorHue.orange,
                           ColorHue.blue
                         ])));
@@ -174,12 +149,12 @@ class Home extends ConsumerWidget {
               }
             }
             ref.read(MapControllerProvider).center =
-                LatLng(geoData[0].geoData[0].lat, geoData[0].geoData[0].lon);
+                LatLng(geoData[0].geoData[0].lat, geoData[0].geoData[0].lng);
             ref.read(DataListProvider.state).state = geoData.toList();
 
             //File file = File('D:/Projects/Backend/sample/long-new-sample.mp4');
 
-            File file = File(geoData[0].file.path.replaceAll(".json", ".mp4"));
+            File file = File(geoData[0].file.path.replaceAll(replacer, ".mp4"));
             // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
             //print("last modified: ${await file.lastModified()}");
             Media media = Media.file(
@@ -191,7 +166,7 @@ class Home extends ConsumerWidget {
             );
             // print(media.metas["duration"]);
             //player.open(media);
-            ref.read(mediaControllerProviderLeft).open(media, autoStart: true);
+            ref.read(mediaControllerProviderLeft).open(media, autoStart: false);
 
             // Navigator.pop(context);
 
@@ -229,7 +204,7 @@ class Home extends ConsumerWidget {
                       child: Row(
                         children: [
                           Expanded(
-                            flex: 3,
+                            flex: 4,
                             child: Container(
                                 color: Colors.grey,
                                 child: list.isNotEmpty
@@ -237,6 +212,10 @@ class Home extends ConsumerWidget {
                                         // final r =
                                         //     ref.watch(refreshProvider.state).state;
                                         return MapScreen(
+                                          duplicateAlertProvider:
+                                              duplicateAlertProvider,
+                                          skipDuplicateProvider:
+                                              skipDuplicateProvider,
                                           mapController: _controller,
                                           // markers: getMarkers(list[0]),
                                           geoFile: DataListProvider,
@@ -262,36 +241,66 @@ class Home extends ConsumerWidget {
                                       )),
                           ),
                           Expanded(
-                            flex: 1,
+                            flex: 2,
                             child: Column(
                               children: [
-                                videoPlayer(leftPlayer),
-                                videoPlayer(rightPlayer, left: false),
+                                VideoPlayer(
+                                  player: leftPlayer,
+                                  duplicateAlertProvider:
+                                      duplicateAlertProvider,
+                                ),
+                                // videoPlayer(rightPlayer, left: false),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: ElevatedButton(
-                                      onPressed: () {
-                                        showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (_) => AlertDialog(
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                  content: SizedBox(
-                                                      width:
-                                                          MediaQuery.of(context)
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Consumer(builder: (context, ref, s) {
+                                        final skipDuplicate = ref
+                                            .watch(skipDuplicateProvider.state)
+                                            .state;
+                                        return Row(
+                                          children: [
+                                            Checkbox(
+                                                value: skipDuplicate,
+                                                onChanged: (v) {
+                                                  ref
+                                                      .read(
+                                                          skipDuplicateProvider
+                                                              .state)
+                                                      .state = v!;
+                                                }),
+                                            const Text("Skip Duplicate Video"),
+                                          ],
+                                        );
+                                      }),
+                                      const Spacer(),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            showDialog(
+                                                context: context,
+                                                barrierDismissible: false,
+                                                builder: (_) => AlertDialog(
+                                                      backgroundColor:
+                                                          Colors.transparent,
+                                                      content: SizedBox(
+                                                          width: MediaQuery.of(
+                                                                      context)
                                                                   .size
                                                                   .width *
                                                               .8,
-                                                      height:
-                                                          MediaQuery.of(context)
+                                                          height: MediaQuery.of(
+                                                                      context)
                                                                   .size
                                                                   .height *
                                                               .8,
-                                                      child: CompressScreen()),
-                                                ));
-                                      },
-                                      child: const Text('Tools')),
+                                                          child:
+                                                              CompressScreen()),
+                                                    ));
+                                          },
+                                          child: const Text('Tools')),
+                                    ],
+                                  ),
                                 ),
                                 Expanded(
                                   child: ListView.builder(
@@ -304,7 +313,7 @@ class Home extends ConsumerWidget {
 
                                             control.center = LatLng(
                                                 list[index].geoData[0].lat,
-                                                list[index].geoData[0].lon);
+                                                list[index].geoData[0].lng);
 
                                             // control.zoom++;
                                           },
@@ -421,7 +430,7 @@ class Home extends ConsumerWidget {
 
   List<LatLng> getMarkers(GeoFile data) {
     List<LatLng> temp = [];
-    temp = data.geoData.map((e) => LatLng(e.lat, e.lon)).toList();
+    temp = data.geoData.map((e) => LatLng(e.lat, e.lng)).toList();
 
     // var c = temp.toList();
     // for (var element in temp) {
@@ -436,22 +445,4 @@ class Home extends ConsumerWidget {
     // print(temp.length);
     return temp;
   }
-}
-
-Stack videoPlayer(Player leftPlayer, {bool left = true}) {
-  return Stack(
-    children: [
-      SizedBox(
-        width: 600,
-        height: 350,
-        child: Video(
-          player: leftPlayer,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(left ? "Left" : "Right"),
-      )
-    ],
-  );
 }

@@ -1,0 +1,36 @@
+import 'package:meta/meta.dart';
+import 'dart:convert';
+
+List<LocationsData> locationsFromMap(String str) => List<LocationsData>.from(json.decode(str).map((x) => LocationsData.fromMap(x)));
+
+String locationsToMap(List<LocationsData> data) => json.encode(List<dynamic>.from(data.map((x) => x.toMap())));
+
+class LocationsData {
+    LocationsData({
+    required this.lat ,
+        required this.lng,
+        required this.timeStamp,
+        required this.duplicate,
+    });
+
+    double lat;
+    double lng;
+    DateTime timeStamp;
+    bool duplicate;
+
+
+
+    factory LocationsData.fromMap(Map<String, dynamic> json) => LocationsData(
+        lat: json["lat"].toDouble(),
+        lng: json["lng"].toDouble(),
+        timeStamp: DateTime.parse(json["timeStamp"]),
+        duplicate: json["duplicate"],
+    );
+
+    Map<String, dynamic> toMap() => {
+        "lat": lat,
+        "lng": lng,
+        "timeStamp": timeStamp.toIso8601String(),
+        "duplicate": duplicate,
+    };
+}

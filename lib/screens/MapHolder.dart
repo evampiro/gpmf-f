@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/AIv2.dart';
 import 'package:gpmf/screens/CustomPainByLatLng.dart';
+import 'package:gpmf/screens/LocationsClass';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
@@ -19,7 +20,7 @@ class MapScreenHolder extends StatefulWidget {
   final MapController? mapController;
   //final List<GeoFile>? geoFiles;
   final bool isLine;
-  final List<Location> coordinates;
+  final List<LocationsData> coordinates;
   @override
   State<MapScreenHolder> createState() => _MapState();
 }

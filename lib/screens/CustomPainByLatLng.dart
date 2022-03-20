@@ -12,13 +12,13 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/AIv2.dart';
+import 'package:gpmf/screens/LocationsClass';
 
 class Custompaint extends CustomPainter {
   Custompaint(
       {required this.data, required this.isLine, required this.mainData});
   List<Offset> data;
-  List<Location> mainData;
+  List<LocationsData> mainData;
   bool isLine;
   @override
   void paint(Canvas canvas, size) {

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
 
-import 'package:gpmf/screens/home.dart';
+import 'package:flutter/material.dart';
+import 'package:gpmf/screens/GeofileClass.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 
@@ -36,7 +36,7 @@ class Painter extends CustomPainter {
       {
         final offset = data[j]
             .geoData
-            .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+            .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lng)))
             .toList();
         // print(offset);
         // if (selectedIndex != j) {
@@ -49,13 +49,18 @@ class Painter extends CustomPainter {
         path.moveTo(offset[0].dx, offset[0].dy);
         for (int i = 0; i < data[j].geoData.length; i += sample) {
           if (i < offset.length - sample) {
-            if (i < currentIndex) {
+            if (i < currentIndex && !data[j].geoData[i].duplicate) {
               paint.color = paint.color = Colors.blue;
             } else {
               paint.color = data[j].color;
             }
 
             if (data[j].isLine) {
+              if (data[j].geoData[i].duplicate) {
+                paint.color = Colors.red;
+              } else {
+                paint.color = data[j].color;
+              }
               path.lineTo(offset[i].dx, offset[i].dy);
 
               //  path.relativeLineTo(offset[i].dx, offset[i].dy);

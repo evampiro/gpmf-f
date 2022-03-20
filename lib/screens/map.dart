@@ -6,8 +6,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/GeofileClass.dart';
+import 'package:gpmf/screens/exporter.dart';
 // import 'package:geolocator/geolocator.dart';
-import 'package:gpmf/screens/home.dart';
 import 'package:gpmf/screens/paintpath.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
@@ -26,17 +27,21 @@ class SelectorCompare {
 }
 
 class MapScreen extends StatefulWidget {
-  const MapScreen(
-      {Key? key,
-      this.mapController,
-      required this.geoFile,
-      required this.leftPlayerController,
-      required this.rightPlayerController})
-      : super(key: key);
+  const MapScreen({
+    Key? key,
+    this.mapController,
+    required this.geoFile,
+    required this.leftPlayerController,
+    required this.rightPlayerController,
+    required this.skipDuplicateProvider,
+    required this.duplicateAlertProvider,
+  }) : super(key: key);
   final MapController? mapController;
   //final List<GeoFile>? geoFiles;
   final Provider<Player> leftPlayerController, rightPlayerController;
   final StateProvider<List<GeoFile>> geoFile;
+  final StateProvider<bool> skipDuplicateProvider, duplicateAlertProvider;
+
   @override
   State<MapScreen> createState() => _MapState();
 }
@@ -151,6 +156,42 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                 0,
                 geoFiles[selectedFileIndex].geoData.length);
             // print(localIndex);
+            var skipDuplicate =
+                ref.read(widget.skipDuplicateProvider.state).state;
+            if (skipDuplicate) {
+              if (geoFiles[selectedFileIndex].geoData[localIndex].duplicate) {
+                ref.read(widget.duplicateAlertProvider.state).state = true;
+                player.pause();
+                for (int i = localIndex;
+                    i < geoFiles[selectedFileIndex].geoData.length;
+                    i++) {
+                  if (!geoFiles[selectedFileIndex].geoData[i].duplicate) {
+                    localIndex = i;
+                    player.seek(Duration(
+                        milliseconds: map(
+                            i,
+                            0,
+                            geoFiles[selectedFileIndex].geoData.length,
+                            0,
+                            geoFiles[selectedFileIndex].duration)));
+
+                    Future.delayed(const Duration(microseconds: 10), () {
+                      player.play();
+                    });
+                    break;
+                  }
+                }
+                ref.read(widget.duplicateAlertProvider.state).state = false;
+              }
+            } else {
+              if (geoFiles[selectedFileIndex].geoData[localIndex].duplicate) {
+                // print("here");
+                ref.read(widget.duplicateAlertProvider.state).state = true;
+              } else {
+                ref.read(widget.duplicateAlertProvider.state).state = false;
+              }
+            }
+
             setState(() {
               previousIndex = index;
               index = localIndex;
@@ -161,7 +202,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
             if (follow) {
               widget.mapController?.center = LatLng(
                   geoFiles[selectedFileIndex].geoData[index].lat,
-                  geoFiles[selectedFileIndex].geoData[index].lon);
+                  geoFiles[selectedFileIndex].geoData[index].lng);
             }
 
             // Offset previous = mainTransformer.fromLatLngToXYCoords(LatLng(
@@ -192,7 +233,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
             final markerPositions = geoFiles[selectedFileIndex]
                 .geoData
                 .map((e) =>
-                    transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+                    transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lng)))
                 .toList();
             // widget.markers?.map(transformer.fromLatLngToXYCoords).toList();
 
@@ -286,7 +327,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                 for (var element in selected) {
                   final markerPositions = element.geoData
                       .map((e) => transformer
-                          .fromLatLngToXYCoords(LatLng(e.lat, e.lon)))
+                          .fromLatLngToXYCoords(LatLng(e.lat, e.lng)))
                       .toList();
                   var indexList = markerPositions
                       .map((e) => CompareOffset(
@@ -321,10 +362,6 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                   var i = markerPositions
                       .indexWhere((e) => indexList[0].offset == e);
 
-                  setState(() {
-                    previousIndex = index;
-                    index = i;
-                  });
                   var dist =
                       (markerPositions[index] - markerPositions[previousIndex])
                           .distance;
@@ -342,10 +379,43 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                   _controller.forward();
                   // print(i);
                   // print('${markerPositions[i].dx}, ${markerPositions[i].dy}');
+                  var skipDuplicate =
+                      ref.read(widget.skipDuplicateProvider.state).state;
+                  // if (skipDuplicate) {
+                  //   if (geoFiles[selectedFileIndex].geoData[i].duplicate) {
+                  //     player.pause();
+                  //     for (int j = i;
+                  //         j < geoFiles[selectedFileIndex].geoData.length;
+                  //         j++) {
+                  //       if (!geoFiles[selectedFileIndex].geoData[j].duplicate) {
+                  //         //localIndex = i;
+                  //         player.seek(Duration(
+                  //             milliseconds: map(
+                  //                 j,
+                  //                 0,
+                  //                 geoFiles[selectedFileIndex].geoData.length,
+                  //                 0,
+                  //                 geoFiles[selectedFileIndex].duration)));
 
-                  player.seek(Duration(
-                      milliseconds: map(i, 0, markerPositions.length, 0,
-                          geoFiles[selectedFileIndex].duration)));
+                  //         // Future.delayed(const Duration(microseconds: 10), () {
+                  //         //   player.play();
+                  //         // });
+                  //         break;
+                  //       }
+                  //     }
+                  //   }
+                  // }
+                  // else
+                  {
+                    player.seek(Duration(
+                        milliseconds: map(i, 0, markerPositions.length, 0,
+                            geoFiles[selectedFileIndex].duration)));
+                  }
+
+                  setState(() {
+                    previousIndex = index;
+                    index = i;
+                  });
                 }
 
 //--------------//
@@ -463,9 +533,9 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                                             // clipBehavior: Clip.antiAlias,
                                             children: [
                                               Text(index.toString()),
-                                              Visibility(
-                                                  visible: false,
-                                                  child: videoPlayer(player))
+                                              // Visibility(
+                                              //     visible: false,
+                                              //     child: videoPlayer(player))
                                             ],
                                           ),
                                         )),
@@ -526,28 +596,6 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
         );
       });
     });
-  }
-
-  int map(int x, int in_min, int in_max, int out_min, int out_max) {
-    return ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
-        .toInt();
-  }
-
-  double mapDouble(
-      {required double x,
-      required double in_min,
-      required double in_max,
-      required double out_min,
-      required double out_max}) {
-    var calc =
-        ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
-    if (calc > out_max) {
-      return out_max;
-    } else if (calc < out_min) {
-      return out_min;
-    } else {
-      return calc;
-    }
   }
 
   int calculateSample({required int max, required int min, required value}) {
