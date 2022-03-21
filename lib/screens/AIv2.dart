@@ -122,29 +122,29 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
     controller.center = LatLng(
         original[original.length ~/ 2].lat, original[original.length ~/ 2].lng);
 
-    for (int j = 0; j < mixed.length; j++) {
-      if (mixed[j].duplicate) {
-        var index = 0;
+    // for (int j = 0; j < mixed.length; j++) {
+    //   if (mixed[j].duplicate) {
+    //     var index = 0;
 
-        for (int i = j; i < mixed.length; i++) {
-          if (mixed[i].duplicate == false) {
-            index = i;
-            break;
-          }
-        }
-        var dataLength = index - j;
-        var mappedLength = map(dataLength, 0, 3000, 28, 60);
-        print(mappedLength);
-        for (int y = index; y > index - mappedLength; y--) {
-          if (y >= 0) {
-            if (mixed[y].duplicate) {
-              mixed[y].duplicate = false;
-            }
-          }
-        }
-        j = index;
-      }
-    }
+    //     for (int i = j; i < mixed.length; i++) {
+    //       if (mixed[i].duplicate == false) {
+    //         index = i;
+    //         break;
+    //       }
+    //     }
+    //     var dataLength = index - j;
+    //     var mappedLength = map(dataLength, 0, 3000, 28, 60);
+    //     print(mappedLength);
+    //     for (int y = index; y > index - mappedLength; y--) {
+    //       if (y >= 0) {
+    //         if (mixed[y].duplicate) {
+    //           mixed[y].duplicate = false;
+    //         }
+    //       }
+    //     }
+    //     j = index;
+    //   }
+    // }
     setState(() {
       processed = locations.toList();
       isProcessing = false;

@@ -27,13 +27,18 @@ class Painter extends CustomPainter {
 
     lPaint.strokeWidth = 1;
 
+    paint.style = PaintingStyle.stroke;
+    paint.color = Colors.black;
+    // canvas.drawRect(
+    //     Rect.fromLTWH(5, 5, transformer.constraints.maxWidth - 10,
+    //         transformer.constraints.maxHeight - 10),
+    //     paint);
     for (int j = 0; j < data.length; j++) {
       paint.color = data[j].color;
       paint.strokeWidth = 3; //
 
       lPaint.color = data[j].color;
-      // if (j == selectedIndex)
-      {
+      if (j == selectedIndex) {
         final offset = data[j]
             .geoData
             .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lng)))
@@ -72,8 +77,8 @@ class Painter extends CustomPainter {
                 if (data[j].geoData[i].duplicate) {
                   paint.color = Colors.red;
                 } else {
-                  paint.color = data[j].color;
-                  // paint.color = paint.color = Colors.blue;
+                  // paint.color = data[j].color;
+                  paint.color = Colors.grey;
                 }
                 path.lineTo(offset[i].dx, offset[i].dy);
 

@@ -50,7 +50,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
   int index = 0, selectedFileIndex = 0, previousIndex = 0;
   bool isAnimation = true, follow = false;
   int counter = 0, animationDouble = 1500;
-  double angle = 186;
+  double angle = 186, previousAngle = 0, testAngle = 0;
   late MapTransformer mainTransformer;
   late AnimationController _controller;
 
@@ -200,6 +200,35 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
               }
             }
 
+            // Offset x = mainTransformer.fromLatLngToXYCoords(LatLng(
+            //     geoFiles[selectedFileIndex].geoData[localIndex].lat,
+            //     geoFiles[selectedFileIndex].geoData[localIndex].lng));
+
+            // Rect visibleScreen = Rect.fromLTWH(
+            //     5,
+            //     5,
+            //     mainTransformer.constraints.maxWidth - 10,
+            //     mainTransformer.constraints.maxHeight - 10);
+
+            // // print(
+            // //     "$x \n ${visibleScreen.topLeft} ${visibleScreen.topRight} ${visibleScreen.bottomLeft} ${visibleScreen.bottomRight}");
+            // var visble = (visibleScreen.contains(x));
+
+            // // var l = mainTransformer
+            // //     .fromXYCoordsToLatLng(Offset(0, constraint.maxWidth));
+            // // print("${l.latitude} ${l.longitude}");
+
+            // if (!visble) {
+            //   setState(() {
+            //     isAnimation = false;
+            //   });
+            //   Future.delayed(const Duration(milliseconds: 250))
+            //       .then((value) => setState(() => (isAnimation = true)));
+            //   widget.mapController?.center = LatLng(
+            //       geoFiles[selectedFileIndex].geoData[localIndex].lat,
+            //       geoFiles[selectedFileIndex].geoData[localIndex].lng);
+            // }
+
             setState(() {
               previousIndex = index;
               index = localIndex;
@@ -208,6 +237,9 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
             // player.takeSnapshot(file, 200, 200);
             // index = localIndex;
             if (follow) {
+              setState(() {
+                isAnimation = true;
+              });
               widget.mapController?.center = LatLng(
                   geoFiles[selectedFileIndex].geoData[index].lat,
                   geoFiles[selectedFileIndex].geoData[index].lng);
@@ -230,6 +262,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
           controller: widget.mapController!,
           builder: (context, transformer) {
             mainTransformer = transformer;
+
             // if (counter == 0 && isAnimation == false) {
             //   counter++;
             // }
@@ -250,6 +283,7 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
               //     (markerPositions[index + 9].dy - markerPositions[index].dy) /
               //         ((markerPositions[index + 9].dx -
               //             markerPositions[index].dx)));
+              previousAngle = angle;
               angle = (57.2958 *
                   math.atan2(
                       (markerPositions[index + 1].dy -
@@ -458,144 +492,174 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                 },
                 child: Stack(
                   children: [
-                    Map(
-                      controller: widget.mapController!,
-                      builder: (context, x, y, z) {
-                        //Legal notice: This url is only used for demo and educational purposes. You need a license key for production use.
+                    AnimatedRotation(
+                      turns: 0,
+                      // turns: ((angle * 0.0174533) -
+                      //         (previousAngle * 0.0174533)) /
+                      //     2,
+                      duration: Duration(milliseconds: 200),
+                      child: Stack(
+                        children: [
+                          Map(
+                            controller: widget.mapController!,
+                            builder: (context, x, y, z) {
+                              //Legal notice: This url is only used for demo and educational purposes. You need a license key for production use.
 
-                        //Google Maps
-                        final url =
-                            'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
+                              //Google Maps
+                              final url =
+                                  'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
 
-                        // final darkUrl =
-                        //     'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i$z!2i$x!3i$y!4i256!2m3!1e0!2sm!3i556279080!3m17!2sen-US!3sUS!5e18!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcC52Om9uLHMuZTpsfHAudjpvZmZ8cC5zOi0xMDAscy5lOmwudC5mfHAuczozNnxwLmM6I2ZmMDAwMDAwfHAubDo0MHxwLnY6b2ZmLHMuZTpsLnQuc3xwLnY6b2ZmfHAuYzojZmYwMDAwMDB8cC5sOjE2LHMuZTpsLml8cC52Om9mZixzLnQ6MXxzLmU6Zy5mfHAuYzojZmYwMDAwMDB8cC5sOjIwLHMudDoxfHMuZTpnLnN8cC5jOiNmZjAwMDAwMHxwLmw6MTd8cC53OjEuMixzLnQ6NXxzLmU6Z3xwLmM6I2ZmMDAwMDAwfHAubDoyMCxzLnQ6NXxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjV8cy5lOmcuc3xwLmM6I2ZmNGQ2MDU5LHMudDo4MnxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjJ8cy5lOmd8cC5sOjIxLHMudDoyfHMuZTpnLmZ8cC5jOiNmZjRkNjA1OSxzLnQ6MnxzLmU6Zy5zfHAuYzojZmY0ZDYwNTkscy50OjN8cy5lOmd8cC52Om9ufHAuYzojZmY3ZjhkODkscy50OjN8cy5lOmcuZnxwLmM6I2ZmN2Y4ZDg5LHMudDo0OXxzLmU6Zy5mfHAuYzojZmY3ZjhkODl8cC5sOjE3LHMudDo0OXxzLmU6Zy5zfHAuYzojZmY3ZjhkODl8cC5sOjI5fHAudzowLjIscy50OjUwfHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE4LHMudDo1MHxzLmU6Zy5mfHAuYzojZmY3ZjhkODkscy50OjUwfHMuZTpnLnN8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmd8cC5jOiNmZjAwMDAwMHxwLmw6MTYscy50OjUxfHMuZTpnLmZ8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmcuc3xwLmM6I2ZmN2Y4ZDg5LHMudDo0fHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE5LHMudDo2fHAuYzojZmYyYjM2Mzh8cC52Om9uLHMudDo2fHMuZTpnfHAuYzojZmYyYjM2Mzh8cC5sOjE3LHMudDo2fHMuZTpnLmZ8cC5jOiNmZjI0MjgyYixzLnQ6NnxzLmU6Zy5zfHAuYzojZmYyNDI4MmIscy50OjZ8cy5lOmx8cC52Om9mZixzLnQ6NnxzLmU6bC50fHAudjpvZmYscy50OjZ8cy5lOmwudC5mfHAudjpvZmYscy50OjZ8cy5lOmwudC5zfHAudjpvZmYscy50OjZ8cy5lOmwuaXxwLnY6b2Zm!4e0&key=AIzaSyAOqYYyBbtXQEtcHG7hwAwyCPQSYidG8yU&token=31440';
-                        // //Mapbox Streets
-                        // final url =
-                        //     'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/$z/$x/$y?access_token=YOUR_MAPBOX_ACCESS_TOKEN';
+                              // final darkUrl =
+                              //     'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i$z!2i$x!3i$y!4i256!2m3!1e0!2sm!3i556279080!3m17!2sen-US!3sUS!5e18!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcC52Om9uLHMuZTpsfHAudjpvZmZ8cC5zOi0xMDAscy5lOmwudC5mfHAuczozNnxwLmM6I2ZmMDAwMDAwfHAubDo0MHxwLnY6b2ZmLHMuZTpsLnQuc3xwLnY6b2ZmfHAuYzojZmYwMDAwMDB8cC5sOjE2LHMuZTpsLml8cC52Om9mZixzLnQ6MXxzLmU6Zy5mfHAuYzojZmYwMDAwMDB8cC5sOjIwLHMudDoxfHMuZTpnLnN8cC5jOiNmZjAwMDAwMHxwLmw6MTd8cC53OjEuMixzLnQ6NXxzLmU6Z3xwLmM6I2ZmMDAwMDAwfHAubDoyMCxzLnQ6NXxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjV8cy5lOmcuc3xwLmM6I2ZmNGQ2MDU5LHMudDo4MnxzLmU6Zy5mfHAuYzojZmY0ZDYwNTkscy50OjJ8cy5lOmd8cC5sOjIxLHMudDoyfHMuZTpnLmZ8cC5jOiNmZjRkNjA1OSxzLnQ6MnxzLmU6Zy5zfHAuYzojZmY0ZDYwNTkscy50OjN8cy5lOmd8cC52Om9ufHAuYzojZmY3ZjhkODkscy50OjN8cy5lOmcuZnxwLmM6I2ZmN2Y4ZDg5LHMudDo0OXxzLmU6Zy5mfHAuYzojZmY3ZjhkODl8cC5sOjE3LHMudDo0OXxzLmU6Zy5zfHAuYzojZmY3ZjhkODl8cC5sOjI5fHAudzowLjIscy50OjUwfHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE4LHMudDo1MHxzLmU6Zy5mfHAuYzojZmY3ZjhkODkscy50OjUwfHMuZTpnLnN8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmd8cC5jOiNmZjAwMDAwMHxwLmw6MTYscy50OjUxfHMuZTpnLmZ8cC5jOiNmZjdmOGQ4OSxzLnQ6NTF8cy5lOmcuc3xwLmM6I2ZmN2Y4ZDg5LHMudDo0fHMuZTpnfHAuYzojZmYwMDAwMDB8cC5sOjE5LHMudDo2fHAuYzojZmYyYjM2Mzh8cC52Om9uLHMudDo2fHMuZTpnfHAuYzojZmYyYjM2Mzh8cC5sOjE3LHMudDo2fHMuZTpnLmZ8cC5jOiNmZjI0MjgyYixzLnQ6NnxzLmU6Zy5zfHAuYzojZmYyNDI4MmIscy50OjZ8cy5lOmx8cC52Om9mZixzLnQ6NnxzLmU6bC50fHAudjpvZmYscy50OjZ8cy5lOmwudC5mfHAudjpvZmYscy50OjZ8cy5lOmwudC5zfHAudjpvZmYscy50OjZ8cy5lOmwuaXxwLnY6b2Zm!4e0&key=AIzaSyAOqYYyBbtXQEtcHG7hwAwyCPQSYidG8yU&token=31440';
+                              // //Mapbox Streets
+                              // final url =
+                              //     'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/$z/$x/$y?access_token=YOUR_MAPBOX_ACCESS_TOKEN';
 
-                        return CachedNetworkImage(
-                          imageUrl: url,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
-                    //  homeMarkerWidget,
-                    ...markerWidgets,
-                    if (selectedFileIndex == 0)
-                      Visibility(
-                        visible: true,
-                        child: AnimatedPositioned(
-                            duration: isAnimation
-                                ? const Duration(milliseconds: 500)
-                                : const Duration(microseconds: 0),
-                            left: markerPositions[index].dx - 8,
-                            top: markerPositions[index].dy - 8,
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  height: 15,
-                                  width: 15,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    boxShadow: const [
-                                      BoxShadow(
-                                          spreadRadius: 0.5, blurRadius: 5)
-                                    ],
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Opacity(
-                                      opacity: 1,
-                                      child: Transform.rotate(
-                                        angle: (angle) * 0.0174533,
-                                        child: Stack(
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Transform.rotate(
-                                              angle: 180 * 0.0174533,
-                                              child: const Icon(
-                                                Icons.arrow_back,
-                                                size: 13,
-                                                color: Colors.white,
+                              return CachedNetworkImage(
+                                imageUrl: url,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          ),
+                          //  homeMarkerWidget,
+                          ...markerWidgets,
+                          if (selectedFileIndex == 0)
+                            Visibility(
+                              visible: true,
+                              child: AnimatedPositioned(
+                                  duration: isAnimation
+                                      ? const Duration(milliseconds: 500)
+                                      : const Duration(microseconds: 0),
+                                  left: markerPositions[index].dx - 8,
+                                  top: markerPositions[index].dy - 8,
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Container(
+                                        height: 15,
+                                        width: 15,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                spreadRadius: 0.5,
+                                                blurRadius: 5)
+                                          ],
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Center(
+                                          child: Opacity(
+                                            opacity: 1,
+                                            child: Transform.rotate(
+                                              angle: (angle) * 0.0174533,
+                                              child: Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  Transform.rotate(
+                                                    angle: 180 * 0.0174533,
+                                                    child: const Icon(
+                                                      Icons.arrow_back,
+                                                      size: 13,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
+                                      Positioned(
+                                          top: -35,
+                                          left: 15,
+                                          child: Transform.rotate(
+                                            angle: 0 * 0.0174533,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(5),
+                                              height: 30,
+                                              color: Colors.grey,
+                                              child: FittedBox(
+                                                  child: Center(
+                                                child: Stack(
+                                                  // clipBehavior: Clip.antiAlias,
+                                                  children: [
+                                                    Text(index.toString()),
+                                                    // Visibility(
+                                                    //     visible: false,
+                                                    //     child: videoPlayer(player))
+                                                  ],
+                                                ),
+                                              )),
+                                            ),
+                                          ))
+                                    ],
+                                  )),
+                            ),
+                          Visibility(
+                            visible: false,
+                            child: AnimatedBuilder(
+                                child: Container(
+                                  width: 15,
+                                  height: 15,
+                                  color: Colors.red,
                                 ),
-                                Positioned(
-                                    top: -35,
-                                    left: 15,
-                                    child: Transform.rotate(
-                                      angle: 0 * 0.0174533,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(5),
-                                        height: 30,
-                                        color: Colors.grey,
-                                        child: FittedBox(
-                                            child: Center(
-                                          child: Stack(
-                                            // clipBehavior: Clip.antiAlias,
-                                            children: [
-                                              Text(index.toString()),
-                                              // Visibility(
-                                              //     visible: false,
-                                              //     child: videoPlayer(player))
-                                            ],
-                                          ),
-                                        )),
-                                      ),
-                                    ))
-                              ],
-                            )),
-                      ),
-                    Visibility(
-                      visible: false,
-                      child: AnimatedBuilder(
-                          child: Container(
-                            width: 15,
-                            height: 15,
-                            color: Colors.red,
+                                animation: _controller,
+                                builder: (context, child) {
+                                  // print(_controller.duration?.inMilliseconds);
+                                  // print('$index $previousIndex');
+                                  var current = 0;
+                                  if (index >= previousIndex) {
+                                    current = mapDouble(
+                                            x: _controller.value * 10,
+                                            in_min: 0,
+                                            in_max: 10,
+                                            out_min: previousIndex.toDouble(),
+                                            out_max: index.toDouble())
+                                        .toInt();
+                                  } else {
+                                    current = mapDouble(
+                                            x: 10 - (_controller.value * 10),
+                                            in_min: 0,
+                                            in_max: 10,
+                                            out_min: index.toDouble(),
+                                            out_max: previousIndex.toDouble())
+                                        .toInt();
+                                  }
+
+                                  // if (index < previousIndex) {
+                                  //   current = (previousIndex + index) - current;
+                                  //   // print(markerPositions[current]);
+                                  // }
+
+                                  return AnimatedPositioned(
+                                      duration:
+                                          const Duration(milliseconds: 10),
+                                      left: markerPositions[current].dx - 8,
+                                      top: markerPositions[current].dy - 8,
+                                      child: child!);
+                                }),
                           ),
-                          animation: _controller,
-                          builder: (context, child) {
-                            // print(_controller.duration?.inMilliseconds);
-                            // print('$index $previousIndex');
-                            var current = 0;
-                            if (index >= previousIndex) {
-                              current = mapDouble(
-                                      x: _controller.value * 10,
-                                      in_min: 0,
-                                      in_max: 10,
-                                      out_min: previousIndex.toDouble(),
-                                      out_max: index.toDouble())
-                                  .toInt();
-                            } else {
-                              current = mapDouble(
-                                      x: 10 - (_controller.value * 10),
-                                      in_min: 0,
-                                      in_max: 10,
-                                      out_min: index.toDouble(),
-                                      out_max: previousIndex.toDouble())
-                                  .toInt();
-                            }
 
-                            // if (index < previousIndex) {
-                            //   current = (previousIndex + index) - current;
-                            //   // print(markerPositions[current]);
-                            // }
-
-                            return AnimatedPositioned(
-                                duration: const Duration(milliseconds: 10),
-                                left: markerPositions[current].dx - 8,
-                                top: markerPositions[current].dy - 8,
-                                child: child!);
-                          }),
+                          // centerMarkerWidget,
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Slider(
+                        value: testAngle,
+                        onChanged: (v) {
+                          setState(() {
+                            testAngle = v;
+                            print(v);
+                          });
+                        },
+                        min: 0,
+                        max: 360,
+                      ),
                     )
-                    // centerMarkerWidget,
                   ],
                 ),
               ),
