@@ -7,31 +7,35 @@ class VideoPlayer extends ConsumerStatefulWidget {
       {Key? key,
       required this.player,
       this.left = true,
-      required this.duplicateAlertProvider})
+      required this.duplicateAlertProvider,
+      required this.modeProvider})
       : super(key: key);
   final Player player;
   final bool left;
-  final StateProvider<bool> duplicateAlertProvider;
+  final StateProvider<bool> duplicateAlertProvider, modeProvider;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _VideoState();
 }
 
 class _VideoState extends ConsumerState<VideoPlayer>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+    with TickerProviderStateMixin {
+  late AnimationController _playController, _modeController;
   bool play = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _controller = AnimationController(
+    _playController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 300));
+    _modeController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 300));
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _controller.dispose();
+    _playController.dispose();
+    _modeController.dispose();
     widget.player.dispose();
     super.dispose();
   }
@@ -39,13 +43,14 @@ class _VideoState extends ConsumerState<VideoPlayer>
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
+      final mode = ref.watch(widget.modeProvider.state).state;
       return Column(
         children: [
           Stack(
             children: [
               SizedBox(
                 width: constraints.maxWidth,
-                height: constraints.maxWidth * 0.5625,
+                height: constraints.maxHeight - 45,
                 child: Video(
                   showControls: false,
                   player: widget.player,
@@ -90,17 +95,37 @@ class _VideoState extends ConsumerState<VideoPlayer>
                 GestureDetector(
                   onTap: () {
                     if (play) {
-                      _controller.reverse();
+                      _playController.reverse();
                       play = false;
                       widget.player.pause();
                     } else {
-                      _controller.forward();
+                      _playController.forward();
                       play = true;
                       widget.player.play();
                     }
                   },
                   child: AnimatedIcon(
-                      icon: AnimatedIcons.play_pause, progress: _controller),
+                      icon: AnimatedIcons.play_pause,
+                      progress: _playController),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (mode) {
+                      _modeController.reverse();
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        ref.read(widget.modeProvider.state).state = false;
+                      });
+                    } else {
+                      _modeController.forward();
+                      //  play = true;
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        ref.read(widget.modeProvider.state).state = true;
+                      });
+                    }
+                  },
+                  child: AnimatedIcon(
+                      icon: AnimatedIcons.arrow_menu,
+                      progress: _modeController),
                 ),
                 const Spacer(),
               ],

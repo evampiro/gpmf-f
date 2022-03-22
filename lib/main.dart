@@ -1,10 +1,25 @@
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/home.dart';
+import 'package:flutter/services.dart';
+import 'package:gpmf/screens/homeHolder.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   DartVLC.initialize();
+  doWhenWindowReady(() {
+    final win = appWindow;
+    final initialSize = Size(600, 450);
+    win.minSize = initialSize;
+    // win.size = initialSize;
+    win.alignment = Alignment.center;
+    win.title = "Custom window with Flutter";
+
+    win.startDragging();
+    win.show();
+    win.maximize();
+  });
   runApp(const MyApp());
 }
 
@@ -18,9 +33,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Demo',
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.system,
+        darkTheme: ThemeData(brightness: Brightness.dark),
         theme: ThemeData(
-          brightness: Brightness.dark,
+          brightness: Brightness.light,
           // This is the theme of your application.
           //
           // Try running your application with "flutter run". You'll see the
@@ -32,7 +48,7 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
         ),
-        home: Home(),
+        home: const HomeHolder(),
       ),
     );
   }

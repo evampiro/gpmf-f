@@ -58,6 +58,9 @@ class Home extends ConsumerWidget {
   final skipDuplicateProvider = StateProvider<bool>((ref) {
     return true;
   });
+  final directionModeProvider = StateProvider<bool>((ref) {
+    return true;
+  });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final list = ref.watch(DataListProvider.state).state;
@@ -66,6 +69,11 @@ class Home extends ConsumerWidget {
     final _controller = ref.watch(MapControllerProvider);
     final leftPlayer = ref.watch(mediaControllerProviderLeft);
     final rightPlayer = ref.watch(mediaControllerProviderRight);
+    final mode = ref.watch(directionModeProvider.state).state;
+    if (!mode) {
+      _controller.zoom = 19;
+    }
+    print(mode);
     return Scaffold(
         floatingActionButton: GestureDetector(
           onTap: () {
@@ -203,104 +211,164 @@ class Home extends ConsumerWidget {
                       flex: 12,
                       child: Row(
                         children: [
-                          Expanded(
-                            flex: 4,
-                            child: Container(
-                                color: Colors.grey,
-                                child: list.isNotEmpty
-                                    ? Consumer(builder: (context, ref, s) {
-                                        // final r =
-                                        //     ref.watch(refreshProvider.state).state;
-                                        return MapScreen(
-                                          duplicateAlertProvider:
-                                              duplicateAlertProvider,
-                                          skipDuplicateProvider:
-                                              skipDuplicateProvider,
-                                          mapController: _controller,
-                                          // markers: getMarkers(list[0]),
-                                          geoFile: DataListProvider,
-                                          leftPlayerController:
-                                              mediaControllerProviderLeft,
-                                          rightPlayerController:
-                                              mediaControllerProviderLeft,
+                          if (mode)
+                            Expanded(
+                              flex: 4,
+                              child: Container(
+                                  color: Colors.grey,
+                                  child: list.isNotEmpty
+                                      ? Consumer(builder: (context, ref, s) {
+                                          // final r =
+                                          //     ref.watch(refreshProvider.state).state;
+                                          return MapScreen(
+                                            duplicateAlertProvider:
+                                                duplicateAlertProvider,
+                                            skipDuplicateProvider:
+                                                skipDuplicateProvider,
+                                            mapController: _controller,
+                                            // markers: getMarkers(list[0]),
+                                            geoFile: DataListProvider,
+                                            leftPlayerController:
+                                                mediaControllerProviderLeft,
+                                            rightPlayerController:
+                                                mediaControllerProviderLeft,
 
-                                          // markers: [
-                                          //   LatLng(list[0].lat!, list[0].lon!),
-                                          //   LatLng(list[(list.length - 1) ~/ 2].lat!,
-                                          //       list[(list.length - 1) ~/ 2].lon!),
-                                          //   LatLng(list[list.length - 1].lat!,
-                                          //       list[list.length - 1].lon!)
-                                          // ],
-                                          // markers: list
-                                          //     .map((e) => LatLng(e.lat!, e.lon!))
-                                          //     .toList(),
-                                        );
-                                      })
-                                    : const Center(
-                                        child: Text('Load Data to visualize'),
-                                      )),
-                          ),
+                                            // markers: [
+                                            //   LatLng(list[0].lat!, list[0].lon!),
+                                            //   LatLng(list[(list.length - 1) ~/ 2].lat!,
+                                            //       list[(list.length - 1) ~/ 2].lon!),
+                                            //   LatLng(list[list.length - 1].lat!,
+                                            //       list[list.length - 1].lon!)
+                                            // ],
+                                            // markers: list
+                                            //     .map((e) => LatLng(e.lat!, e.lon!))
+                                            //     .toList(),
+                                          );
+                                        })
+                                      : const Center(
+                                          child: Text('Load Data to visualize'),
+                                        )),
+                            ),
                           Expanded(
                             flex: 2,
                             child: Column(
                               children: [
-                                VideoPlayer(
-                                  player: leftPlayer,
-                                  duplicateAlertProvider:
-                                      duplicateAlertProvider,
-                                ),
-                                // videoPlayer(rightPlayer, left: false),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Consumer(builder: (context, ref, s) {
-                                        final skipDuplicate = ref
-                                            .watch(skipDuplicateProvider.state)
-                                            .state;
-                                        return Row(
-                                          children: [
-                                            Checkbox(
-                                                value: skipDuplicate,
-                                                onChanged: (v) {
-                                                  ref
-                                                      .read(
-                                                          skipDuplicateProvider
-                                                              .state)
-                                                      .state = v!;
-                                                }),
-                                            const Text("Skip Duplicate Video"),
-                                          ],
-                                        );
-                                      }),
-                                      const Spacer(),
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            showDialog(
-                                                context: context,
-                                                barrierDismissible: false,
-                                                builder: (_) => AlertDialog(
-                                                      backgroundColor:
-                                                          Colors.transparent,
-                                                      content: SizedBox(
-                                                          width: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width *
-                                                              .8,
-                                                          height: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .height *
-                                                              .8,
-                                                          child:
-                                                              CompressScreen()),
-                                                    ));
-                                          },
-                                          child: const Text('Tools')),
-                                    ],
-                                  ),
+                                Column(
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        SizedBox(
+                                          height: !mode ? 890 : 500,
+                                          child: VideoPlayer(
+                                            modeProvider: directionModeProvider,
+                                            player: leftPlayer,
+                                            duplicateAlertProvider:
+                                                duplicateAlertProvider,
+                                          ),
+                                        ),
+                                        // if (list.isNotEmpty && !mode)
+                                        Visibility(
+                                          visible: false,
+                                          child: Positioned(
+                                            left: 20,
+                                            bottom: 60,
+                                            child: Opacity(
+                                              opacity: 0.95,
+                                              child: ClipOval(
+                                                child: SizedBox(
+                                                  width: 300,
+                                                  height: 300,
+                                                  child: MapScreen(
+                                                    duplicateAlertProvider:
+                                                        duplicateAlertProvider,
+                                                    skipDuplicateProvider:
+                                                        skipDuplicateProvider,
+                                                    mapController: _controller,
+                                                    interactive: true,
+                                                    // markers: getMarkers(list[0]),
+                                                    geoFile: DataListProvider,
+                                                    leftPlayerController:
+                                                        mediaControllerProviderLeft,
+                                                    rightPlayerController:
+                                                        mediaControllerProviderLeft,
+
+                                                    // markers: [
+                                                    //   LatLng(list[0].lat!, list[0].lon!),
+                                                    //   LatLng(list[(list.length - 1) ~/ 2].lat!,
+                                                    //       list[(list.length - 1) ~/ 2].lon!),
+                                                    //   LatLng(list[list.length - 1].lat!,
+                                                    //       list[list.length - 1].lon!)
+                                                    // ],
+                                                    // markers: list
+                                                    //     .map((e) => LatLng(e.lat!, e.lon!))
+                                                    //     .toList(),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    // videoPlayer(rightPlayer, left: false),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Consumer(builder: (context, ref, s) {
+                                            final skipDuplicate = ref
+                                                .watch(
+                                                    skipDuplicateProvider.state)
+                                                .state;
+                                            return Row(
+                                              children: [
+                                                Checkbox(
+                                                    value: skipDuplicate,
+                                                    onChanged: (v) {
+                                                      ref
+                                                          .read(
+                                                              skipDuplicateProvider
+                                                                  .state)
+                                                          .state = v!;
+                                                    }),
+                                                const Text(
+                                                    "Skip Duplicate Video"),
+                                              ],
+                                            );
+                                          }),
+                                          const Spacer(),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (_) => AlertDialog(
+                                                          backgroundColor:
+                                                              Colors
+                                                                  .transparent,
+                                                          content: SizedBox(
+                                                              width: MediaQuery
+                                                                          .of(
+                                                                              context)
+                                                                      .size
+                                                                      .width *
+                                                                  .8,
+                                                              height: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .height *
+                                                                  .8,
+                                                              child:
+                                                                  CompressScreen()),
+                                                        ));
+                                              },
+                                              child: const Text('Tools')),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Expanded(
                                   child: ListView.builder(
