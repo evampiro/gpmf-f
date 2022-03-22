@@ -201,7 +201,6 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
         children: [
           Column(children: [
             AppBar(actions: [
-              Expanded(flex: 1, child: Container()),
               Expanded(
                 flex: 1,
                 child: GestureDetector(
@@ -313,7 +312,7 @@ class _AIScreenState extends State<AIScreen2> with TickerProviderStateMixin {
               ),
             ]),
             Expanded(
-              flex: 5,
+              flex: 12,
               child: Row(
                 children: [
                   if (original.isNotEmpty)

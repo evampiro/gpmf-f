@@ -1,5 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/AIv2.dart';
 import 'package:gpmf/screens/home.dart';
 
 final buttonColors = WindowButtonColors(
@@ -77,9 +78,108 @@ class _HomeHolderState extends State<HomeHolder> with TickerProviderStateMixin {
                 ],
               ),
             )),
-            Expanded(child: Home())
+            Expanded(child: TabScreen())
           ],
         )),
+      ),
+    );
+  }
+}
+
+class TabItem {
+  TabItem({required this.title, required this.icon, this.id = 0});
+  String title;
+  IconData icon;
+  int id;
+}
+
+class TabScreen extends StatefulWidget {
+  TabScreen({Key? key}) : super(key: key);
+
+  @override
+  State<TabScreen> createState() => _TabScreenState();
+}
+
+class _TabScreenState extends State<TabScreen> {
+  int pageIndex = 0;
+
+  List<TabItem> tabs = [
+    TabItem(title: 'Video Player', icon: Icons.fmd_good, id: 0),
+    TabItem(title: 'Screenshot', icon: Icons.picture_in_picture, id: 1),
+    TabItem(title: 'Duplicate Elimination', icon: Icons.copy, id: 2),
+    TabItem(title: 'Compression', icon: Icons.video_label, id: 3),
+    TabItem(title: 'Telemetry Extracter', icon: Icons.account_tree, id: 4),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SingleChildScrollView(
+          child: Row(
+            children: tabs
+                .map((e) => tab(
+                      item: e,
+                      onTap: () {},
+                    ))
+                .toList(),
+          ),
+        ),
+        Expanded(
+            child: IndexedStack(
+          index: pageIndex,
+          children: [
+            Home(),
+            Container(),
+            AIScreen2(),
+            Container(),
+            Container()
+          ],
+        ))
+      ],
+    );
+  }
+
+  Widget tab({
+    required TabItem item,
+    required Function onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          pageIndex = item.id;
+        });
+
+        onTap();
+      },
+      child: Container(
+        constraints: const BoxConstraints(
+          minWidth: 80,
+        ),
+        height: 35,
+        color: item.id == pageIndex
+            ? Colors.grey
+            : Theme.of(context).scaffoldBackgroundColor,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 20,
+            ),
+            Icon(
+              item.icon,
+              size: 12,
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Text('${item.title}'),
+            const SizedBox(
+              width: 20,
+            ),
+          ],
+        ),
       ),
     );
   }

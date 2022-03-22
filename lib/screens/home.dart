@@ -75,23 +75,23 @@ class Home extends ConsumerWidget {
     }
     print(mode);
     return Scaffold(
-        floatingActionButton: GestureDetector(
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) {
-              return const AIScreen2();
-            }));
-          },
-          child: Container(
-            margin: const EdgeInsets.all(12),
-            height: 50,
-            width: 50,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.green,
-            ),
-            child: const Icon(Icons.start),
-          ),
-        ),
+        // floatingActionButton: GestureDetector(
+        //   onTap: () {
+        //     Navigator.push(context, MaterialPageRoute(builder: (_) {
+        //       return const AIScreen2();
+        //     }));
+        //   },
+        //   child: Container(
+        //     margin: const EdgeInsets.all(12),
+        //     height: 50,
+        //     width: 50,
+        //     decoration: const BoxDecoration(
+        //       shape: BoxShape.circle,
+        //       color: Colors.green,
+        //     ),
+        //     child: const Icon(Icons.start),
+        //   ),
+        // ),
         floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
         body: DropTarget(
           onDragDone: (detail) async {
