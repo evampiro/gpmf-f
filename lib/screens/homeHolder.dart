@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/AIv2.dart';
+import 'package:gpmf/screens/animatedindexedstack.dart';
 import 'package:gpmf/screens/home.dart';
 
 final buttonColors = WindowButtonColors(
@@ -115,22 +116,40 @@ class _TabScreenState extends State<TabScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SingleChildScrollView(
-          child: Row(
-            children: tabs
-                .map((e) => tab(
-                      item: e,
-                      onTap: () {},
-                    ))
-                .toList(),
-          ),
+        SizedBox(
+          height: 45,
+          child: ReorderableListView(
+              scrollDirection: Axis.horizontal,
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  if (newIndex > oldIndex) {
+                    newIndex -= 1;
+                  }
+                  final items = tabs.removeAt(oldIndex);
+                  tabs.insert(newIndex, items);
+                });
+              },
+              buildDefaultDragHandles: false,
+              anchor: 0,
+              children: [
+                for (int i = 0; i < tabs.length; i++)
+                  tab(
+                    item: tabs[i],
+                    index: i,
+                    onTap: () {},
+                  )
+              ]),
         ),
         Expanded(
             child: IndexedStack(
           index: pageIndex,
           children: [
-            Home(),
-            Container(),
+            Home(
+              videoPlayer: true,
+            ),
+            Home(
+              videoPlayer: false,
+            ),
             AIScreen2(),
             Container(),
             Container()
@@ -140,11 +159,10 @@ class _TabScreenState extends State<TabScreen> {
     );
   }
 
-  Widget tab({
-    required TabItem item,
-    required Function onTap,
-  }) {
+  Widget tab(
+      {required TabItem item, required Function onTap, required int index}) {
     return GestureDetector(
+      key: Key(item.id.toString()),
       onTap: () {
         setState(() {
           pageIndex = item.id;
@@ -152,33 +170,36 @@ class _TabScreenState extends State<TabScreen> {
 
         onTap();
       },
-      child: Container(
-        constraints: const BoxConstraints(
-          minWidth: 80,
-        ),
-        height: 35,
-        color: item.id == pageIndex
-            ? Colors.grey
-            : Theme.of(context).scaffoldBackgroundColor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(
-              width: 20,
-            ),
-            Icon(
-              item.icon,
-              size: 12,
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            Text('${item.title}'),
-            const SizedBox(
-              width: 20,
-            ),
-          ],
+      child: ReorderableDragStartListener(
+        index: index,
+        child: Container(
+          constraints: const BoxConstraints(
+            minWidth: 80,
+          ),
+          height: 35,
+          color: item.id == pageIndex
+              ? Colors.grey
+              : Theme.of(context).scaffoldBackgroundColor,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(
+                width: 20,
+              ),
+              Icon(
+                item.icon,
+                size: 12,
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Text('${item.title}'),
+              const SizedBox(
+                width: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );

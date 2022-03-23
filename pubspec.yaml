@@ -38,8 +38,8 @@ dependencies:
   cached_network_image: ^3.2.0
   latlng: ^0.1.0
   dart_vlc: ^0.1.6
-  draggable_widget: ^2.0.0
-  resizable_widget: ^1.0.5
+  #draggable_widget: ^2.0.0
+  #resizable_widget: ^1.0.5
   cross_file: ^0.3.2
   #geolocator: ^8.2.0
   #geolocator:
@@ -47,6 +47,7 @@ dependencies:
   file_picker: ^4.5.1
   random_color: ^1.0.6-nullsafety
   bitsdojo_window: ^0.1.1+1
+  #animated_indexed_stack: ^0.0.7
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

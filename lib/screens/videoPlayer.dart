@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class VideoPlayer extends ConsumerStatefulWidget {
-  const VideoPlayer(
-      {Key? key,
-      required this.player,
-      this.left = true,
-      required this.duplicateAlertProvider,
-      required this.modeProvider})
-      : super(key: key);
+  const VideoPlayer({
+    Key? key,
+    required this.player,
+    this.left = true,
+    required this.duplicateAlertProvider,
+  }) : super(key: key);
   final Player player;
   final bool left;
-  final StateProvider<bool> duplicateAlertProvider, modeProvider;
+  final StateProvider<bool> duplicateAlertProvider;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _VideoState();
 }
@@ -43,7 +42,6 @@ class _VideoState extends ConsumerState<VideoPlayer>
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final mode = ref.watch(widget.modeProvider.state).state;
       return Column(
         children: [
           Stack(
@@ -107,25 +105,6 @@ class _VideoState extends ConsumerState<VideoPlayer>
                   child: AnimatedIcon(
                       icon: AnimatedIcons.play_pause,
                       progress: _playController),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if (mode) {
-                      _modeController.reverse();
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        ref.read(widget.modeProvider.state).state = false;
-                      });
-                    } else {
-                      _modeController.forward();
-                      //  play = true;
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        ref.read(widget.modeProvider.state).state = true;
-                      });
-                    }
-                  },
-                  child: AnimatedIcon(
-                      icon: AnimatedIcons.arrow_menu,
-                      progress: _modeController),
                 ),
                 const Spacer(),
               ],
