@@ -1,5 +1,10 @@
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+final spaceIntentProvider = StateProvider<Function>((ref) {
+  return () {};
+});
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) {
   var calc = ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)

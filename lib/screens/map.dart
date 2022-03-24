@@ -35,6 +35,7 @@ class MapScreen extends StatefulWidget {
       required this.rightPlayerController,
       required this.skipDuplicateProvider,
       required this.duplicateAlertProvider,
+      required this.mode,
       this.interactive = false})
       : super(key: key);
   final MapController? mapController;
@@ -42,7 +43,7 @@ class MapScreen extends StatefulWidget {
   final Provider<Player> leftPlayerController, rightPlayerController;
   final StateProvider<List<GeoFile>> geoFile;
   final StateProvider<bool> skipDuplicateProvider, duplicateAlertProvider;
-  final bool interactive;
+  final bool interactive, mode;
 
   @override
   State<MapScreen> createState() => _MapState();
@@ -206,7 +207,9 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                 geoFiles[selectedFileIndex].geoData[localIndex].lat,
                 geoFiles[selectedFileIndex].geoData[localIndex].lng));
 
-            Rect visibleScreen = Rect.fromLTWH(
+            Rect visibleScreen;
+
+            visibleScreen = Rect.fromLTWH(
                 50,
                 50,
                 mainTransformer.constraints.maxWidth - 50,

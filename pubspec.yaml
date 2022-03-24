@@ -47,6 +47,7 @@ dependencies:
   file_picker: ^4.5.1
   random_color: ^1.0.6-nullsafety
   bitsdojo_window: ^0.1.1+1
+  screenshot: ^1.2.3
   #animated_indexed_stack: ^0.0.7
 
   # The following adds the Cupertino Icons font to your application.

@@ -3,6 +3,7 @@ import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gpmf/screens/homeHolder.dart';
+import 'package:gpmf/screens/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
@@ -48,7 +49,27 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
         ),
-        home: const HomeHolder(),
+        home: FocusableActionDetector(
+            autofocus: true,
+            shortcuts: {
+              spaceBarKeySet: SpaceIntent(),
+              arrowLeftKeySet: ArrowLeftIntent(),
+              controlTabKeySet: ControlTabIntent()
+            },
+            actions: {
+              SpaceIntent: CallbackAction(
+                onInvoke: (intent) {
+                  return IntentFunctions().onSpace();
+                },
+              ),
+              ArrowLeftIntent: CallbackAction(onInvoke: (intent) {
+                return IntentFunctions().onArrowLeft();
+              }),
+              ControlTabIntent: CallbackAction(onInvoke: (intent) {
+                return IntentFunctions().onControlTab();
+              })
+            },
+            child: const HomeHolder()),
       ),
     );
   }

@@ -19,7 +19,7 @@ class VideoPlayer extends ConsumerStatefulWidget {
 class _VideoState extends ConsumerState<VideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController _playController, _modeController;
-  bool play = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -29,6 +29,8 @@ class _VideoState extends ConsumerState<VideoPlayer>
     _modeController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 300));
   }
+
+  Offset dragPosition = Offset(0, 0);
 
   @override
   void dispose() {
@@ -42,17 +44,32 @@ class _VideoState extends ConsumerState<VideoPlayer>
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
+      widget.player.playbackStream.listen((event) {
+        if (event.isPlaying) {
+          _playController.forward();
+        } else {
+          _playController.reverse();
+        }
+      });
       return Column(
         children: [
           Stack(
             children: [
-              SizedBox(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight - 45,
-                child: Video(
-                  showControls: false,
-                  player: widget.player,
+              InteractiveViewer(
+                panEnabled: false,
+                minScale: 1,
+                maxScale: 3,
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: Video(
+                    showControls: false,
+                    player: widget.player,
+                  ),
                 ),
+                onInteractionUpdate: (details) {
+                  print(details.scale);
+                },
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -79,36 +96,52 @@ class _VideoState extends ConsumerState<VideoPlayer>
                   );
                 }),
               ),
-            ],
-          ),
-          Container(
-            color: Colors.grey,
-            height: 45,
-            width: constraints.maxWidth,
-            child: Row(
-              // mainAxisAlignment: MainAxisAlignment.,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    if (play) {
-                      _playController.reverse();
-                      play = false;
-                      widget.player.pause();
-                    } else {
-                      _playController.forward();
-                      play = true;
-                      widget.player.play();
-                    }
-                  },
-                  child: AnimatedIcon(
-                      icon: AnimatedIcons.play_pause,
-                      progress: _playController),
+              Positioned(
+                left: 0,
+                bottom: 0,
+                child: Container(
+                  color: Colors.grey,
+                  height: 45,
+                  width: constraints.maxWidth,
+                  child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          if (widget.player.position.position!.inMilliseconds >
+                              5000) {
+                            widget.player.seek(Duration(
+                                milliseconds: widget.player.position.position!
+                                        .inMilliseconds -
+                                    5000));
+                          }
+                        },
+                        child: Icon(Icons.replay_5),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          if (widget.player.playback.isPlaying) {
+                            _playController.reverse();
+
+                            widget.player.pause();
+                          } else {
+                            _playController.forward();
+
+                            widget.player.play();
+                          }
+                        },
+                        child: AnimatedIcon(
+                            icon: AnimatedIcons.play_pause,
+                            progress: _playController),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
                 ),
-                const Spacer(),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       );
