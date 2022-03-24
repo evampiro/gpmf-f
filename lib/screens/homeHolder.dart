@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gpmf/screens/AIv2.dart';
 import 'package:gpmf/screens/animatedindexedstack.dart';
 import 'package:gpmf/screens/home.dart';
+import 'package:process_run/shell.dart';
 
 final buttonColors = WindowButtonColors(
     iconNormal: Colors.white,

@@ -60,6 +60,10 @@ class Home extends ConsumerWidget {
   // final directionModeProvider = StateProvider<bool>((ref) {
   //   return true;
   // });
+
+  final dragOffsetProvider = StateProvider<Offset>((ref) {
+    return Offset(0, 0);
+  });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final list = ref.watch(DataListProvider.state).state;
@@ -240,10 +244,46 @@ class Home extends ConsumerWidget {
                                   children: [
                                     SizedBox(
                                       height: !videoPlayer ? 890 : 500,
-                                      child: VideoPlayer(
-                                        player: leftPlayer,
-                                        duplicateAlertProvider:
-                                            duplicateAlertProvider,
+                                      child: GestureDetector(
+                                        onTapUp: (details) {
+                                          print(details.localPosition);
+                                        },
+                                        child: Stack(
+                                          children: [
+                                            VideoPlayer(
+                                              player: leftPlayer,
+                                              duplicateAlertProvider:
+                                                  duplicateAlertProvider,
+                                            ),
+                                            Consumer(
+                                                builder: (context, ref, c) {
+                                              final dragOffset = ref
+                                                  .watch(
+                                                      dragOffsetProvider.state)
+                                                  .state;
+                                              return Positioned(
+                                                left: dragOffset.dx,
+                                                top: dragOffset.dy,
+                                                child: Draggable(
+                                                  child: FlutterLogo(),
+                                                  feedback: FlutterLogo(),
+                                                  onDragEnd: (drag) {
+                                                    print(drag.offset);
+                                                    ref
+                                                            .read(
+                                                                dragOffsetProvider
+                                                                    .state)
+                                                            .state =
+                                                        Offset(
+                                                            drag.offset.dx,
+                                                            drag.offset.dy -
+                                                                22);
+                                                  },
+                                                ),
+                                              );
+                                            })
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     if (list.isNotEmpty && !videoPlayer)
