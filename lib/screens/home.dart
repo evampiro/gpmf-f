@@ -17,7 +17,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 import 'package:random_color/random_color.dart';
-import 'package:screenshot/screenshot.dart';
+// import 'package:screenshot/screenshot.dart';
 
 Random rand = Random();
 final DataListProvider = StateProvider<List<GeoFile>>((ref) {
@@ -70,7 +70,6 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Future.delayed(Duration(milliseconds: 10), () {
       // ref.read(spaceIntentProvider.state).state = () {
@@ -83,7 +82,7 @@ class _HomeState extends ConsumerState<Home> {
     });
   }
 
-  final ScreenshotController screenShotController = ScreenshotController();
+  // final ScreenshotController screenShotController = ScreenshotController();
   @override
   Widget build(BuildContext context) {
     final list = ref.watch(DataListProvider.state).state;
@@ -92,10 +91,6 @@ class _HomeState extends ConsumerState<Home> {
     final _controller = ref.watch(MapControllerProvider);
     final leftPlayer = ref.watch(mediaControllerProviderLeft);
     final rightPlayer = ref.watch(mediaControllerProviderRight);
-
-    // if (!videoPlayer && list.isNotEmpty) {
-    //   _controller.zoom = 19;
-    // }
 
     return Scaffold(body: LayoutBuilder(builder: (context, constraints) {
       return DropTarget(

@@ -1,11 +1,9 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/AIv2.dart';
-import 'package:gpmf/screens/animatedindexedstack.dart';
 import 'package:gpmf/screens/home.dart';
 import 'package:gpmf/screens/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:process_run/shell.dart';
 
 final buttonColors = WindowButtonColors(
     iconNormal: Colors.white,
@@ -170,41 +168,45 @@ class _HomeHolderState extends ConsumerState<HomeHolder>
         key: Key(item.id.toString()),
         builder: (context, ref, c) {
           final pageIndex = ref.watch(currentPageIndexProvider.state).state;
-          return GestureDetector(
-            onTap: () {
-              ref.read(currentPageIndexProvider.state).state = item.id;
+          return Tooltip(
+            waitDuration: const Duration(milliseconds: 800),
+            message: item.title,
+            child: GestureDetector(
+              onTap: () {
+                ref.read(currentPageIndexProvider.state).state = item.id;
 
-              onTap();
-            },
-            child: ReorderableDragStartListener(
-              index: index,
-              child: Container(
-                constraints: const BoxConstraints(
-                  minWidth: 80,
-                ),
-                height: 35,
-                color: item.id == pageIndex
-                    ? Colors.grey
-                    : Theme.of(context).scaffoldBackgroundColor,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Icon(
-                      item.icon,
-                      size: 12,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text('${item.title}'),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                  ],
+                onTap();
+              },
+              child: ReorderableDragStartListener(
+                index: index,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    minWidth: 80,
+                  ),
+                  height: 35,
+                  color: item.id == pageIndex
+                      ? Colors.grey
+                      : Theme.of(context).scaffoldBackgroundColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Icon(
+                        item.icon,
+                        size: 12,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text('${item.title}'),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -21,16 +21,25 @@ final controlTabKeySet = LogicalKeySet(
   // Replace with control on Windows
 );
 
+class SKeyIntent extends Intent {}
+
+final sKeySet = LogicalKeySet(
+  LogicalKeyboardKey.keyS,
+
+  // Replace with control on Windows
+);
+
 class IntentFunctions {
   static final IntentFunctions _instance = IntentFunctions._internal(
-      onSpace: () {}, onArrowLeft: () {}, onControlTab: () {});
+      onSpace: () {}, onArrowLeft: () {}, onControlTab: () {}, onSKey: () {});
 
   factory IntentFunctions() => _instance;
 
   IntentFunctions._internal(
       {required this.onSpace,
       required this.onArrowLeft,
-      required this.onControlTab});
+      required this.onControlTab,
+      required this.onSKey});
 
-  Function onSpace, onArrowLeft, onControlTab;
+  Function onSpace, onArrowLeft, onControlTab, onSKey;
 }

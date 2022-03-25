@@ -1,7 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gpmf/screens/homeHolder.dart';
 import 'package:gpmf/screens/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -54,7 +53,8 @@ class MyApp extends StatelessWidget {
             shortcuts: {
               spaceBarKeySet: SpaceIntent(),
               arrowLeftKeySet: ArrowLeftIntent(),
-              controlTabKeySet: ControlTabIntent()
+              controlTabKeySet: ControlTabIntent(),
+              sKeySet: SKeyIntent(),
             },
             actions: {
               SpaceIntent: CallbackAction(
@@ -67,6 +67,9 @@ class MyApp extends StatelessWidget {
               }),
               ControlTabIntent: CallbackAction(onInvoke: (intent) {
                 return IntentFunctions().onControlTab();
+              }),
+              SKeyIntent: CallbackAction(onInvoke: (intent) {
+                return IntentFunctions().onSKey();
               })
             },
             child: const HomeHolder()),
