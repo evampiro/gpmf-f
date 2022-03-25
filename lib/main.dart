@@ -70,7 +70,7 @@ class MyApp extends StatelessWidget {
               }),
               SKeyIntent: CallbackAction(onInvoke: (intent) {
                 return IntentFunctions().onSKey();
-              })
+              }),
             },
             child: const HomeHolder()),
       ),

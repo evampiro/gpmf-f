@@ -29,6 +29,14 @@ final sKeySet = LogicalKeySet(
   // Replace with control on Windows
 );
 
+class EscKeyIntent extends Intent {}
+
+final escKeySet = LogicalKeySet(
+  LogicalKeyboardKey.escape,
+
+  // Replace with control on Windows
+);
+
 class IntentFunctions {
   static final IntentFunctions _instance = IntentFunctions._internal(
       onSpace: () {}, onArrowLeft: () {}, onControlTab: () {}, onSKey: () {});
