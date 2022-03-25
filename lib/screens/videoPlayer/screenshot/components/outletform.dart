@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../models/custommarker.dart';
 
-
 class OutletForm extends StatefulWidget {
   OutletForm({Key? key, required this.customMarker}) : super(key: key);
   final CustomMarker customMarker;
@@ -13,7 +12,6 @@ class OutletForm extends StatefulWidget {
 }
 
 class _OutletFormState extends State<OutletForm> {
-
   String? categoryName;
   TextEditingController _categoriesName = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -31,10 +29,10 @@ class _OutletFormState extends State<OutletForm> {
     // TODO: implement initState
     super.initState();
     _categoriesName = TextEditingController(
-        text: (widget.customMarker.name??'').isNotEmpty
+        text: (widget.customMarker.name ?? '').isNotEmpty
             ? widget.customMarker.name
             : '');
-    categoryName=widget.customMarker.category;
+    categoryName = widget.customMarker.category;
   }
 
   @override
@@ -51,19 +49,20 @@ class _OutletFormState extends State<OutletForm> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      SizedBox(height: 20,),
+                      const SizedBox(
+                        height: 20,
+                      ),
                       DropdownSearch<String>(
                         validator: (marker) {
                           RegExp nameValid = RegExp('[a-zA-Z]');
-                          if ((marker??"").isEmpty) {
+                          if ((marker ?? "").isEmpty) {
                             return 'Name cannot be empty';
-                          }
-                          else if (!nameValid.hasMatch((marker??""))) {
+                          } else if (!nameValid.hasMatch((marker ?? ""))) {
                             return "Name must contain alphabets only";
                           }
                         },
                         showSearchBox: true,
-                        mode: Mode.MENU,
+                        mode: Mode.DIALOG,
                         showSelectedItems: true,
                         items: listOfValue,
                         // itemAsString: (marker){
@@ -73,7 +72,7 @@ class _OutletFormState extends State<OutletForm> {
                         // popupItemDisabled: (String s) => s.startsWith('I'),
                         onChanged: (value) {
                           // widget.customMarker.category=categoryName;
-                          categoryName = value??"";
+                          categoryName = value ?? "";
                         },
                         selectedItem: categoryName,
                         showClearButton: true,
@@ -81,20 +80,21 @@ class _OutletFormState extends State<OutletForm> {
                           hintText: "Select Categories",
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(
-                              color: Color(0xff6DA7FE),
+                            borderSide: const BorderSide(
+                              color: const Color(0xff6DA7FE),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: Color(0xff6DA7FE),
                             ),
                           ),
-                          contentPadding: EdgeInsets.only(left: 12, top: 4),
+                          contentPadding:
+                              const EdgeInsets.only(left: 12, top: 4),
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 12,
                       ),
                       TextFormField(
@@ -104,25 +104,26 @@ class _OutletFormState extends State<OutletForm> {
                             return 'Name cannot not be empty';
                           } else if (!nameValid.hasMatch(name)) {
                             return "Name must contain alphabets only";
-                          } else if(name.length<=3){
+                          } else if (name.length <= 3) {
                             return "Name must contain more than 3 letters";
                           }
                         },
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(
-                              color: Color(0xff6DA7FE),
+                            borderSide: const BorderSide(
+                              color: const Color(0xff6DA7FE),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: Color(0xff6DA7FE),
                             ),
                           ),
-                          contentPadding: EdgeInsets.only(left: 12, top: 4),
-                          hintStyle: TextStyle(color: Colors.grey),
+                          contentPadding:
+                              const EdgeInsets.only(left: 12, top: 4),
+                          hintStyle: const TextStyle(color: Colors.grey),
                           hintText: "Enter Name",
                         ),
                         controller: _categoriesName,
@@ -130,16 +131,19 @@ class _OutletFormState extends State<OutletForm> {
                     ],
                   ),
                 ),
-                SizedBox(height: 12,),
+                const SizedBox(
+                  height: 12,
+                ),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      if ((widget.customMarker.category??"") == categoryName && widget.customMarker.name==_categoriesName.text){
+                      if ((widget.customMarker.category ?? "") ==
+                              categoryName &&
+                          widget.customMarker.name == _categoriesName.text) {
                         _Key.currentState?.showSnackBar(
                           const SnackBar(content: Text('No changes made.')),
                         );
-                      }
-                      else{
+                      } else {
                         widget.customMarker
                           ..name = _categoriesName.text
                           ..category = categoryName;
@@ -149,7 +153,7 @@ class _OutletFormState extends State<OutletForm> {
                       }
                     }
                   },
-                  child: Text("Button"),
+                  child: const Text("Button"),
                 ),
               ],
             ),
@@ -159,4 +163,3 @@ class _OutletFormState extends State<OutletForm> {
     );
   }
 }
-
