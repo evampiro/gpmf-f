@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/GeofileClass.dart';
+import 'package:gpmf/screens/videoPlayer/models/GeofileClass.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart';
 

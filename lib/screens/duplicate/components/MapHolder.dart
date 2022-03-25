@@ -3,8 +3,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/AIv2.dart';
-import 'package:gpmf/screens/CustomPainByLatLng.dart';
+import 'package:gpmf/screens/duplicate/AIv2.dart';
+import 'package:gpmf/screens/duplicate/components/CustomPainByLatLng.dart';
 import 'package:gpmf/screens/LocationsClass';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlng/latlng.dart';

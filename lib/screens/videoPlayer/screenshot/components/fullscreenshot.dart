@@ -2,25 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/Component/pixelcolor/colorpicker.dart';
-import 'package:gpmf/screens/intents.dart';
+import 'package:gpmf/screens/Components/pixelcolor/colorpicker.dart';
+import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
+import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:latlng/latlng.dart';
 import 'package:random_color/random_color.dart';
-
-class CustomMarker {
-  CustomMarker(
-      {required this.position,
-      required this.color,
-      this.selected = false,
-      required this.id});
-  Offset position;
-  Color color;
-  LatLng? gps;
-  String? name, category;
-  bool selected;
-  int id;
-}
 
 class FullScreenShot extends ConsumerStatefulWidget {
   const FullScreenShot({Key? key, required this.imageData}) : super(key: key);

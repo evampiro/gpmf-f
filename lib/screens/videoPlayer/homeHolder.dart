@@ -1,8 +1,8 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/AIv2.dart';
-import 'package:gpmf/screens/home.dart';
-import 'package:gpmf/screens/intents.dart';
+import 'package:gpmf/screens/duplicate/AIv2.dart';
+import 'package:gpmf/screens/videoPlayer/home.dart';
+import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final buttonColors = WindowButtonColors(
@@ -18,6 +18,13 @@ final closeButtonColors = WindowButtonColors(
     mouseDown: const Color(0xFFB71C1C),
     iconNormal: Colors.white,
     iconMouseOver: Colors.white);
+
+class TabItem {
+  TabItem({required this.title, required this.icon, this.id = 0});
+  String title;
+  IconData icon;
+  int id;
+}
 
 class HomeHolder extends ConsumerStatefulWidget {
   const HomeHolder({Key? key}) : super(key: key);
@@ -213,11 +220,4 @@ class _HomeHolderState extends ConsumerState<HomeHolder>
           );
         });
   }
-}
-
-class TabItem {
-  TabItem({required this.title, required this.icon, this.id = 0});
-  String title;
-  IconData icon;
-  int id;
 }

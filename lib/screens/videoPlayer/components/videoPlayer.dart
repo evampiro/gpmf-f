@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:gpmf/screens/fullscreenshot.dart';
-import 'package:gpmf/screens/homeHolder.dart';
-import 'package:gpmf/screens/intents.dart';
+import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
+import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
+import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'dart:ui' as ui;
 

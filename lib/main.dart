@@ -1,8 +1,8 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
-import 'package:gpmf/screens/homeHolder.dart';
-import 'package:gpmf/screens/intents.dart';
+import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
+import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
