@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/Components/pixelcolor/colorpicker.dart';
+import 'package:gpmf/screens/videoPlayer/screenshot/components/outletform.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
 import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -170,20 +171,24 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                     padding: EdgeInsets.zero,
                                     height: 0,
                                     enabled: false,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                        color: markers[i].color,
-                                        width: 2,
-                                      )),
-                                      width: 300,
-                                      height: 200,
-                                      // child: ElevatedButton(
-                                      //   onPressed: () {
-                                      //     Navigator.pop(context);
-                                      //   },
-                                      //   child: const Text("test"),
-                                      // ),
+                                    child: SingleChildScrollView(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                          color: markers[i].color,
+                                          width: 2,
+                                        )),
+                                        width: 300,
+                                        height: 250,
+                                        child: OutletForm(
+                                            customMarker: markers[i]),
+                                        // child: ElevatedButton(
+                                        //   onPressed: () {
+                                        //     Navigator.pop(context);
+                                        //   },
+                                        //   child: const Text("test"),
+                                        // ),
+                                      ),
                                     ))
                               ];
                             },
