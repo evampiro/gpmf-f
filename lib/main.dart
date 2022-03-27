@@ -49,6 +49,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
           ),
           home: FocusableActionDetector(
+              focusNode: IntentFunctions().focus,
               autofocus: true,
               shortcuts: {
                 spaceBarKeySet: SpaceIntent(),

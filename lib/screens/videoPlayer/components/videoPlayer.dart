@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:gpmf/screens/videoPlayer/components/timeline.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
 import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
 import 'package:gpmf/utilities/intents.dart';
@@ -13,15 +14,17 @@ import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
 
 class VideoPlayer extends ConsumerStatefulWidget {
-  const VideoPlayer({
-    Key? key,
-    required this.player,
-    this.left = true,
-    required this.duplicateAlertProvider,
-  }) : super(key: key);
+  const VideoPlayer(
+      {Key? key,
+      required this.player,
+      this.left = true,
+      required this.duplicateAlertProvider,
+      required this.duration})
+      : super(key: key);
   final Player player;
   final bool left;
   final StateProvider<bool> duplicateAlertProvider;
+  final int duration;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _VideoState();
 }
@@ -30,7 +33,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController _playController, _modeController;
 
-  final GlobalKey _globalKey = GlobalKey();
+  //final GlobalKey _globalKey = GlobalKey();
   @override
   void initState() {
     super.initState();
@@ -83,11 +86,11 @@ class _VideoState extends ConsumerState<VideoPlayer>
           _playController.reverse();
         }
       });
-      return RepaintBoundary(
-        key: _globalKey,
-        child: Column(
-          children: [
-            Stack(
+      return Column(
+        children: [
+          Expanded(
+            flex: 8,
+            child: Stack(
               children: [
                 InteractiveViewer(
                   panEnabled: false,
@@ -178,8 +181,15 @@ class _VideoState extends ConsumerState<VideoPlayer>
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            flex: 1,
+            child: TimeLine(
+              player: widget.player,
+              duration: widget.duration,
+            ),
+          )
+        ],
       );
     });
   }

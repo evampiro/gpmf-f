@@ -274,6 +274,9 @@ class _HomeState extends ConsumerState<Home> {
                                     child: Stack(
                                       children: [
                                         VideoPlayer(
+                                          duration: list.isNotEmpty
+                                              ? list[0].duration
+                                              : 0,
                                           player: leftPlayer,
                                           duplicateAlertProvider:
                                               duplicateAlertProvider,
@@ -319,7 +322,7 @@ class _HomeState extends ConsumerState<Home> {
                                       visible: true,
                                       child: Positioned(
                                         left: 20,
-                                        bottom: 60,
+                                        bottom: 180,
                                         child: Opacity(
                                           opacity: 0.95,
                                           child: ClipOval(
