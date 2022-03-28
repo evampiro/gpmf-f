@@ -19,6 +19,7 @@ class GeoFile {
   Color color;
   Rect? boundingBox;
   bool isLine;
+  String? leftPath, rightPath;
   Rect boundingBoxLatLng() {
     double minX = double.infinity;
     double maxX = 0;

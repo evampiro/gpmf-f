@@ -5,11 +5,15 @@ import 'package:gpmf/utilities/exporter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class TimeLine extends ConsumerStatefulWidget {
-  const TimeLine({Key? key, required this.duration, required this.player})
+  const TimeLine(
+      {Key? key,
+      required this.duration,
+      required this.leftplayer,
+      required this.rightplayer})
       : super(key: key);
 
   final int duration;
-  final Player player;
+  final Player leftplayer, rightplayer;
 
   @override
   ConsumerState<TimeLine> createState() => _TimeLineState();
@@ -21,7 +25,8 @@ class _TimeLineState extends ConsumerState<TimeLine> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
-      widget.player.positionStream.listen((event) {
+      //print(constraint);
+      widget.leftplayer.positionStream.listen((event) {
         currentPosition = mapDouble(
             x: event.position!.inSeconds.toDouble(),
             in_min: 0,
@@ -29,88 +34,59 @@ class _TimeLineState extends ConsumerState<TimeLine> {
             out_min: 0,
             out_max: constraint.maxWidth);
         // currentPosition -= 8.5;
+        if (!mounted) return;
         setState(() {});
       });
-      return Container(
-        child: GestureDetector(
-          onTapUp: (detail) {
-            //print("here");
-            calculatePosition(detail.localPosition.dx, constraint.maxWidth);
-          },
-          child: Stack(
-            children: [
-              Container(
-                width: constraint.maxWidth,
-                height: constraint.maxHeight,
+      return GestureDetector(
+        onTapUp: (detail) {
+          //print("here");
+          calculatePosition(detail.localPosition.dx, constraint.maxWidth);
+        },
+        child: Stack(
+          children: [
+            Container(
+              width: constraint.maxWidth,
+              height: constraint.maxHeight,
+              color: Colors.transparent,
+            ),
+            Positioned(
+              left: 0,
+              top: 0,
+              child: Container(
+                width: 50,
+                height: 50,
                 color: Colors.transparent,
               ),
-              Positioned(
-                left: 0,
-                top: 0,
+            ),
+            TimeRuler(
+              duration: widget.duration,
+            ),
+            AnimatedPositioned(
+              left: currentPosition.toDouble(),
+              top: 0,
+              duration: Duration(milliseconds: isAnimated ? 1000 : 0),
+              child: Draggable(
+                onDragEnd: (detail) {
+                  calculatePosition(detail.offset.dx, constraint.maxWidth);
+                },
+                axis: Axis.horizontal,
+                feedback: Container(
+                  height: constraint.maxHeight,
+                  width: 2,
+                  color: Colors.blue[800],
+                ),
                 child: Container(
-                  width: 50,
-                  height: 50,
-                  color: Colors.transparent,
+                  height: constraint.maxHeight,
+                  width: 2,
+                  color: Colors.blue,
                 ),
+                childWhenDragging: Container(),
               ),
-              TimeRuler(
-                duration: widget.duration,
-              ),
-              AnimatedPositioned(
-                left: currentPosition.toDouble(),
-                top: 0,
-                duration: Duration(milliseconds: isAnimated ? 1000 : 0),
-                child: Draggable(
-                  onDragEnd: (detail) {
-                    calculatePosition(detail.offset.dx, constraint.maxWidth);
-                  },
-                  axis: Axis.horizontal,
-                  feedback: timelinehead(constraint),
-                  child: timelinehead(constraint),
-                  childWhenDragging: Container(),
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
       );
     });
-  }
-
-  Stack timelinehead(BoxConstraints constraint) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 20,
-          height: constraint.maxHeight,
-          color: Colors.transparent,
-        ),
-        Positioned(
-          left: 8.5,
-          child: Container(
-            height: constraint.maxHeight,
-            width: 2,
-            color: Colors.blue,
-          ),
-        ),
-        Positioned(
-          left: 0,
-          top: 15,
-          child: Transform.rotate(
-            angle: 180 * 0.0174533,
-            child: ClipPath(
-              clipper: TimelineHeadClipper(),
-              child: Container(
-                width: 20,
-                height: 20,
-                color: Colors.red,
-              ),
-            ),
-          ),
-        )
-      ],
-    );
   }
 
   void calculatePosition(double dx, double width) {
@@ -118,7 +94,10 @@ class _TimeLineState extends ConsumerState<TimeLine> {
       setState(() {
         isAnimated = false;
         currentPosition = dx;
-        widget.player.seek(Duration(
+        widget.leftplayer.seek(Duration(
+            milliseconds: map(currentPosition.toInt(), 0, width.toInt(), 0,
+                widget.duration)));
+        widget.rightplayer.seek(Duration(
             milliseconds: map(currentPosition.toInt(), 0, width.toInt(), 0,
                 widget.duration)));
       });

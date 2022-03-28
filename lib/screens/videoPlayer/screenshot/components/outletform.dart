@@ -13,17 +13,24 @@ class OutletForm extends StatefulWidget {
 }
 
 class _OutletFormState extends State<OutletForm> {
-  String? categoryName;
+  String? categoryName, sizeName;
   TextEditingController _categoriesName = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _Key = GlobalKey<ScaffoldMessengerState>();
-  final List<String> listOfValue = [
-    'kathmandu',
-    'pokhara',
-    'patan',
-    'lumbini',
-    'janakpur'
-  ];
+  final List<String> categories = [
+        'Grocery',
+        'Clothing',
+        'Hardware',
+        'Cosmetics',
+        'Pharmacy',
+        'Stationary',
+      ],
+      size = [
+        "<1 Shutter",
+        "1 Shutter",
+        "2 Shutter",
+        ">2 Shutter",
+      ];
 
   @override
   void initState() {
@@ -34,6 +41,7 @@ class _OutletFormState extends State<OutletForm> {
             ? widget.customMarker.name
             : '');
     categoryName = widget.customMarker.category;
+    sizeName = widget.customMarker.size;
   }
 
   @override
@@ -72,7 +80,7 @@ class _OutletFormState extends State<OutletForm> {
                           showSearchBox: true,
                           mode: Mode.MENU,
                           showSelectedItems: true,
-                          items: listOfValue,
+                          items: categories,
                           // itemAsString: (marker){
                           //   return marker!.category!;
                           // },
@@ -86,6 +94,51 @@ class _OutletFormState extends State<OutletForm> {
                           showClearButton: true,
                           dropdownSearchDecoration: InputDecoration(
                             hintText: "Select Categories",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(
+                                color: const Color(0xff6DA7FE),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(
+                                color: Color(0xff6DA7FE),
+                              ),
+                            ),
+                            contentPadding:
+                                const EdgeInsets.only(left: 12, top: 4),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        DropdownSearch<String>(
+                          validator: (marker) {
+                            RegExp nameValid = RegExp('[a-zA-Z]');
+                            if ((marker ?? "").isEmpty) {
+                              return 'Size cannot be empty';
+                            } else if (!nameValid.hasMatch((marker ?? ""))) {
+                              return "Size must contain alphabets only";
+                            }
+                          },
+                          showSearchBox: false,
+                          mode: Mode.MENU,
+                          showSelectedItems: true,
+                          items: size,
+                          // itemAsString: (marker){
+                          //   return marker!.category!;
+                          // },
+
+                          // popupItemDisabled: (String s) => s.startsWith('I'),
+                          onChanged: (value) {
+                            // widget.customMarker.category=categoryName;
+                            sizeName = value ?? "";
+                          },
+                          selectedItem: sizeName,
+                          showClearButton: true,
+                          dropdownSearchDecoration: InputDecoration(
+                            hintText: "Select Size",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.0),
                               borderSide: const BorderSide(
@@ -150,6 +203,7 @@ class _OutletFormState extends State<OutletForm> {
                         if (_formKey.currentState!.validate()) {
                           if ((widget.customMarker.category ?? "") ==
                                   categoryName &&
+                              (widget.customMarker.size ?? "") == sizeName &&
                               widget.customMarker.name ==
                                   _categoriesName.text) {
                             _Key.currentState?.showSnackBar(
@@ -158,7 +212,8 @@ class _OutletFormState extends State<OutletForm> {
                           } else {
                             widget.customMarker
                               ..name = _categoriesName.text
-                              ..category = categoryName;
+                              ..category = categoryName
+                              ..size = sizeName;
                             _Key.currentState?.showSnackBar(
                               const SnackBar(content: Text('Saved')),
                             );

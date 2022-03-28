@@ -209,7 +209,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                                 width: 2,
                                               )),
                                               width: 300,
-                                              height: 260,
+                                              height: 350,
                                               child: OutletForm(
                                                   customMarker: markers[i]),
                                               // child: ElevatedButton(
@@ -242,6 +242,30 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                   ),
                 ),
               ),
+              if (modifiedImage != null)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  child: Draggable(
+                    childWhenDragging: Container(),
+                    feedback: Container(
+                      height: 500,
+                      width: 800,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.fill,
+                              image: MemoryImage(modifiedImage!))),
+                    ),
+                    child: Container(
+                      height: 500,
+                      width: 800,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.fill,
+                              image: MemoryImage(modifiedImage!))),
+                    ),
+                  ),
+                ),
               Positioned(
                   left: (MediaQuery.of(context).size.width / 2) -
                       kBottomNavigationBarHeight,
@@ -279,18 +303,6 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                 top: 12,
                 child: CloseButton(),
               ),
-              if (modifiedImage != null)
-                Positioned(
-                    left: 20,
-                    bottom: 20,
-                    child: Container(
-                      height: 500,
-                      width: 800,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              fit: BoxFit.fill,
-                              image: MemoryImage(modifiedImage!))),
-                    ))
             ],
           ),
         ),
@@ -300,7 +312,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
 
   String generateToolTip(CustomMarker marker) {
     if (marker.name == null && marker.category == null) return '';
-    return "\nName:  ${marker.name} \nCategory:  ${marker.category}\n";
+    return "\nName:  ${marker.name} \nCategory:  ${marker.category}\nSize:  ${marker.size}\n";
   }
 
   bool checkMarkers(List<CustomMarker> markers) {
