@@ -160,11 +160,11 @@ class _OutletFormState extends State<OutletForm> {
                         ),
                         TextFormField(
                           validator: (name) {
-                             if(name!.isNotEmpty){
-                               if (name.length <= 3) {
-                                 return "Name must contain more than 3 letters";
-                               }
-                             }
+                            if (name!.isNotEmpty) {
+                              if (name.length <= 3) {
+                                return "Name must contain more than 3 letters";
+                              }
+                            }
                           },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
@@ -196,6 +196,7 @@ class _OutletFormState extends State<OutletForm> {
                     height: 40,
                     width: double.infinity,
                     child: ElevatedButton(
+                      style: ButtonStyle(),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           if ((widget.customMarker.category ?? "") ==

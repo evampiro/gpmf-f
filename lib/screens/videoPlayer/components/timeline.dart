@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/videoPlayer/components/timeruler.dart';
+import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
+import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
 import 'package:gpmf/utilities/exporter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -9,11 +13,13 @@ class TimeLine extends ConsumerStatefulWidget {
       {Key? key,
       required this.duration,
       required this.leftplayer,
-      required this.rightplayer})
+      required this.rightplayer,
+      required this.outlets})
       : super(key: key);
 
   final int duration;
   final Player leftplayer, rightplayer;
+  final Outlets outlets;
 
   @override
   ConsumerState<TimeLine> createState() => _TimeLineState();
@@ -22,10 +28,11 @@ class TimeLine extends ConsumerStatefulWidget {
 class _TimeLineState extends ConsumerState<TimeLine> {
   double currentPosition = 0;
   bool isAnimated = true;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
-      print(constraint);
+      // print(constraint.maxWidth);
       widget.leftplayer.positionStream.listen((event) {
         currentPosition = mapDouble(
             x: event.position!.inSeconds.toDouble(),
@@ -37,69 +44,81 @@ class _TimeLineState extends ConsumerState<TimeLine> {
         if (!mounted) return;
         setState(() {});
       });
-      return GestureDetector(
-        onTapUp: (detail) {
-          //print("here");
-          calculatePosition(detail.localPosition.dx, constraint.maxWidth);
-        },
-        child: Stack(
-          children: [
-            Container(
-              width: constraint.maxWidth,
-              height: constraint.maxHeight,
+      return Stack(
+        children: [
+          Container(
+            width: constraint.maxWidth,
+            height: constraint.maxHeight,
+            color: Colors.transparent,
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Container(
+              width: 50,
+              height: 50,
               color: Colors.transparent,
             ),
-            Positioned(
-              left: 0,
-              top: 0,
-              child: Container(
-                width: 50,
-                height: 50,
-                color: Colors.transparent,
-              ),
-            ),
-            TimeRuler(
+          ),
+          GestureDetector(
+            onTapUp: (detail) {
+              calculatePosition(detail.localPosition.dx, constraint.maxWidth);
+            },
+            child: TimeRuler(
               duration: widget.duration,
             ),
-            Positioned(
-              left: 0,
-              top: mapDouble(
-                  x: constraint.maxHeight,
-                  in_min: 0,
-                  in_max: 300,
-                  out_min: 30,
-                  out_max: 50),
-              child: Container(
-                color: Colors.grey.withOpacity(0.5),
-                child: ListView(
-                  children: [],
-                ),
+          ),
+          Positioned(
+            left: 0,
+            top: mapDouble(
+                x: constraint.maxHeight,
+                in_min: 0,
+                in_max: 300,
+                out_min: 30,
+                out_max: 50),
+            child: Container(
+              width: constraint.maxWidth,
+              height: constraint.maxHeight,
+              color: Colors.grey.withOpacity(0.8),
+              child: Stack(
+                // scrollDirection: Axis.horizontal,
+                children: widget.outlets.outlets
+                    .map((e) => Positioned(
+                          left: 100,
+                          top: 25,
+                          child: Container(
+                            width: 25,
+                            height: 25,
+                            color: Colors.red,
+                          ),
+                        ))
+                    .toList(),
               ),
             ),
-            AnimatedPositioned(
-              left: currentPosition.toDouble(),
-              top: 0,
-              duration: Duration(milliseconds: isAnimated ? 1000 : 0),
-              child: Draggable(
-                onDragEnd: (detail) {
-                  calculatePosition(detail.offset.dx, constraint.maxWidth);
-                },
-                axis: Axis.horizontal,
-                feedback: Container(
-                  height: constraint.maxHeight,
-                  width: 2,
-                  color: Colors.blue[800],
-                ),
-                child: Container(
-                  height: constraint.maxHeight,
-                  width: 2,
-                  color: Colors.blue,
-                ),
-                childWhenDragging: Container(),
+          ),
+          AnimatedPositioned(
+            left: currentPosition.toDouble(),
+            top: 0,
+            duration: Duration(milliseconds: isAnimated ? 1000 : 0),
+            child: Draggable(
+              onDragEnd: (detail) {
+                calculatePosition(detail.offset.dx, constraint.maxWidth);
+              },
+              axis: Axis.horizontal,
+              feedback: Container(
+                height: constraint.maxHeight,
+                width: 2,
+                color: Colors.blue[800],
               ),
-            )
-          ],
-        ),
+              child: Container(
+                height: constraint.maxHeight,
+                width: 2,
+                color: Colors.blue,
+              ),
+              childWhenDragging: Container(),
+            ),
+          )
+        ],
       );
     });
   }
@@ -122,6 +141,15 @@ class _TimeLineState extends ConsumerState<TimeLine> {
         });
       });
     }
+  }
+
+  double calclatePositionFromDuration(double currentDuration, double width) {
+    return mapDouble(
+        x: currentDuration,
+        in_min: 0,
+        in_max: widget.duration.toDouble(),
+        out_min: 0,
+        out_max: width);
   }
 }
 

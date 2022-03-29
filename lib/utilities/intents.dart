@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 class SpaceIntent extends Intent {}
 
 final spaceBarKeySet = LogicalKeySet(
+  //LogicalKeyboardKey.control,
   LogicalKeyboardKey.space, // Replace with control on Windows
 );
 
@@ -43,6 +44,7 @@ class IntentFunctions {
 
   factory IntentFunctions() => _instance;
   FocusNode focus = FocusNode();
+  bool isSpaceActive = true;
   IntentFunctions._internal(
       {required this.onSpace,
       required this.onArrowLeft,

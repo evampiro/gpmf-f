@@ -1,16 +1,14 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gpmf/screens/videoPlayer/components/timeline.dart';
-import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
 import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
+import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
+import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
 import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'dart:ui' as ui;
-
 import 'package:path_provider/path_provider.dart';
 
 class VideoPlayer extends ConsumerStatefulWidget {
@@ -34,7 +32,7 @@ class VideoPlayer extends ConsumerStatefulWidget {
 class _VideoState extends ConsumerState<VideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController _playController, _modeController;
-
+  Outlets outlet = Outlets(outlets: []);
   //final GlobalKey _globalKey = GlobalKey();
   @override
   void initState() {
@@ -61,6 +59,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
         var data = temp.readAsBytesSync();
         Navigator.push(context, MaterialPageRoute(builder: (_) {
           return FullScreenShot(
+            outlet: outlet,
             imageData: data,
           );
         }));
@@ -218,6 +217,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
           Expanded(
             flex: 3,
             child: TimeLine(
+              outlets: Outlets(outlets: []),
               leftplayer: widget.lefPlayer,
               rightplayer: widget.rightPlayer,
               duration: widget.duration,

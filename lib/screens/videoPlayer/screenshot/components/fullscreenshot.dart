@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gpmf/screens/Components/pixelcolor/colorpicker.dart';
+import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/outletform.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
 import 'package:gpmf/utilities/intents.dart';
@@ -13,10 +14,12 @@ import 'package:random_color/random_color.dart';
 import 'dart:ui' as ui;
 
 class FullScreenShot extends ConsumerStatefulWidget {
-  const FullScreenShot({Key? key, required this.imageData}) : super(key: key);
+  const FullScreenShot(
+      {Key? key, required this.imageData, required this.outlet})
+      : super(key: key);
 
   final Uint8List imageData;
-
+  final Outlets outlet;
   @override
   ConsumerState<FullScreenShot> createState() => _FullScreenShotState();
 }
@@ -35,6 +38,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
     super.initState();
     controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 200));
+    IntentFunctions().isSpaceActive = false;
   }
 
   @override
@@ -42,6 +46,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
     return WillPopScope(
       onWillPop: () {
         IntentFunctions().focus.requestFocus();
+        IntentFunctions().isSpaceActive = true;
         if (markers.isEmpty) {
           return Future.value(true);
         } else {
@@ -183,6 +188,23 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                   //                 width: 2, color: markers[i].color)),
                                   //       ),
                                   //     ),
+                                  //   ),
+                                  // ),
+                                  // InkWell(
+                                  //   onTap: () {
+                                  //     showDialog(
+                                  //         context: context,
+                                  //         builder: (_) {
+                                  //           return Material(child: TextField());
+                                  //         });
+                                  //   },
+                                  //   child: Icon(
+                                  //     (markers[i].name == null &&
+                                  //             markers[i].category == null)
+                                  //         ? Icons.edit_location_alt
+                                  //         : Icons.room,
+                                  //     color: markers[i].color,
+                                  //     size: 50,
                                   //   ),
                                   // ),
                                   PopupMenuButton(

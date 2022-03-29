@@ -60,7 +60,9 @@ class MyApp extends StatelessWidget {
               actions: {
                 SpaceIntent: CallbackAction(
                   onInvoke: (intent) {
-                    return IntentFunctions().onSpace();
+                    if (IntentFunctions().isSpaceActive) {
+                      return IntentFunctions().onSpace();
+                    }
                   },
                 ),
                 ArrowLeftIntent: CallbackAction(onInvoke: (intent) {
