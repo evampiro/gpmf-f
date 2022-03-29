@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:gpmf/screens/Components/DialogPrompt.dart';
 import 'package:gpmf/screens/Components/pixelcolor/colorpicker.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/outletform.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
@@ -128,11 +129,22 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                               onPointerDown: (details) {
                                 if (details.kind == PointerDeviceKind.mouse &&
                                     details.buttons == kSecondaryMouseButton) {
-                                  markers.removeAt(markers.indexWhere(
-                                      (element) => element == markers[i]));
-                                  setState(() {
-                                    confirm = checkMarkers(markers);
-                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return DialogPrompt(onYes: (){
+                                          markers.removeAt(markers.indexWhere(
+                                                  (element) =>
+                                              element ==
+                                                  markers[
+                                                  i]));
+                                          setState(() {
+                                            confirm =
+                                                checkMarkers(
+                                                    markers);
+                                          });
+                                        },);
+                                      });
                                 } else if (details.kind ==
                                         PointerDeviceKind.mouse &&
                                     details.buttons == kPrimaryMouseButton) {
@@ -224,7 +236,8 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                     tooltip: generateToolTip(markers[i]),
                                     child: Icon(
                                       (markers[i].name == null &&
-                                              markers[i].category == null)
+                                              markers[i].category == null &&
+                                              markers[i].size == null)
                                           ? Icons.edit_location_alt
                                           : Icons.room,
                                       color: markers[i].color,
