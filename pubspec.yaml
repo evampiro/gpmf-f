@@ -54,6 +54,7 @@ dependencies:
   flutter_colorpicker:
   badges:
 #  rulers: ^1.0.7
+
   #timeline_editor: ^0.3.4
   #animated_indexed_stack: ^0.0.7
 
