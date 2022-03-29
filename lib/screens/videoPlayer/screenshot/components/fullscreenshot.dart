@@ -129,22 +129,31 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                               onPointerDown: (details) {
                                 if (details.kind == PointerDeviceKind.mouse &&
                                     details.buttons == kSecondaryMouseButton) {
-                                  showDialog(
+                                  Function markertest=(){
+                                    markers.removeAt(markers.indexWhere(
+                                            (element) =>
+                                        element ==
+                                            markers[
+                                            i]));
+                                    setState(() {
+                                      confirm =
+                                          checkMarkers(
+                                              markers);
+                                    });
+                                  };
+                                  if(markers[i].category!=null && markers[i].size!=null) {
+                                    showDialog(
                                       context: context,
                                       builder: (_) {
                                         return DialogPrompt(onYes: (){
-                                          markers.removeAt(markers.indexWhere(
-                                                  (element) =>
-                                              element ==
-                                                  markers[
-                                                  i]));
-                                          setState(() {
-                                            confirm =
-                                                checkMarkers(
-                                                    markers);
-                                          });
+                                markertest();
                                         },);
                                       });
+                                  }
+                                  else
+                                    {
+                                      markertest();
+                                    }
                                 } else if (details.kind ==
                                         PointerDeviceKind.mouse &&
                                     details.buttons == kPrimaryMouseButton) {

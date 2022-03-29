@@ -57,14 +57,13 @@ class _OutletFormState extends State<OutletForm> {
             : '');
     categoryName = widget.customMarker.category;
     sizeName = widget.customMarker.size;
-    if(list.contains(widget.customMarker.color)){
+    if (list.contains(widget.customMarker.color)) {
       list.remove(widget.customMarker.color);
       list.insert(0, widget.customMarker.color);
-    }
-    else{
+    } else {
       list.insert(0, widget.customMarker.color);
     }
-    selectedColor=widget.customMarker.color;
+    selectedColor = widget.customMarker.color;
   }
 
   @override
@@ -232,9 +231,9 @@ class _OutletFormState extends State<OutletForm> {
                       children: list
                           .map(
                             (e) => GestureDetector(
-                              onTap: (){
+                              onTap: () {
                                 setState(() {
-                                  selectedColor=e;
+                                  selectedColor = e;
                                 });
                               },
                               child: Stack(
@@ -256,7 +255,7 @@ class _OutletFormState extends State<OutletForm> {
                                     top: 0,
                                     right: 0,
                                     child: Visibility(
-                                      visible: e==selectedColor,
+                                      visible: e == selectedColor,
                                       child: Container(
                                         height: 16,
                                         width: 16,
@@ -310,7 +309,7 @@ class _OutletFormState extends State<OutletForm> {
                             Navigator.pop(context);
                           }
                         }
-                          widget.customMarker.color=selectedColor;
+                        widget.customMarker.color = selectedColor;
                       },
                       child: const Text("Save"),
                     ),
