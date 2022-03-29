@@ -160,14 +160,11 @@ class _OutletFormState extends State<OutletForm> {
                         ),
                         TextFormField(
                           validator: (name) {
-                            RegExp nameValid = RegExp('[a-zA-Z]');
-                            if (name!.isEmpty) {
-                              return 'Name cannot not be empty';
-                            } else if (!nameValid.hasMatch(name)) {
-                              return "Name must contain alphabets only";
-                            } else if (name.length <= 3) {
-                              return "Name must contain more than 3 letters";
-                            }
+                             if(name!.isNotEmpty){
+                               if (name.length <= 3) {
+                                 return "Name must contain more than 3 letters";
+                               }
+                             }
                           },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
