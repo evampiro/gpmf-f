@@ -66,6 +66,8 @@ class _OutletFormState extends State<OutletForm> {
     selectedColor = widget.customMarker.color;
   }
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -140,8 +142,8 @@ class _OutletFormState extends State<OutletForm> {
                         const SizedBox(
                           height: 12,
                         ),
-                        Text("Shop Size"),
-                        SizedBox(
+                        const Text("Shop Size"),
+                        const SizedBox(
                           height: 5,
                         ),
                         DropdownSearch<String>(
@@ -225,59 +227,65 @@ class _OutletFormState extends State<OutletForm> {
                   SizedBox(
                     height: 20,
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: list
-                          .map(
-                            (e) => GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedColor = e;
-                                });
-                              },
-                              child: Stack(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(6.0),
-                                    child: Container(
-                                      clipBehavior: Clip.hardEdge,
-                                      padding: EdgeInsets.all(5),
-                                      height: 30,
-                                      width: 30,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: e,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: Visibility(
-                                      visible: e == selectedColor,
+                  Scrollbar(
+                    isAlwaysShown: true,
+                    thickness: 3,
+                    controller: _scrollController,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: list
+                            .map(
+                              (e) => GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedColor = e;
+                                  });
+                                },
+                                child: Stack(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(6.0),
                                       child: Container(
-                                        height: 16,
-                                        width: 16,
+                                        clipBehavior: Clip.hardEdge,
+                                        padding: EdgeInsets.all(5),
+                                        height: 30,
+                                        width: 30,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: Colors.blue,
+                                          color: e,
                                         ),
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Icon(
-                                            Icons.done,
-                                            size: 10,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 0,
+                                      right: 0,
+                                      child: Visibility(
+                                        visible: e == selectedColor,
+                                        child: Container(
+                                          height: 16,
+                                          width: 16,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.blue,
+                                          ),
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Icon(
+                                              Icons.done,
+                                              size: 10,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
+                            )
+                            .toList(),
+                      ),
                     ),
                   ),
                   const SizedBox(

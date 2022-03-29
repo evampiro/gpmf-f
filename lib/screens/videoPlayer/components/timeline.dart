@@ -81,19 +81,29 @@ class _TimeLineState extends ConsumerState<TimeLine> {
               height: constraint.maxHeight,
               color: Colors.grey.withOpacity(0.8),
               child: Stack(
-                // scrollDirection: Axis.horizontal,
-                children: widget.outlets.outlets
-                    .map((e) => Positioned(
-                          left: 100,
-                          top: 25,
+                  // scrollDirection: Axis.horizontal,
+                  children: List.generate(
+                      5,
+                      (index) => Positioned(
+                          left: index * 100,
+                          top: index * 25,
                           child: Container(
                             width: 25,
                             height: 25,
                             color: Colors.red,
-                          ),
-                        ))
-                    .toList(),
-              ),
+                          )))
+                  // widget.outlets.outlets
+                  //     .map((e) => Positioned(
+                  //           left: 100,
+                  //           top: 25,
+                  //           child: Container(
+                  //             width: 25,
+                  //             height: 25,
+                  //             color: Colors.red,
+                  //           ),
+                  //         ))
+                  //     .toList(),
+                  ),
             ),
           ),
           AnimatedPositioned(

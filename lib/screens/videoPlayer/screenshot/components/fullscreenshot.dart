@@ -134,31 +134,28 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                               onPointerDown: (details) {
                                 if (details.kind == PointerDeviceKind.mouse &&
                                     details.buttons == kSecondaryMouseButton) {
-                                  Function markertest=(){
+                                  // ignore: prefer_function_declarations_over_variables
+                                  Function markertest = () {
                                     markers.removeAt(markers.indexWhere(
-                                            (element) =>
-                                        element ==
-                                            markers[
-                                            i]));
+                                        (element) => element == markers[i]));
                                     setState(() {
-                                      confirm =
-                                          checkMarkers(
-                                              markers);
+                                      confirm = checkMarkers(markers);
                                     });
                                   };
-                                  if(markers[i].category!=null && markers[i].size!=null) {
+                                  if (markers[i].category != null &&
+                                      markers[i].size != null) {
                                     showDialog(
-                                      context: context,
-                                      builder: (_) {
-                                        return DialogPrompt(onYes: (){
-                                markertest();
-                                        },);
-                                      });
+                                        context: context,
+                                        builder: (_) {
+                                          return DialogPrompt(
+                                            onYes: () {
+                                              markertest();
+                                            },
+                                          );
+                                        });
+                                  } else {
+                                    markertest();
                                   }
-                                  else
-                                    {
-                                      markertest();
-                                    }
                                 } else if (details.kind ==
                                         PointerDeviceKind.mouse &&
                                     details.buttons == kPrimaryMouseButton) {
@@ -321,6 +318,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                         style: ElevatedButton.styleFrom(primary: Colors.green),
                         onPressed: confirm
                             ? () async {
+                                // widget.outlet.outlets.add(SingleOutlet(currentDuration: , imageData: widget.imageData, detail: detail));
                                 RenderRepaintBoundary boundary = _repaintKey
                                         .currentContext!
                                         .findRenderObject()!
