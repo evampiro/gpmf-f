@@ -471,6 +471,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0-dev.4"
+  rulers:
+    dependency: "direct main"
+    description:
+      name: rulers
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.7"
   rxdart:
     dependency: transitive
     description:

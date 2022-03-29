@@ -42,7 +42,7 @@ class IntentFunctions {
       onSpace: () {}, onArrowLeft: () {}, onControlTab: () {}, onSKey: () {});
 
   factory IntentFunctions() => _instance;
-
+  FocusNode focus = FocusNode();
   IntentFunctions._internal(
       {required this.onSpace,
       required this.onArrowLeft,

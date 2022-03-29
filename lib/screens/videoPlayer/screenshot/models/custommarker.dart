@@ -10,7 +10,7 @@ class CustomMarker {
   Offset position;
   Color color;
   LatLng? gps;
-  String? name, category;
+  String? name, category, size;
   bool selected;
   int id;
 }

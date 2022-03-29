@@ -52,6 +52,8 @@ dependencies:
   pixel_color_picker: ^1.0.0
   dropdown_search:
   flutter_colorpicker:
+  rulers: ^1.0.7
+  #timeline_editor: ^0.3.4
   #animated_indexed_stack: ^0.0.7
 
   # The following adds the Cupertino Icons font to your application.

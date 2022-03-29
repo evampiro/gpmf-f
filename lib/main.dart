@@ -31,49 +31,49 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Demo',
-        themeMode: ThemeMode.system,
-        darkTheme: ThemeData(brightness: Brightness.dark),
-        theme: ThemeData(
-          brightness: Brightness.light,
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.blue,
-        ),
-        home: FocusableActionDetector(
-            autofocus: true,
-            shortcuts: {
-              spaceBarKeySet: SpaceIntent(),
-              arrowLeftKeySet: ArrowLeftIntent(),
-              controlTabKeySet: ControlTabIntent(),
-              sKeySet: SKeyIntent(),
-            },
-            actions: {
-              SpaceIntent: CallbackAction(
-                onInvoke: (intent) {
-                  return IntentFunctions().onSpace();
-                },
-              ),
-              ArrowLeftIntent: CallbackAction(onInvoke: (intent) {
-                return IntentFunctions().onArrowLeft();
-              }),
-              ControlTabIntent: CallbackAction(onInvoke: (intent) {
-                return IntentFunctions().onControlTab();
-              }),
-              SKeyIntent: CallbackAction(onInvoke: (intent) {
-                return IntentFunctions().onSKey();
-              }),
-            },
-            child: const HomeHolder()),
-      ),
+          debugShowCheckedModeBanner: false,
+          title: 'Demo',
+          themeMode: ThemeMode.system,
+          darkTheme: ThemeData(brightness: Brightness.dark),
+          theme: ThemeData(
+            brightness: Brightness.light,
+            // This is the theme of your application.
+            //
+            // Try running your application with "flutter run". You'll see the
+            // application has a blue toolbar. Then, without quitting the app, try
+            // changing the primarySwatch below to Colors.green and then invoke
+            // "hot reload" (press "r" in the console where you ran "flutter run",
+            // or simply save your changes to "hot reload" in a Flutter IDE).
+            // Notice that the counter didn't reset back to zero; the application
+            // is not restarted.
+            primarySwatch: Colors.blue,
+          ),
+          home: FocusableActionDetector(
+              focusNode: IntentFunctions().focus,
+              autofocus: true,
+              shortcuts: {
+                spaceBarKeySet: SpaceIntent(),
+                arrowLeftKeySet: ArrowLeftIntent(),
+                controlTabKeySet: ControlTabIntent(),
+                sKeySet: SKeyIntent(),
+              },
+              actions: {
+                SpaceIntent: CallbackAction(
+                  onInvoke: (intent) {
+                    return IntentFunctions().onSpace();
+                  },
+                ),
+                ArrowLeftIntent: CallbackAction(onInvoke: (intent) {
+                  return IntentFunctions().onArrowLeft();
+                }),
+                ControlTabIntent: CallbackAction(onInvoke: (intent) {
+                  return IntentFunctions().onControlTab();
+                }),
+                SKeyIntent: CallbackAction(onInvoke: (intent) {
+                  return IntentFunctions().onSKey();
+                }),
+              },
+              child: const HomeHolder())),
     );
   }
 }

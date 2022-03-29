@@ -4,9 +4,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
 import 'package:gpmf/screens/videoPlayer/models/GeofileClass.dart';
 import 'package:gpmf/screens/LocationsClass';
 import 'package:gpmf/screens/compress/compress.dart';
@@ -220,8 +223,311 @@ class _HomeState extends ConsumerState<Home> {
                 ),
                 Expanded(
                     flex: 12,
-                    child: Row(
+                    child: Column(
                       children: [
+                        Visibility(
+                          visible: true,
+                          child: Expanded(
+                            flex: 5,
+                            child: Column(
+                              children: [
+                                Stack(
+                                  children: [
+                                    SizedBox(
+                                      height: !widget.videoPlayer
+                                          ? constraints.maxHeight
+                                          : 500,
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: VideoPlayer(
+                                              duration: list.isNotEmpty
+                                                  ? list[0].duration
+                                                  : 0,
+                                              lefPlayer: leftPlayer,
+                                              rightPlayer: rightPlayer,
+                                              duplicateAlertProvider:
+                                                  duplicateAlertProvider,
+                                            ),
+                                          ),
+                                          // if (widget.videoPlayer)
+                                          //   Expanded(
+                                          //     child: VideoPlayer(
+                                          //       duration: list.isNotEmpty
+                                          //           ? list[0].duration
+                                          //           : 0,
+                                          //       player: leftPlayer,
+                                          //       duplicateAlertProvider:
+                                          //           duplicateAlertProvider,
+                                          //       left: false,
+                                          //     ),
+                                          //   ),
+                                          // Consumer(
+                                          //     builder: (context, ref, c) {
+
+                                          //   final Size size = Size(50, 50);
+                                          //   final child = SizedBox(
+                                          //     width: size.width,
+                                          //     height: size.height,
+                                          //     child: const FlutterLogo(),
+                                          //   );
+                                          //   return Positioned(
+                                          //     left: dragOffset.dx,
+                                          //     top: dragOffset.dy,
+                                          //     child: Draggable(
+                                          //       child: child,
+                                          //       feedback: child,
+                                          //       onDragEnd: (drag) {
+                                          //         print(drag.offset);
+                                          //         ref
+                                          //                 .read(
+                                          //                     dragOffsetProvider
+                                          //                         .state)
+                                          //                 .state =
+                                          //             Offset(
+                                          //                 drag.offset.dx,
+                                          //                 drag.offset.dy -
+                                          //                     size.height *
+                                          //                         1.55);
+                                          //       },
+                                          //       childWhenDragging:
+                                          //           Container(),
+                                          //     ),
+                                          //   );
+                                          // })
+                                        ],
+                                      ),
+                                    ),
+                                    if (list.isNotEmpty && !widget.videoPlayer)
+                                      Visibility(
+                                        visible: true,
+                                        child: Positioned(
+                                          left: 20,
+                                          bottom: 180,
+                                          child: Opacity(
+                                            opacity: 0.95,
+                                            child: ClipOval(
+                                              child: SizedBox(
+                                                width: 300,
+                                                height: 300,
+                                                child: MapScreen(
+                                                  mode: widget.videoPlayer,
+                                                  duplicateAlertProvider:
+                                                      duplicateAlertProvider,
+                                                  skipDuplicateProvider:
+                                                      skipDuplicateProvider,
+                                                  mapController: _controller,
+                                                  interactive: true,
+                                                  // markers: getMarkers(list[0]),
+                                                  geoFile: DataListProvider,
+                                                  leftPlayerController:
+                                                      mediaControllerProviderLeft,
+                                                  rightPlayerController:
+                                                      mediaControllerProviderLeft,
+
+                                                  // markers: [
+                                                  //   LatLng(list[0].lat!, list[0].lon!),
+                                                  //   LatLng(list[(list.length - 1) ~/ 2].lat!,
+                                                  //       list[(list.length - 1) ~/ 2].lon!),
+                                                  //   LatLng(list[list.length - 1].lat!,
+                                                  //       list[list.length - 1].lon!)
+                                                  // ],
+                                                  // markers: list
+                                                  //     .map((e) => LatLng(e.lat!, e.lon!))
+                                                  //     .toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                  ],
+                                ),
+                                // videoPlayer(rightPlayer, left: false),
+                                if (widget.videoPlayer)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Consumer(builder: (context, ref, s) {
+                                          final skipDuplicate = ref
+                                              .watch(
+                                                  skipDuplicateProvider.state)
+                                              .state;
+                                          return Row(
+                                            children: [
+                                              Checkbox(
+                                                  value: skipDuplicate,
+                                                  onChanged: (v) {
+                                                    ref
+                                                        .read(
+                                                            skipDuplicateProvider
+                                                                .state)
+                                                        .state = v!;
+                                                  }),
+                                              const Text(
+                                                  "Skip Duplicate Video"),
+                                            ],
+                                          );
+                                        }),
+                                        const Spacer(),
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              Navigator.push(context,
+                                                  MaterialPageRoute(
+                                                      builder: (_) {
+                                                return HomeHolder();
+                                              }));
+                                            },
+                                            icon: Icon(Icons.clean_hands)),
+                                        ElevatedButton(
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  barrierDismissible: false,
+                                                  builder: (_) => AlertDialog(
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        content: SizedBox(
+                                                            width:
+                                                                MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width *
+                                                                    .8,
+                                                            height: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                .8,
+                                                            child:
+                                                                CompressScreen()),
+                                                      ));
+                                            },
+                                            child: const Text('Tools')),
+                                      ],
+                                    ),
+                                  ),
+                                if (widget.videoPlayer)
+                                  Visibility(
+                                    visible: false,
+                                    child: Expanded(
+                                      child: ListView.builder(
+                                          itemCount: list.length,
+                                          itemBuilder: (context, index) {
+                                            return ListTile(
+                                              onTap: () {
+                                                var control = ref.read(
+                                                    MapControllerProvider);
+
+                                                control.center = LatLng(
+                                                    list[index].geoData[0].lat,
+                                                    list[index].geoData[0].lng);
+
+                                                // control.zoom++;
+                                              },
+                                              title: Text(
+                                                  '${list[index].file.name}\nSamples: ${list[index].geoData.length}'),
+                                              leading: CircleAvatar(
+                                                backgroundColor:
+                                                    list[index].color,
+                                              ),
+                                              trailing: Consumer(
+                                                  builder: (context, ref, s) {
+                                                // ignore: unused_local_variable
+                                                final r = ref
+                                                    .watch(
+                                                        refreshProvider.state)
+                                                    .state;
+                                                return Checkbox(
+                                                  value: list[index].isLine,
+                                                  onChanged: (v) {
+                                                    // print(v);
+                                                    var tempList = ref
+                                                        .read(DataListProvider
+                                                            .state)
+                                                        .state;
+                                                    tempList[index].isLine = v!;
+                                                    ref
+                                                        .read(DataListProvider
+                                                            .state)
+                                                        .state = tempList;
+                                                    var a = Random();
+                                                    ref
+                                                        .read(refreshProvider
+                                                            .state)
+                                                        .state = a.nextInt(100);
+                                                  },
+                                                );
+                                              }),
+                                              // IconButton(
+                                              //     onPressed: () {},
+                                              //     icon:
+                                              //         const Icon(Icons.play_arrow)),
+                                              subtitle: Consumer(
+                                                  builder: (context, ref, s) {
+                                                // ignore: unused_local_variable
+                                                final r = ref
+                                                    .watch(
+                                                        refreshProvider.state)
+                                                    .state;
+
+                                                return Row(
+                                                  children: [
+                                                    const Text('Quality'),
+                                                    Slider(
+                                                      value: list[index]
+                                                          .sample
+                                                          .toDouble(),
+                                                      onChanged: (v) {
+                                                        // print(v);
+                                                        var tempList = ref
+                                                            .read(
+                                                                DataListProvider
+                                                                    .state)
+                                                            .state;
+
+                                                        tempList[index].sample =
+                                                            v.toInt();
+                                                        ref
+                                                            .read(
+                                                                DataListProvider
+                                                                    .state)
+                                                            .state = tempList;
+                                                        ref
+                                                            .read(
+                                                                refreshProvider
+                                                                    .state)
+                                                            .state = v.toInt();
+                                                        // var c = _controller.zoom;
+                                                        // _controller.zoom = c;
+                                                      },
+                                                      onChangeEnd: (v) {},
+                                                      min: 1,
+                                                      max: list[index]
+                                                              .geoData
+                                                              .length /
+                                                          sampleDivisor,
+                                                    ),
+                                                    Text(list[index]
+                                                        .sample
+                                                        .toDouble()
+                                                        .toString())
+                                                  ],
+                                                );
+                                              }),
+                                              // trailing: Text("${list?[index].time}"),
+                                            );
+                                          }),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
                         if (widget.videoPlayer)
                           Expanded(
                             flex: 4,
@@ -257,268 +563,209 @@ class _HomeState extends ConsumerState<Home> {
                                           //     .toList(),
                                         );
                                       })
-                                    : const Center(
-                                        child: Text('Load Data to visualize'),
-                                      )),
-                          ),
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            children: [
-                              Stack(
-                                children: [
-                                  SizedBox(
-                                    height: !widget.videoPlayer
-                                        ? constraints.maxHeight
-                                        : 400,
-                                    child: Stack(
-                                      children: [
-                                        VideoPlayer(
-                                          player: leftPlayer,
-                                          duplicateAlertProvider:
-                                              duplicateAlertProvider,
-                                        ),
-                                        // Consumer(
-                                        //     builder: (context, ref, c) {
-
-                                        //   final Size size = Size(50, 50);
-                                        //   final child = SizedBox(
-                                        //     width: size.width,
-                                        //     height: size.height,
-                                        //     child: const FlutterLogo(),
-                                        //   );
-                                        //   return Positioned(
-                                        //     left: dragOffset.dx,
-                                        //     top: dragOffset.dy,
-                                        //     child: Draggable(
-                                        //       child: child,
-                                        //       feedback: child,
-                                        //       onDragEnd: (drag) {
-                                        //         print(drag.offset);
-                                        //         ref
-                                        //                 .read(
-                                        //                     dragOffsetProvider
-                                        //                         .state)
-                                        //                 .state =
-                                        //             Offset(
-                                        //                 drag.offset.dx,
-                                        //                 drag.offset.dy -
-                                        //                     size.height *
-                                        //                         1.55);
-                                        //       },
-                                        //       childWhenDragging:
-                                        //           Container(),
-                                        //     ),
-                                        //   );
-                                        // })
-                                      ],
-                                    ),
-                                  ),
-                                  if (list.isNotEmpty && !widget.videoPlayer)
-                                    Visibility(
-                                      visible: true,
-                                      child: Positioned(
-                                        left: 20,
-                                        bottom: 60,
-                                        child: Opacity(
-                                          opacity: 0.95,
-                                          child: ClipOval(
-                                            child: SizedBox(
-                                              width: 300,
-                                              height: 300,
-                                              child: MapScreen(
-                                                mode: widget.videoPlayer,
-                                                duplicateAlertProvider:
-                                                    duplicateAlertProvider,
-                                                skipDuplicateProvider:
-                                                    skipDuplicateProvider,
-                                                mapController: _controller,
-                                                interactive: true,
-                                                // markers: getMarkers(list[0]),
-                                                geoFile: DataListProvider,
-                                                leftPlayerController:
-                                                    mediaControllerProviderLeft,
-                                                rightPlayerController:
-                                                    mediaControllerProviderLeft,
-
-                                                // markers: [
-                                                //   LatLng(list[0].lat!, list[0].lon!),
-                                                //   LatLng(list[(list.length - 1) ~/ 2].lat!,
-                                                //       list[(list.length - 1) ~/ 2].lon!),
-                                                //   LatLng(list[list.length - 1].lat!,
-                                                //       list[list.length - 1].lon!)
-                                                // ],
-                                                // markers: list
-                                                //     .map((e) => LatLng(e.lat!, e.lon!))
-                                                //     .toList(),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                ],
-                              ),
-                              // videoPlayer(rightPlayer, left: false),
-                              if (widget.videoPlayer)
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Consumer(builder: (context, ref, s) {
-                                        final skipDuplicate = ref
-                                            .watch(skipDuplicateProvider.state)
-                                            .state;
-                                        return Row(
+                                    : Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            Checkbox(
-                                                value: skipDuplicate,
-                                                onChanged: (v) {
+                                            const Text(
+                                                'Load Data to visualize'),
+                                            IconButton(
+                                                onPressed: () async {
+                                                  here:
+                                                  String? selectedDirectory =
+                                                      await FilePicker.platform
+                                                          .getDirectoryPath();
+
+                                                  if (selectedDirectory ==
+                                                      null) {
+                                                    // User canceled the picker
+
+                                                  }
+                                                  final List<FileSystemEntity>
+                                                      entities =
+                                                      await Directory(
+                                                              selectedDirectory!)
+                                                          .list(recursive: true)
+                                                          .toList();
+                                                  // entities.forEach((element) {
+                                                  //   print(element);
+                                                  // });
+                                                  List<FileThumb> files = [];
+                                                  final Iterable<File>
+                                                      iterablefiles = entities
+                                                          .whereType<File>();
+                                                  // ignore: avoid_function_literals_in_foreach_calls
+                                                  iterablefiles
+                                                      .forEach((element) {
+                                                    var thumb = '';
+                                                    // var length =
+                                                    //     await element.length();
+                                                    // var player = Player(
+                                                    //     id: Random().nextInt(1000),
+                                                    //     videoDimensions:
+                                                    //         const VideoDimensions(1920, 1080));
+                                                    // Media media = Media.file(
+                                                    //   // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+                                                    //   element,
+                                                    //   parse: true,
+
+                                                    //   // Media.file(
+                                                    // );
+                                                    // print(element.path);
+                                                    if (element.path
+                                                        .contains(".json"))
+                                                      files.add(
+                                                        FileThumb(
+                                                          file: element,
+                                                          thumbnail: thumb,
+                                                          size: 0,
+                                                          filename: element.path
+                                                              .split('\\')
+                                                              .toList()
+                                                              .last,
+                                                        ),
+                                                      );
+
+                                                    // player.open(media);
+                                                    // player.seek(const Duration(milliseconds: 0));
+                                                    // print(files.length);
+                                                  });
+
+                                                  ref
+                                                      .read(DataListProvider
+                                                          .state)
+                                                      .state = [];
+
+                                                  List<GeoFile> tempFiles = [];
+
+                                                  for (var element in files) {
+                                                    XFile n = XFile(
+                                                        element.file.path);
+                                                    var dat =
+                                                        await n.readAsString();
+                                                    var json = jsonDecode(dat);
+                                                    String replacer = '';
+                                                    List<LocationsData> data =
+                                                        [];
+                                                    if (n.path.contains(
+                                                        "_processed")) {
+                                                      data =
+                                                          locationsFromMap(dat);
+                                                      replacer =
+                                                          '_processed.json';
+                                                    } else {
+                                                      replacer = '.json';
+                                                      for (int i = 0;
+                                                          i < json.length;
+                                                          i++) {
+                                                        data.add(LocationsData(
+                                                            lat: json[i]
+                                                                ["value"][0],
+                                                            lng: json[i]
+                                                                ["value"][1],
+                                                            timeStamp: DateTime
+                                                                .parse(json[i]
+                                                                        ["date"]
+                                                                    .toString()),
+                                                            duplicate: false));
+                                                      }
+                                                    }
+
+                                                    //print(data[0].time.difference(data.last.time).inMilliseconds);
+
+                                                    File filel = File(n.path
+                                                        .replaceAll(
+                                                            replacer, ".mp4"));
+
+                                                    // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4');
+                                                    //print("last modified: ${await file.lastModified()}");
+                                                    Media media = Media.file(
+                                                      // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+                                                      filel,
+                                                      parse: true,
+
+                                                      // Media.file(
+                                                    );
+                                                    tempFiles.add(GeoFile(
+                                                        file: n,
+                                                        geoData: data,
+                                                        sample: 1,
+                                                        duration: int.parse(
+                                                            media.metas[
+                                                                "duration"]!),
+                                                        color: Colors.red,
+                                                        isLine: true));
+                                                  }
+
+                                                  // ref.read(fileListProvider.state).state = files;
+                                                  print(tempFiles.length);
+                                                  List<String> left = [],
+                                                      right = [];
+                                                  tempFiles.forEach((element) {
+                                                    File file = File(element
+                                                        .file.path
+                                                        .replaceAll(
+                                                            '.json', ".mp4"));
+                                                    if (element.file.path
+                                                        .contains('\\L'))
+                                                      left.add(file.path
+                                                          .replaceAll(
+                                                              ".json", ".mp4"));
+                                                    else if (element.file.path
+                                                        .contains('\\R'))
+                                                      right.add(file.path
+                                                          .replaceAll(
+                                                              ".json", ".mp4"));
+                                                  });
+                                                  //print(left[0]);
+                                                  Media mediaL = Media.file(
+                                                    // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+                                                    File(left[0]),
+                                                    parse: true,
+
+                                                    // Media.file(
+                                                  );
+                                                  Media mediaR = Media.file(
+                                                    // File('D:/hilife/Projects/Backend/gpmf/long-new-sample.mp4'),
+                                                    File(right[0]),
+                                                    parse: true,
+
+                                                    // Media.file(
+                                                  );
+
                                                   ref
                                                       .read(
-                                                          skipDuplicateProvider
+                                                          mediaControllerProviderLeft)
+                                                      .open(mediaL,
+                                                          autoStart: false);
+                                                  ref
+                                                      .read(
+                                                          mediaControllerProviderRight)
+                                                      .open(mediaR,
+                                                          autoStart: false);
+                                                  ref
+                                                          .read(
+                                                              MapControllerProvider)
+                                                          .center =
+                                                      LatLng(
+                                                          tempFiles[0]
+                                                              .geoData[0]
+                                                              .lat,
+                                                          tempFiles[0]
+                                                              .geoData[0]
+                                                              .lng);
+                                                  ref
+                                                          .read(DataListProvider
                                                               .state)
-                                                      .state = v!;
-                                                }),
-                                            const Text("Skip Duplicate Video"),
+                                                          .state =
+                                                      tempFiles.toList();
+                                                },
+                                                icon: Icon(Icons.folder_open)),
                                           ],
-                                        );
-                                      }),
-                                      const Spacer(),
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            showDialog(
-                                                context: context,
-                                                barrierDismissible: false,
-                                                builder: (_) => AlertDialog(
-                                                      backgroundColor:
-                                                          Colors.transparent,
-                                                      content: SizedBox(
-                                                          width: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width *
-                                                              .8,
-                                                          height: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .height *
-                                                              .8,
-                                                          child:
-                                                              CompressScreen()),
-                                                    ));
-                                          },
-                                          child: const Text('Tools')),
-                                    ],
-                                  ),
-                                ),
-                              if (widget.videoPlayer)
-                                Expanded(
-                                  child: ListView.builder(
-                                      itemCount: list.length,
-                                      itemBuilder: (context, index) {
-                                        return ListTile(
-                                          onTap: () {
-                                            var control =
-                                                ref.read(MapControllerProvider);
-
-                                            control.center = LatLng(
-                                                list[index].geoData[0].lat,
-                                                list[index].geoData[0].lng);
-
-                                            // control.zoom++;
-                                          },
-                                          title: Text(
-                                              '${list[index].file.name}\nSamples: ${list[index].geoData.length}'),
-                                          leading: CircleAvatar(
-                                            backgroundColor: list[index].color,
-                                          ),
-                                          trailing: Consumer(
-                                              builder: (context, ref, s) {
-                                            // ignore: unused_local_variable
-                                            final r = ref
-                                                .watch(refreshProvider.state)
-                                                .state;
-                                            return Checkbox(
-                                              value: list[index].isLine,
-                                              onChanged: (v) {
-                                                // print(v);
-                                                var tempList = ref
-                                                    .read(
-                                                        DataListProvider.state)
-                                                    .state;
-                                                tempList[index].isLine = v!;
-                                                ref
-                                                    .read(
-                                                        DataListProvider.state)
-                                                    .state = tempList;
-                                                var a = Random();
-                                                ref
-                                                    .read(refreshProvider.state)
-                                                    .state = a.nextInt(100);
-                                              },
-                                            );
-                                          }),
-                                          // IconButton(
-                                          //     onPressed: () {},
-                                          //     icon:
-                                          //         const Icon(Icons.play_arrow)),
-                                          subtitle: Consumer(
-                                              builder: (context, ref, s) {
-                                            // ignore: unused_local_variable
-                                            final r = ref
-                                                .watch(refreshProvider.state)
-                                                .state;
-
-                                            return Row(
-                                              children: [
-                                                const Text('Quality'),
-                                                Slider(
-                                                  value: list[index]
-                                                      .sample
-                                                      .toDouble(),
-                                                  onChanged: (v) {
-                                                    // print(v);
-                                                    var tempList = ref
-                                                        .read(DataListProvider
-                                                            .state)
-                                                        .state;
-
-                                                    tempList[index].sample =
-                                                        v.toInt();
-                                                    ref
-                                                        .read(DataListProvider
-                                                            .state)
-                                                        .state = tempList;
-                                                    ref
-                                                        .read(refreshProvider
-                                                            .state)
-                                                        .state = v.toInt();
-                                                    // var c = _controller.zoom;
-                                                    // _controller.zoom = c;
-                                                  },
-                                                  onChangeEnd: (v) {},
-                                                  min: 1,
-                                                  max: list[index]
-                                                          .geoData
-                                                          .length /
-                                                      sampleDivisor,
-                                                ),
-                                                Text(list[index]
-                                                    .sample
-                                                    .toDouble()
-                                                    .toString())
-                                              ],
-                                            );
-                                          }),
-                                          // trailing: Text("${list?[index].time}"),
-                                        );
-                                      }),
-                                ),
-                            ],
+                                        ),
+                                      )),
                           ),
-                        ),
                       ],
                     ))
               ],

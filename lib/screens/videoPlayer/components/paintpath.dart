@@ -38,7 +38,8 @@ class Painter extends CustomPainter {
       paint.strokeWidth = 3; //
 
       lPaint.color = data[j].color;
-      if (j == selectedIndex) {
+      // if (j == selectedIndex)
+      {
         final offset = data[j]
             .geoData
             .map((e) => transformer.fromLatLngToXYCoords(LatLng(e.lat, e.lng)))

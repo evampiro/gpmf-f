@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:gpmf/screens/videoPlayer/components/timeline.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
 import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
 import 'package:gpmf/utilities/intents.dart';
@@ -13,15 +14,19 @@ import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
 
 class VideoPlayer extends ConsumerStatefulWidget {
-  const VideoPlayer({
-    Key? key,
-    required this.player,
-    this.left = true,
-    required this.duplicateAlertProvider,
-  }) : super(key: key);
-  final Player player;
-  final bool left;
+  const VideoPlayer(
+      {Key? key,
+      required this.lefPlayer,
+      required this.rightPlayer,
+      this.left = true,
+      required this.duplicateAlertProvider,
+      required this.duration,
+      this.dual = false})
+      : super(key: key);
+  final Player lefPlayer, rightPlayer;
+  final bool left, dual;
   final StateProvider<bool> duplicateAlertProvider;
+  final int duration;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _VideoState();
 }
@@ -30,7 +35,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController _playController, _modeController;
 
-  final GlobalKey _globalKey = GlobalKey();
+  //final GlobalKey _globalKey = GlobalKey();
   @override
   void initState() {
     super.initState();
@@ -40,12 +45,12 @@ class _VideoState extends ConsumerState<VideoPlayer>
         vsync: this, duration: const Duration(milliseconds: 300));
     IntentFunctions().onSKey = () async {
       int currentindex = ref.read(currentPageIndexProvider.state).state;
-      if (currentindex == 1 && widget.player.current.medias.isNotEmpty) {
-        if (widget.player.playback.isPlaying) widget.player.pause();
+      if (currentindex == 1 && widget.lefPlayer.current.medias.isNotEmpty) {
+        if (widget.lefPlayer.playback.isPlaying) widget.lefPlayer.pause();
         var tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
         File temp = File(tempPath + "temp.png");
-        widget.player.takeSnapshot(temp, 1920, 1080);
+        widget.lefPlayer.takeSnapshot(temp, 1920, 1080);
         // RenderRepaintBoundary boundary = _globalKey.currentContext!
         //     .findRenderObject()! as RenderRepaintBoundary;
         // ui.Image image = await boundary.toImage(
@@ -69,41 +74,66 @@ class _VideoState extends ConsumerState<VideoPlayer>
   void dispose() {
     _playController.dispose();
     _modeController.dispose();
-    widget.player.dispose();
+    widget.lefPlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      widget.player.playbackStream.listen((event) {
+      widget.lefPlayer.playbackStream.listen((event) {
         if (event.isPlaying) {
           _playController.forward();
         } else {
           _playController.reverse();
         }
       });
-      return RepaintBoundary(
-        key: _globalKey,
-        child: Column(
-          children: [
-            Stack(
+      return Column(
+        children: [
+          Expanded(
+            flex: 8,
+            child: Stack(
               children: [
-                InteractiveViewer(
-                  panEnabled: false,
-                  minScale: 1,
-                  maxScale: 3,
-                  child: SizedBox(
-                    width: constraints.maxWidth,
-                    height: constraints.maxHeight,
-                    child: Video(
-                      showControls: false,
-                      player: widget.player,
+                Row(
+                  children: [
+                    Expanded(
+                      child: InteractiveViewer(
+                        panEnabled: false,
+                        minScale: 1,
+                        maxScale: 3,
+                        child: SizedBox(
+                          width: constraints.maxWidth / 2,
+                          height: constraints.maxHeight,
+                          child: Video(
+                            showControls: false,
+                            player: widget.lefPlayer,
+                          ),
+                        ),
+                        onInteractionUpdate: (details) {
+                          print(details.scale);
+                        },
+                      ),
                     ),
-                  ),
-                  onInteractionUpdate: (details) {
-                    print(details.scale);
-                  },
+                    if (widget.dual)
+                      Expanded(
+                        child: InteractiveViewer(
+                          panEnabled: false,
+                          minScale: 1,
+                          maxScale: 3,
+                          child: SizedBox(
+                            width: constraints.maxWidth / 2,
+                            height: constraints.maxHeight,
+                            child: Video(
+                              showControls: false,
+                              player: widget.rightPlayer,
+                            ),
+                          ),
+                          onInteractionUpdate: (details) {
+                            print(details.scale);
+                          },
+                        ),
+                      ),
+                  ],
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -144,12 +174,16 @@ class _VideoState extends ConsumerState<VideoPlayer>
                         const Spacer(),
                         GestureDetector(
                           onTap: () {
-                            if (widget
-                                    .player.position.position!.inMilliseconds >
+                            if (widget.lefPlayer.position.position!
+                                    .inMilliseconds >
                                 5000) {
-                              widget.player.seek(Duration(
-                                  milliseconds: widget.player.position.position!
-                                          .inMilliseconds -
+                              widget.lefPlayer.seek(Duration(
+                                  milliseconds: widget.lefPlayer.position
+                                          .position!.inMilliseconds -
+                                      5000));
+                              widget.rightPlayer.seek(Duration(
+                                  milliseconds: widget.lefPlayer.position
+                                          .position!.inMilliseconds -
                                       5000));
                             }
                           },
@@ -157,14 +191,16 @@ class _VideoState extends ConsumerState<VideoPlayer>
                         ),
                         GestureDetector(
                           onTap: () {
-                            if (widget.player.playback.isPlaying) {
+                            if (widget.lefPlayer.playback.isPlaying) {
                               _playController.reverse();
 
-                              widget.player.pause();
+                              widget.lefPlayer.pause();
+                              widget.rightPlayer.pause();
                             } else {
                               _playController.forward();
 
-                              widget.player.play();
+                              widget.lefPlayer.play();
+                              widget.rightPlayer.play();
                             }
                           },
                           child: AnimatedIcon(
@@ -178,8 +214,15 @@ class _VideoState extends ConsumerState<VideoPlayer>
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          Flexible(
+            child: TimeLine(
+              leftplayer: widget.lefPlayer,
+              rightplayer: widget.rightPlayer,
+              duration: widget.duration,
+            ),
+          )
+        ],
       );
     });
   }
