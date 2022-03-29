@@ -51,7 +51,7 @@ class Home extends ConsumerStatefulWidget {
 }
 
 class _HomeState extends ConsumerState<Home> {
-  final sampleDivisor = 10;
+  final sampleDivisor = 2;
 
   final mediaControllerProviderRight = Provider<Player>((ref) {
     return Player(
@@ -142,7 +142,8 @@ class _HomeState extends ConsumerState<Home> {
               var geof = GeoFile(
                   file: file,
                   geoData: data,
-                  sample: data.length ~/ sampleDivisor,
+                  // sample: data.length ~/ sampleDivisor,
+                  sample: 1,
                   duration: int.parse(media.metas["duration"]!),
                   isLine: true,
                   color: RandomColor().randomColor(

@@ -215,7 +215,8 @@ class _VideoState extends ConsumerState<VideoPlayer>
               ],
             ),
           ),
-          Flexible(
+          Expanded(
+            flex: 3,
             child: TimeLine(
               leftplayer: widget.lefPlayer,
               rightplayer: widget.rightPlayer,

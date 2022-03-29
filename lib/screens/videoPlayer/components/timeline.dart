@@ -25,7 +25,7 @@ class _TimeLineState extends ConsumerState<TimeLine> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
-      //print(constraint);
+      print(constraint);
       widget.leftplayer.positionStream.listen((event) {
         currentPosition = mapDouble(
             x: event.position!.inSeconds.toDouble(),
@@ -60,6 +60,21 @@ class _TimeLineState extends ConsumerState<TimeLine> {
             ),
             TimeRuler(
               duration: widget.duration,
+            ),
+            Positioned(
+              left: 0,
+              top: mapDouble(
+                  x: constraint.maxHeight,
+                  in_min: 0,
+                  in_max: 300,
+                  out_min: 30,
+                  out_max: 50),
+              child: Container(
+                color: Colors.grey.withOpacity(0.5),
+                child: ListView(
+                  children: [],
+                ),
+              ),
             ),
             AnimatedPositioned(
               left: currentPosition.toDouble(),
