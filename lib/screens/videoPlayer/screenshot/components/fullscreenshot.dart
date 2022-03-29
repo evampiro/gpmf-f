@@ -16,11 +16,17 @@ import 'dart:ui' as ui;
 
 class FullScreenShot extends ConsumerStatefulWidget {
   const FullScreenShot(
-      {Key? key, required this.imageData, required this.outlet})
+      {Key? key,
+      required this.imageData,
+      required this.outlet,
+      required this.duration,
+      this.singleOutlets})
       : super(key: key);
 
   final Uint8List imageData;
-  final Outlets outlet;
+  final List<Outlets> outlet;
+  final int duration;
+  final List<SingleOutlet>? singleOutlets;
   @override
   ConsumerState<FullScreenShot> createState() => _FullScreenShotState();
 }
@@ -40,6 +46,11 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
     controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 200));
     IntentFunctions().isSpaceActive = false;
+    if (widget.singleOutlets != null) {
+      for (SingleOutlet value in widget.singleOutlets ?? []) {
+        markers.add(value.detail);
+      }
+    }
   }
 
   @override
@@ -328,11 +339,24 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                         .devicePixelRatio);
                                 ByteData? byteData = await image.toByteData(
                                     format: ui.ImageByteFormat.png);
+                                widget.outlet.add(Outlets(
+                                    currentDuration: widget.duration,
+                                    outlets: markers
+                                        .map((e) => SingleOutlet(
+                                            imageData: (byteData?.buffer
+                                                .asUint8List())!,
+                                            detail: e))
+                                        .toList()));
 
-                                setState(() {
-                                  modifiedImage =
-                                      byteData?.buffer.asUint8List();
+                                Navigator.pop(context);
+                                Future.delayed(Duration(milliseconds: 10), () {
+                                  IntentFunctions().isSpaceActive = true;
+                                  IntentFunctions().focus.requestFocus();
                                 });
+                                // setState(() {
+                                //   modifiedImage =
+                                //       byteData?.buffer.asUint8List();
+                                // });
                               }
                             : null,
                         child: const Text(

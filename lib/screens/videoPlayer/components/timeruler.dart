@@ -24,7 +24,7 @@ class TimeRulerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // TODO: implement paint
-    size = Size(size.width, size.height / 2.5);
+    size = Size(size.width, size.height / 3.5);
     var paint = Paint()..color = Colors.white;
     var divisor = duration / 1000;
 

@@ -52,7 +52,7 @@ dependencies:
   pixel_color_picker: ^1.0.0
   dropdown_search:
   flutter_colorpicker:
-  badges:
+#  badges:
 #  rulers: ^1.0.7
 
   #timeline_editor: ^0.3.4

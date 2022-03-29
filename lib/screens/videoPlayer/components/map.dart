@@ -602,7 +602,6 @@ class _MapState extends State<MapScreen> with SingleTickerProviderStateMixin {
                                           ),
                                           Visibility(
                                             visible: false,
-                                            // !widget.interactive,
                                             child: Positioned(
                                                 top: -35,
                                                 left: 15,

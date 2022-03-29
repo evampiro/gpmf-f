@@ -32,7 +32,7 @@ class VideoPlayer extends ConsumerStatefulWidget {
 class _VideoState extends ConsumerState<VideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController _playController, _modeController;
-  Outlets outlet = Outlets(outlets: []);
+  List<Outlets> outlet = [];
   //final GlobalKey _globalKey = GlobalKey();
   @override
   void initState() {
@@ -57,12 +57,14 @@ class _VideoState extends ConsumerState<VideoPlayer>
         //     await image.toByteData(format: ui.ImageByteFormat.png);
         // final Uint8List? imageData = byteData?.buffer.asUint8List();
         var data = temp.readAsBytesSync();
-        Navigator.push(context, MaterialPageRoute(builder: (_) {
+        await Navigator.push(context, MaterialPageRoute(builder: (_) {
           return FullScreenShot(
+            duration: widget.lefPlayer.position.position!.inMilliseconds,
             outlet: outlet,
             imageData: data,
           );
         }));
+        setState(() {});
       }
     };
   }
@@ -217,7 +219,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
           Expanded(
             flex: 3,
             child: TimeLine(
-              outlets: Outlets(outlets: []),
+              outlets: outlet,
               leftplayer: widget.lefPlayer,
               rightplayer: widget.rightPlayer,
               duration: widget.duration,

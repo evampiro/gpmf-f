@@ -304,7 +304,7 @@ class _HomeState extends ConsumerState<Home> {
                                         visible: true,
                                         child: Positioned(
                                           left: 20,
-                                          bottom: 180,
+                                          bottom: 350,
                                           child: Opacity(
                                             opacity: 0.95,
                                             child: ClipOval(
