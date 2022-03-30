@@ -35,10 +35,10 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
     with TickerProviderStateMixin {
   final List<CustomMarker> markers = [];
   late AnimationController controller;
-  bool confirm = false;
+  bool confirm = false, isScreenshotMode = false;
   Uint8List? modifiedImage;
   final GlobalKey _repaintKey = GlobalKey();
-
+  int currentRender = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -62,7 +62,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
         if (markers.isEmpty) {
           return Future.value(true);
         } else {
-          return Future.value(false);
+          return Future.value(true);
         }
       },
       child: Scaffold(
@@ -141,151 +141,158 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                           Positioned(
                             left: markers[i].position.dx - 25,
                             top: markers[i].position.dy - 50,
-                            child: Listener(
-                              onPointerDown: (details) {
-                                if (details.kind == PointerDeviceKind.mouse &&
-                                    details.buttons == kSecondaryMouseButton) {
-                                  // ignore: prefer_function_declarations_over_variables
-                                  Function markertest = () {
-                                    markers.removeAt(markers.indexWhere(
-                                        (element) => element == markers[i]));
-                                    setState(() {
-                                      confirm = checkMarkers(markers);
-                                    });
-                                  };
-                                  if (markers[i].category != null &&
-                                      markers[i].size != null) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (_) {
-                                          return DialogPrompt(
-                                            onYes: () {
-                                              markertest();
-                                            },
-                                          );
-                                        });
-                                  } else {
-                                    markertest();
-                                  }
-                                } else if (details.kind ==
-                                        PointerDeviceKind.mouse &&
-                                    details.buttons == kPrimaryMouseButton) {
-                                  for (int j = 0; j < markers.length; j++) {
-                                    markers[j].selected = false;
-                                  }
-
-                                  setState(() {
-                                    markers[i].selected = true;
-                                  });
-                                }
-                              },
-                              child: Draggable(
-                                rootOverlay: true,
-                                onDragEnd: (drag) {
-                                  if (drag.offset.dx > 0 &&
-                                      drag.offset.dy <
-                                          MediaQuery.of(context).size.height) {
-                                    setState(() {
-                                      markers[i].position = Offset(
-                                          drag.offset.dx + 25,
-                                          drag.offset.dy + 50);
-                                    });
-                                  }
-                                },
-                                feedback: Icon(
-                                  Icons.room,
-                                  color: markers[i].color.withOpacity(0.7),
-                                  size: 50,
-                                ),
-                                childWhenDragging: Container(),
-                                child:
-                                    Stack(clipBehavior: Clip.none, children: [
-                                  // Positioned(
-                                  //   left: 50,
-                                  //   child: Visibility(
-                                  //     visible: markers[i].selected,
-                                  //     // markers[i].selected ? 1 : 0,
-                                  //     // duration: const Duration(milliseconds: 100),
-                                  //     child: GestureDetector(
-                                  //       onTap: () {},
-                                  //       child: Container(
-                                  //         width: 200,
-                                  //         height: 200,
-                                  //         decoration: BoxDecoration(
-                                  //             color: Colors.green,
-                                  //             border: Border.all(
-                                  //                 width: 2, color: markers[i].color)),
-                                  //       ),
-                                  //     ),
-                                  //   ),
-                                  // ),
-                                  // InkWell(
-                                  //   onTap: () {
-                                  //     showDialog(
-                                  //         context: context,
-                                  //         builder: (_) {
-                                  //           return Material(child: TextField());
-                                  //         });
-                                  //   },
-                                  //   child: Icon(
-                                  //     (markers[i].name == null &&
-                                  //             markers[i].category == null)
-                                  //         ? Icons.edit_location_alt
-                                  //         : Icons.room,
-                                  //     color: markers[i].color,
-                                  //     size: 50,
-                                  //   ),
-                                  // ),
-                                  PopupMenuButton(
-                                    onCanceled: () {
-                                      IntentFunctions().focus.requestFocus();
+                            child: Visibility(
+                              visible:
+                                  !isScreenshotMode ? true : currentRender == i,
+                              child: Listener(
+                                onPointerDown: (details) {
+                                  if (details.kind == PointerDeviceKind.mouse &&
+                                      details.buttons ==
+                                          kSecondaryMouseButton) {
+                                    // ignore: prefer_function_declarations_over_variables
+                                    Function markertest = () {
+                                      markers.removeAt(markers.indexWhere(
+                                          (element) => element == markers[i]));
                                       setState(() {
                                         confirm = checkMarkers(markers);
                                       });
-                                    },
-                                    offset: Offset(50, 50),
-                                    color: Colors.transparent,
-                                    padding: EdgeInsets.zero,
-                                    elevation: 0,
-                                    itemBuilder: (_) {
-                                      return [
-                                        PopupMenuItem(
-                                            padding: EdgeInsets.zero,
-                                            height: 0,
-                                            enabled: false,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                color: markers[i].color,
-                                                width: 2,
-                                              )),
-                                              width: 300,
-                                              height: 350,
-                                              child: OutletForm(
-                                                  customMarker: markers[i]),
-                                              // child: ElevatedButton(
-                                              //   onPressed: () {
-                                              //     Navigator.pop(context);
-                                              //   },
-                                              //   child: const Text("test"),
-                                              // ),
-                                            ))
-                                      ];
-                                    },
-                                    tooltip: generateToolTip(markers[i]),
-                                    child: Icon(
-                                      (markers[i].name == null &&
-                                              markers[i].category == null &&
-                                              markers[i].size == null)
-                                          ? Icons.edit_location_alt
-                                          : Icons.room,
-                                      color: markers[i].color,
-                                      size: 50,
-                                    ),
-                                  ),
+                                    };
+                                    if (markers[i].category != null &&
+                                        markers[i].size != null) {
+                                      showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return DialogPrompt(
+                                              onYes: () {
+                                                markertest();
+                                              },
+                                            );
+                                          });
+                                    } else {
+                                      markertest();
+                                    }
+                                  } else if (details.kind ==
+                                          PointerDeviceKind.mouse &&
+                                      details.buttons == kPrimaryMouseButton) {
+                                    for (int j = 0; j < markers.length; j++) {
+                                      markers[j].selected = false;
+                                    }
 
-                                  // Positioned(right: -15, top: -15, child: CloseButton())
-                                ]),
+                                    setState(() {
+                                      markers[i].selected = true;
+                                    });
+                                  }
+                                },
+                                child: Draggable(
+                                  rootOverlay: true,
+                                  onDragEnd: (drag) {
+                                    if (drag.offset.dx > 0 &&
+                                        drag.offset.dy <
+                                            MediaQuery.of(context)
+                                                .size
+                                                .height) {
+                                      setState(() {
+                                        markers[i].position = Offset(
+                                            drag.offset.dx + 25,
+                                            drag.offset.dy + 50);
+                                      });
+                                    }
+                                  },
+                                  feedback: Icon(
+                                    Icons.room,
+                                    color: markers[i].color.withOpacity(0.7),
+                                    size: 50,
+                                  ),
+                                  childWhenDragging: Container(),
+                                  child:
+                                      Stack(clipBehavior: Clip.none, children: [
+                                    // Positioned(
+                                    //   left: 50,
+                                    //   child: Visibility(
+                                    //     visible: markers[i].selected,
+                                    //     // markers[i].selected ? 1 : 0,
+                                    //     // duration: const Duration(milliseconds: 100),
+                                    //     child: GestureDetector(
+                                    //       onTap: () {},
+                                    //       child: Container(
+                                    //         width: 200,
+                                    //         height: 200,
+                                    //         decoration: BoxDecoration(
+                                    //             color: Colors.green,
+                                    //             border: Border.all(
+                                    //                 width: 2, color: markers[i].color)),
+                                    //       ),
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    // InkWell(
+                                    //   onTap: () {
+                                    //     showDialog(
+                                    //         context: context,
+                                    //         builder: (_) {
+                                    //           return Material(child: TextField());
+                                    //         });
+                                    //   },
+                                    //   child: Icon(
+                                    //     (markers[i].name == null &&
+                                    //             markers[i].category == null)
+                                    //         ? Icons.edit_location_alt
+                                    //         : Icons.room,
+                                    //     color: markers[i].color,
+                                    //     size: 50,
+                                    //   ),
+                                    // ),
+                                    PopupMenuButton(
+                                      onCanceled: () {
+                                        IntentFunctions().focus.requestFocus();
+                                        setState(() {
+                                          confirm = checkMarkers(markers);
+                                        });
+                                      },
+                                      offset: Offset(50, 50),
+                                      color: Colors.transparent,
+                                      padding: EdgeInsets.zero,
+                                      elevation: 0,
+                                      itemBuilder: (_) {
+                                        return [
+                                          PopupMenuItem(
+                                              padding: EdgeInsets.zero,
+                                              height: 0,
+                                              enabled: false,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                  color: markers[i].color,
+                                                  width: 2,
+                                                )),
+                                                width: 300,
+                                                height: 350,
+                                                child: OutletForm(
+                                                    customMarker: markers[i]),
+                                                // child: ElevatedButton(
+                                                //   onPressed: () {
+                                                //     Navigator.pop(context);
+                                                //   },
+                                                //   child: const Text("test"),
+                                                // ),
+                                              ))
+                                        ];
+                                      },
+                                      tooltip: generateToolTip(markers[i]),
+                                      child: Icon(
+                                        (markers[i].name == null &&
+                                                markers[i].category == null &&
+                                                markers[i].size == null)
+                                            ? Icons.edit_location_alt
+                                            : Icons.room,
+                                        color: markers[i].color,
+                                        size: 50,
+                                      ),
+                                    ),
+
+                                    // Positioned(right: -15, top: -15, child: CloseButton())
+                                  ]),
+                                ),
                               ),
                             ),
                           ),
@@ -330,24 +337,43 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                         onPressed: confirm
                             ? () async {
                                 // widget.outlet.outlets.add(SingleOutlet(currentDuration: , imageData: widget.imageData, detail: detail));
-                                RenderRepaintBoundary boundary = _repaintKey
-                                        .currentContext!
-                                        .findRenderObject()!
-                                    as RenderRepaintBoundary;
-                                ui.Image image = await boundary.toImage(
-                                    pixelRatio: MediaQuery.of(context)
-                                        .devicePixelRatio);
-                                ByteData? byteData = await image.toByteData(
-                                    format: ui.ImageByteFormat.png);
-                                widget.outlet.add(Outlets(
-                                    currentDuration: widget.duration,
-                                    outlets: markers
-                                        .map((e) => SingleOutlet(
-                                            imageData: (byteData?.buffer
-                                                .asUint8List())!,
-                                            detail: e))
-                                        .toList()));
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    },
+                                    barrierDismissible: false);
+                                isScreenshotMode = true;
+                                Outlets outlet = Outlets(
+                                    outlets: [],
+                                    currentDuration: widget.duration);
 
+                                for (int i = 0; i < markers.length; i++) {
+                                  setState(() {
+                                    currentRender = i;
+                                  });
+                                  await Future.delayed(
+                                      Duration(milliseconds: 50), () async {
+                                    RenderRepaintBoundary boundary = _repaintKey
+                                            .currentContext!
+                                            .findRenderObject()!
+                                        as RenderRepaintBoundary;
+                                    ui.Image image = await boundary.toImage(
+                                        pixelRatio: MediaQuery.of(context)
+                                            .devicePixelRatio);
+                                    ByteData? byteData = await image.toByteData(
+                                        format: ui.ImageByteFormat.png);
+                                    outlet.outlets.add(SingleOutlet(
+                                        imageData:
+                                            (byteData?.buffer.asUint8List())!,
+                                        detail: markers[i]));
+                                  });
+                                }
+                                Navigator.pop(context);
+                                widget.outlet.add(outlet);
+                                isScreenshotMode = false;
+                                currentRender = 0;
                                 Navigator.pop(context);
                                 Future.delayed(Duration(milliseconds: 10), () {
                                   IntentFunctions().isSpaceActive = true;

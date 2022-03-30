@@ -304,13 +304,22 @@ class _HomeState extends ConsumerState<Home> {
                                         visible: true,
                                         child: Positioned(
                                           left: 20,
-                                          bottom: 350,
+                                          bottom: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              .335,
                                           child: Opacity(
                                             opacity: 0.95,
                                             child: ClipOval(
                                               child: SizedBox(
-                                                width: 300,
-                                                height: 300,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    .12,
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    .12,
                                                 child: MapScreen(
                                                   mode: widget.videoPlayer,
                                                   duplicateAlertProvider:

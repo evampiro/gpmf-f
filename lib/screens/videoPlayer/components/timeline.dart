@@ -1,6 +1,8 @@
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:dart_vlc/dart_vlc.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/videoPlayer/components/timeruler.dart';
 import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
@@ -30,6 +32,7 @@ class _TimeLineState extends ConsumerState<TimeLine> {
   double currentPosition = 0;
   bool isAnimated = true, isHovering = false;
   int currentHover = 0;
+  int currentHoverSelected = 0;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
@@ -70,6 +73,27 @@ class _TimeLineState extends ConsumerState<TimeLine> {
               duration: widget.duration,
             ),
           ),
+          if (widget.outlets.isNotEmpty)
+            Positioned(
+              top: -(MediaQuery.of(context).size.height),
+              left: -calclatePositionFromDuration(
+                  widget.outlets[currentHover].currentDuration.toDouble(),
+                  constraint.maxWidth),
+              child: Visibility(
+                visible: isHovering,
+                child: AnimatedOpacity(
+                  opacity: isHovering ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 1.2, sigmaY: 1.2),
+                    child: Container(
+                        width: MediaQuery.of(context).size.width * 5,
+                        height: MediaQuery.of(context).size.height * 5,
+                        color: Colors.black54.withOpacity(0.35)),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             left: 0,
             top: mapDouble(
@@ -101,107 +125,209 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                         left: calclatePositionFromDuration(
                             widget.outlets[i].currentDuration.toDouble(),
                             constraint.maxWidth),
-                        top: i * 50,
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          onHover: (v) {
-                            setState(() {
-                              isHovering = true;
-                              currentHover = i;
-                            });
-                          },
-                          onExit: (v) {
-                            setState(() {
-                              isHovering = false;
-                            });
-                          },
-                          child: GestureDetector(
-                            onTap: () {
-                              widget.leftplayer.pause();
-                              widget.leftplayer.seek(Duration(
-                                  milliseconds:
-                                      widget.outlets[i].currentDuration));
-                              setState(() {
-                                currentPosition = calclatePositionFromDuration(
-                                    widget.outlets[i].currentDuration
-                                        .toDouble(),
-                                    constraint.maxWidth);
-                              });
-                              Future.delayed(const Duration(milliseconds: 1000),
-                                  () {
-                                Navigator.push(context,
-                                    MaterialPageRoute(builder: (_) {
-                                  widget.leftplayer.pause();
-                                  return FullScreenShot(
-                                      imageData: widget
-                                          .outlets[i].outlets[0].imageData,
-                                      outlet: widget.outlets,
-                                      duration:
-                                          widget.outlets[i].currentDuration,
-                                      singleOutlets: widget.outlets[i].outlets);
-                                }));
-                              });
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                  boxShadow: const [
-                                    BoxShadow(
-                                        spreadRadius: 1.5,
-                                        blurRadius: 10,
-                                        color: Colors.black54)
-                                  ],
-                                  color: Colors.red,
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: MemoryImage(widget
-                                          .outlets[i].outlets[0].imageData))),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Positioned(
-                                      right: -10,
-                                      top: -10,
-                                      child: CircleAvatar(
-                                        radius: 10,
-                                        backgroundColor: Colors.blue,
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Text(
-                                            widget.outlets[i].outlets.length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10),
-                                          ),
-                                        ),
-                                      )),
-                                  Positioned(
-                                      right: -500,
-                                      top: -(500 * 0.5625) - 20,
-                                      child: AnimatedOpacity(
-                                        opacity: currentHover == i && isHovering
-                                            ? 1
-                                            : 0,
-                                        duration: Duration(milliseconds: 200),
-                                        child: Container(
-                                          width: 500,
-                                          height: 500 * 0.5625,
-                                          decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                  image: MemoryImage(widget
-                                                      .outlets[i]
-                                                      .outlets[0]
-                                                      .imageData))),
-                                        ),
-                                      ))
-                                ],
+                        top: calculateTopOffset(i, constraint.maxHeight, 30),
+                        child: Builder(builder: (context) {
+                          int size = 30;
+
+                          return AnimatedScale(
+                            duration: Duration(milliseconds: 200),
+                            scale: isHovering && currentHover == i ? 2 : 1,
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              onHover: (v) {
+                                setState(() {
+                                  isHovering = true;
+                                  currentHover = i;
+                                });
+                              },
+                              onExit: (v) {
+                                setState(() {
+                                  isHovering = false;
+                                  currentHoverSelected = 0;
+                                });
+                              },
+                              child: Listener(
+                                onPointerSignal: (details) {
+                                  if (details is PointerScrollEvent) {
+                                    final delta = details.scrollDelta;
+                                    if (delta.dy < 0) {
+                                      if (currentHoverSelected <
+                                          widget.outlets[currentHover].outlets
+                                                  .length -
+                                              1) {
+                                        setState(() {
+                                          currentHoverSelected++;
+                                        });
+                                      }
+                                    } else {
+                                      if (currentHoverSelected > 0) {
+                                        setState(() {
+                                          currentHoverSelected--;
+                                        });
+                                      }
+                                    }
+                                  }
+                                },
+                                child: GestureDetector(
+                                  onTap: () {
+                                    widget.leftplayer.pause();
+                                    widget.leftplayer.seek(Duration(
+                                        milliseconds:
+                                            widget.outlets[i].currentDuration));
+                                    setState(() {
+                                      currentPosition =
+                                          calclatePositionFromDuration(
+                                              widget.outlets[i].currentDuration
+                                                  .toDouble(),
+                                              constraint.maxWidth);
+                                    });
+                                    Future.delayed(
+                                        const Duration(milliseconds: 1000), () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (_) {
+                                        widget.leftplayer.pause();
+                                        return FullScreenShot(
+                                            imageData: widget.outlets[i]
+                                                .outlets[0].imageData,
+                                            outlet: widget.outlets,
+                                            duration: widget
+                                                .outlets[i].currentDuration,
+                                            singleOutlets:
+                                                widget.outlets[i].outlets);
+                                      }));
+                                    });
+                                  },
+                                  child: Container(
+                                    width: size.toDouble(),
+                                    height: size.toDouble(),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                              spreadRadius: 1.5,
+                                              blurRadius: 10,
+                                              color: Colors.black54)
+                                        ],
+                                        color: Colors.red,
+                                        image: DecorationImage(
+                                            fit: BoxFit.cover,
+                                            image: MemoryImage(widget.outlets[i]
+                                                .outlets[0].imageData))),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Positioned(
+                                            right: -10,
+                                            top: -10,
+                                            child: CircleAvatar(
+                                              radius: 8,
+                                              backgroundColor: Colors.blue,
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(
+                                                  isHovering &&
+                                                          currentHover == i
+                                                      ? (currentHoverSelected +
+                                                              1)
+                                                          .toString()
+                                                      : widget.outlets[i]
+                                                          .outlets.length
+                                                          .toString(),
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 9),
+                                                ),
+                                              ),
+                                            )),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      )
+                          );
+                        }),
+                      ),
+                    if (widget.outlets.isNotEmpty)
+                      Positioned(
+                          // right: -constraint.maxWidth * .5,
+                          // top: -(constraint.maxWidth * .5 * 0.5625) - 20,
+                          left: MediaQuery.of(context).size.width / 2 -
+                              (constraint.maxWidth * .5) / 2,
+                          top: -(MediaQuery.of(context).size.height / 1.5),
+                          child: Visibility(
+                            visible: isHovering,
+                            child: AnimatedOpacity(
+                              opacity: isHovering ? 1 : 0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Container(
+                                width: constraint.maxWidth * .5,
+                                height: constraint.maxWidth * .5 * 0.5625,
+                                decoration: BoxDecoration(
+                                    boxShadow: const [
+                                      BoxShadow(
+                                          spreadRadius: 2,
+                                          blurRadius: 10,
+                                          color: Colors.black54)
+                                    ],
+                                    image: DecorationImage(
+                                        image: MemoryImage(widget
+                                            .outlets[currentHover]
+                                            .outlets[currentHoverSelected]
+                                            .imageData))),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Positioned(
+                                        left: mapDouble(
+                                            x: widget
+                                                .outlets[currentHover]
+                                                .outlets[currentHoverSelected]
+                                                .detail
+                                                .position
+                                                .dx,
+                                            in_min: 0,
+                                            in_max: 1920,
+                                            out_min: 0,
+                                            out_max: constraint.maxWidth * .5),
+                                        top: mapDouble(
+                                            x: widget
+                                                .outlets[currentHover]
+                                                .outlets[currentHoverSelected]
+                                                .detail
+                                                .position
+                                                .dy,
+                                            in_min: 0,
+                                            in_max: 1080,
+                                            out_min: 0,
+                                            out_max: constraint.maxWidth *
+                                                .5 *
+                                                0.5625),
+                                        child: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: Colors.black
+                                                  .withOpacity(0.35)),
+                                          child: Stack(
+                                            children: [
+                                              BackdropFilter(
+                                                filter: ImageFilter.blur(
+                                                    sigmaX: 5, sigmaY: 5),
+                                              ),
+                                              Text(generateToolTip(widget
+                                                  .outlets[currentHover]
+                                                  .outlets[currentHoverSelected]
+                                                  .detail))
+                                            ],
+                                          ),
+                                        ))
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )),
                   ]),
             ),
           ),
@@ -232,6 +358,11 @@ class _TimeLineState extends ConsumerState<TimeLine> {
     });
   }
 
+  String generateToolTip(CustomMarker marker) {
+    if (marker.name == null && marker.category == null) return '';
+    return "Name:  ${marker.name!.isEmpty ? 'N/A' : '${marker.name}'} \nCategory:  ${marker.category}\nSize:  ${marker.size}";
+  }
+
   void calculatePosition(double dx, double width) {
     if (dx > 0) {
       setState(() {
@@ -259,6 +390,20 @@ class _TimeLineState extends ConsumerState<TimeLine> {
         in_max: widget.duration.toDouble(),
         out_min: 0,
         out_max: width);
+  }
+
+  double calculateTopOffset(int i, double maxHeight, size) {
+    if ((i * size) + size > maxHeight - size) {
+      var top = ((((i * size) + size).toDouble() - (maxHeight - size)));
+
+      if (top + size > (maxHeight - size)) {
+        top = top - (maxHeight - size);
+      }
+
+      return top;
+    } else {
+      return (i * size).toDouble();
+    }
   }
 }
 
