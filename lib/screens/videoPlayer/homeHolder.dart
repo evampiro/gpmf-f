@@ -2,6 +2,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/duplicate/AIv2.dart';
 import 'package:gpmf/screens/videoPlayer/home.dart';
+import 'package:gpmf/utilities/exporter.dart';
 import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -143,23 +144,27 @@ class _HomeHolderState extends ConsumerState<HomeHolder>
                 ],
               ),
             )),
-            Expanded(child: Consumer(builder: (context, ref, c) {
-              final index = ref.watch(currentPageIndexProvider.state).state;
-              return IndexedStack(
-                index: index,
-                children: [
-                  const Home(
-                    videoPlayer: true,
-                  ),
-                  const Home(
-                    videoPlayer: false,
-                  ),
-                  const AIScreen2(),
-                  Container(),
-                  Container()
-                ],
-              );
-            }))
+            //Expanded(child: Test()),
+            Visibility(
+              visible: true,
+              child: Expanded(child: Consumer(builder: (context, ref, c) {
+                final index = ref.watch(currentPageIndexProvider.state).state;
+                return IndexedStack(
+                  index: index,
+                  children: [
+                    const Home(
+                      videoPlayer: true,
+                    ),
+                    const Home(
+                      videoPlayer: false,
+                    ),
+                    const AIScreen2(),
+                    Container(),
+                    Container()
+                  ],
+                );
+              })),
+            )
           ],
         ),
       ),
@@ -171,53 +176,119 @@ class _HomeHolderState extends ConsumerState<HomeHolder>
     required Function onTap,
     required int index,
   }) {
-    return Consumer(
-        key: Key(item.id.toString()),
-        builder: (context, ref, c) {
-          final pageIndex = ref.watch(currentPageIndexProvider.state).state;
-          return Tooltip(
-            waitDuration: const Duration(milliseconds: 800),
-            message: item.title,
-            child: GestureDetector(
-              onTap: () {
-                ref.read(currentPageIndexProvider.state).state = item.id;
+    return MouseRegion(
+      key: Key(item.id.toString()),
+      cursor: SystemMouseCursors.click,
+      child: Consumer(builder: (context, ref, c) {
+        final pageIndex = ref.watch(currentPageIndexProvider.state).state;
+        return Tooltip(
+          waitDuration: const Duration(milliseconds: 800),
+          message: item.title,
+          child: GestureDetector(
+            onTap: () {
+              ref.read(currentPageIndexProvider.state).state = item.id;
 
-                onTap();
-              },
-              child: ReorderableDragStartListener(
-                index: index,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minWidth: 80,
-                  ),
-                  height: 35,
-                  color: item.id == pageIndex
-                      ? Colors.grey
-                      : Theme.of(context).scaffoldBackgroundColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Icon(
-                        item.icon,
-                        size: 12,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text('${item.title}'),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                    ],
-                  ),
+              onTap();
+            },
+            child: ReorderableDragStartListener(
+              index: index,
+              child: Container(
+                constraints: const BoxConstraints(
+                  minWidth: 80,
+                ),
+                height: 35,
+                color: item.id == pageIndex
+                    ? Colors.grey
+                    : Theme.of(context).scaffoldBackgroundColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Icon(
+                      item.icon,
+                      size: 12,
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Text('${item.title}'),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                  ],
                 ),
               ),
             ),
-          );
-        });
+          ),
+        );
+      }),
+    );
   }
 }
+
+// class Test extends StatefulWidget {
+//   Test({Key? key}) : super(key: key);
+
+//   @override
+//   State<Test> createState() => _TestState();
+// }
+
+// class _TestState extends State<Test> {
+//   double height1 = 0.5, height2 = 0.5;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: LayoutBuilder(builder: (context, constraint) {
+//         return Column(
+//           children: [
+//             Container(
+//               height: height1 * constraint.maxHeight,
+//               // color: Colors.red,
+//             ),
+//             Container(
+//               height: height2 * constraint.maxHeight,
+//               color: Colors.grey,
+//               child: Stack(
+//                 clipBehavior: Clip.none,
+//                 children: [
+//                   MouseRegion(
+//                     cursor: SystemMouseCursors.resizeUpDown,
+//                     child: Draggable(
+//                       onDragUpdate: (details) {
+//                         // print(details.delta.dy / 10);
+
+//                         setState(() {
+//                           height1 += details.delta.dy / 1000;
+//                           height2 -= details.delta.dy / 1000;
+//                         });
+//                       },
+//                       axis: Axis.vertical,
+//                       feedback: Container(
+//                         // width: double.infinity,
+//                         height: 6,
+//                         color: Colors.transparent,
+//                       ),
+//                       childWhenDragging: Container(
+//                         height: 6,
+//                         color: Colors.blue,
+//                       ),
+//                       child: Container(
+//                         // width: double.infinity,
+//                         height: 6,
+//                         color: Colors.transparent,
+//                       ),
+//                     ),
+//                   )
+//                 ],
+//               ),
+//             )
+//           ],
+//         );
+//       }),
+//     );
+//   }
+// }

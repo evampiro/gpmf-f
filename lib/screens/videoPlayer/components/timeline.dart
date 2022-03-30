@@ -322,6 +322,32 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                                   .detail))
                                             ],
                                           ),
+                                        )),
+                                    Positioned(
+                                        bottom: 10,
+                                        left: constraint.maxWidth / 3.9,
+                                        child: Row(
+                                          children: widget
+                                              .outlets[currentHover].outlets
+                                              .map((e) {
+                                            int index = widget
+                                                .outlets[currentHover].outlets
+                                                .indexOf(e);
+                                            return Container(
+                                              width: 10,
+                                              height: 10,
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 10.0,
+                                                      horizontal: 2.0),
+                                              decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: currentHoverSelected ==
+                                                          index
+                                                      ? Colors.blue
+                                                      : Colors.grey),
+                                            );
+                                          }).toList(),
                                         ))
                                   ],
                                 ),

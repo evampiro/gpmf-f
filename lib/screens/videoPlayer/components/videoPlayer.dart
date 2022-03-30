@@ -34,6 +34,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
   late AnimationController _playController, _modeController;
   List<Outlets> outlet = [];
   //final GlobalKey _globalKey = GlobalKey();
+  double height1 = 0.7, height2 = 0.3;
   @override
   void initState() {
     super.initState();
@@ -91,8 +92,8 @@ class _VideoState extends ConsumerState<VideoPlayer>
       });
       return Column(
         children: [
-          Expanded(
-            flex: 8,
+          Container(
+            height: height1 * constraints.maxHeight,
             child: Stack(
               children: [
                 Row(
@@ -173,40 +174,46 @@ class _VideoState extends ConsumerState<VideoPlayer>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Spacer(),
-                        GestureDetector(
-                          onTap: () {
-                            if (widget.lefPlayer.position.position!
-                                    .inMilliseconds >
-                                5000) {
-                              widget.lefPlayer.seek(Duration(
-                                  milliseconds: widget.lefPlayer.position
-                                          .position!.inMilliseconds -
-                                      5000));
-                              widget.rightPlayer.seek(Duration(
-                                  milliseconds: widget.lefPlayer.position
-                                          .position!.inMilliseconds -
-                                      5000));
-                            }
-                          },
-                          child: Icon(Icons.replay_5),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (widget.lefPlayer.position.position!
+                                      .inMilliseconds >
+                                  5000) {
+                                widget.lefPlayer.seek(Duration(
+                                    milliseconds: widget.lefPlayer.position
+                                            .position!.inMilliseconds -
+                                        5000));
+                                widget.rightPlayer.seek(Duration(
+                                    milliseconds: widget.lefPlayer.position
+                                            .position!.inMilliseconds -
+                                        5000));
+                              }
+                            },
+                            child: Icon(Icons.replay_5),
+                          ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            if (widget.lefPlayer.playback.isPlaying) {
-                              _playController.reverse();
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (widget.lefPlayer.playback.isPlaying) {
+                                _playController.reverse();
 
-                              widget.lefPlayer.pause();
-                              widget.rightPlayer.pause();
-                            } else {
-                              _playController.forward();
+                                widget.lefPlayer.pause();
+                                widget.rightPlayer.pause();
+                              } else {
+                                _playController.forward();
 
-                              widget.lefPlayer.play();
-                              widget.rightPlayer.play();
-                            }
-                          },
-                          child: AnimatedIcon(
-                              icon: AnimatedIcons.play_pause,
-                              progress: _playController),
+                                widget.lefPlayer.play();
+                                widget.rightPlayer.play();
+                              }
+                            },
+                            child: AnimatedIcon(
+                                icon: AnimatedIcons.play_pause,
+                                progress: _playController),
+                          ),
                         ),
                         const Spacer(),
                       ],
@@ -216,13 +223,45 @@ class _VideoState extends ConsumerState<VideoPlayer>
               ],
             ),
           ),
-          Expanded(
-            flex: 3,
-            child: TimeLine(
-              outlets: outlet,
-              leftplayer: widget.lefPlayer,
-              rightplayer: widget.rightPlayer,
-              duration: widget.duration,
+          Container(
+            height: height2 * constraints.maxHeight,
+            child: Stack(
+              children: [
+                TimeLine(
+                  outlets: outlet,
+                  leftplayer: widget.lefPlayer,
+                  rightplayer: widget.rightPlayer,
+                  duration: widget.duration,
+                ),
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeUpDown,
+                  child: Draggable(
+                    onDragUpdate: (details) {
+                      // print(details.delta.dy / 10);
+
+                      setState(() {
+                        height1 += details.delta.dy / 1000;
+                        height2 -= details.delta.dy / 1000;
+                      });
+                    },
+                    axis: Axis.vertical,
+                    feedback: Container(
+                      // width: double.infinity,
+                      height: 6,
+                      color: Colors.transparent,
+                    ),
+                    childWhenDragging: Container(
+                      height: 6,
+                      color: Colors.blue,
+                    ),
+                    child: Container(
+                      // width: double.infinity,
+                      height: 6,
+                      color: Colors.transparent,
+                    ),
+                  ),
+                )
+              ],
             ),
           )
         ],
