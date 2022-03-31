@@ -120,6 +120,10 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                       //           color: Colors.red,
                       //         )))
                       [
+                    Container(
+                      width: constraint.maxWidth,
+                      height: constraint.maxHeight,
+                    ),
                     for (int i = 0; i < widget.outlets.length; i++)
                       Positioned(
                         left: calclatePositionFromDuration(
