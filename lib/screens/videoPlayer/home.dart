@@ -176,6 +176,10 @@ class _HomeState extends ConsumerState<Home> {
 
             // Media.file(
           );
+
+          // Media newMedia =
+          //     Media.network("http://videotest.loca.lt/video/long-p-sample.MP4");
+
           // print(media.metas["duration"]);
           //player.open(media);
           ref.read(mediaControllerProviderLeft).open(media, autoStart: false);

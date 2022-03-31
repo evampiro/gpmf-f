@@ -252,9 +252,8 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                       Positioned(
                           // right: -constraint.maxWidth * .5,
                           // top: -(constraint.maxWidth * .5 * 0.5625) - 20,
-                          left: MediaQuery.of(context).size.width / 2 -
-                              (constraint.maxWidth * .5) / 2,
-                          top: -(MediaQuery.of(context).size.height / 1.5),
+                          left: MediaQuery.of(context).size.width / 4,
+                          top: -(MediaQuery.of(context).size.height / 1.8),
                           child: Visibility(
                             visible: isHovering,
                             child: AnimatedOpacity(

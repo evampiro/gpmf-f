@@ -44,6 +44,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
         vsync: this, duration: const Duration(milliseconds: 300));
     IntentFunctions().onSKey = () async {
       int currentindex = ref.read(currentPageIndexProvider.state).state;
+      print(currentindex);
       if (currentindex == 1 && widget.lefPlayer.current.medias.isNotEmpty) {
         if (widget.lefPlayer.playback.isPlaying) widget.lefPlayer.pause();
         var tempDir = await getTemporaryDirectory();

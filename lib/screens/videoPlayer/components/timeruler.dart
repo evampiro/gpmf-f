@@ -8,7 +8,8 @@ class TimeRuler extends StatelessWidget {
     return LayoutBuilder(builder: (context, constraint) {
       return CustomPaint(
         size: Size(constraint.maxWidth, constraint.maxHeight),
-        painter: TimeRulerPainter(duration: duration),
+        painter: TimeRulerPainter(
+            duration: duration, height: MediaQuery.of(context).size.height),
         child: Container(),
       );
     });
@@ -16,15 +17,15 @@ class TimeRuler extends StatelessWidget {
 }
 
 class TimeRulerPainter extends CustomPainter {
-  TimeRulerPainter({required this.duration});
+  TimeRulerPainter({required this.duration, required this.height});
   final int duration;
-
+  final double height;
   int subDivisor = 9, startPoint = 8;
   double labelSeparator = 18;
   @override
   void paint(Canvas canvas, Size size) {
     // TODO: implement paint
-    size = Size(size.width, size.height / 3.5);
+    size = Size(size.width, height / 12);
     var paint = Paint()..color = Colors.white;
     var divisor = duration / 1000;
 
