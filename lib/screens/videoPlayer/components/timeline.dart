@@ -134,7 +134,7 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                           int size = 30;
 
                           return AnimatedScale(
-                            duration: Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 200),
                             scale: isHovering && currentHover == i ? 2 : 1,
                             child: MouseRegion(
                               cursor: SystemMouseCursors.click,
