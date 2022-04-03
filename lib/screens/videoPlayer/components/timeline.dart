@@ -48,6 +48,10 @@ class _TimeLineState extends ConsumerState<TimeLine> {
         if (!mounted) return;
         setState(() {});
       });
+
+      // print((-MediaQuery.of(context).size.height / 1.8).toString() +
+      //     ' ' +
+      //     constraint.maxHeight.toString());
       return Stack(
         clipBehavior: Clip.none,
         children: [
@@ -121,9 +125,8 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                       //         )))
                       [
                     Container(
-                      width: constraint.maxWidth,
-                      height: constraint.maxHeight,
-                    ),
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height),
                     for (int i = 0; i < widget.outlets.length; i++)
                       Positioned(
                         left: calclatePositionFromDuration(
@@ -267,6 +270,11 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                 width: constraint.maxWidth * .5,
                                 height: constraint.maxWidth * .5 * 0.5625,
                                 decoration: BoxDecoration(
+                                    color: widget
+                                        .outlets[currentHover]
+                                        .outlets[currentHoverSelected]
+                                        .detail
+                                        .color,
                                     boxShadow: const [
                                       BoxShadow(
                                           spreadRadius: 2,
@@ -307,7 +315,7 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                                 .5 *
                                                 0.5625),
                                         child: Container(
-                                          padding: EdgeInsets.all(8),
+                                          padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(10),

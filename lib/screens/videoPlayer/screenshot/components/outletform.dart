@@ -2,6 +2,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/utilities/intents.dart';
+import 'package:random_color/random_color.dart';
 
 import '../models/custommarker.dart';
 
@@ -19,6 +20,7 @@ class _OutletFormState extends State<OutletForm> {
   final _formKey = GlobalKey<FormState>();
   final _Key = GlobalKey<ScaffoldMessengerState>();
   final List<String> categories = [
+        'Closed Shutter',
         'Grocery',
         'Clothing',
         'Hardware',
@@ -32,18 +34,20 @@ class _OutletFormState extends State<OutletForm> {
         "2 Shutter",
         ">2 Shutter",
       ];
-  List list = [
-    Colors.red,
-    Colors.white,
-    Colors.orange,
-    Colors.green,
-    Colors.purple,
-    Colors.blue,
-    Colors.black,
-    Colors.brown,
-    Colors.amber,
-    Colors.purpleAccent,
-  ];
+  final List list = [
+        Colors.red,
+        Colors.white,
+        Colors.orange,
+        Colors.green,
+        Colors.purple,
+        Colors.blue,
+        Colors.black,
+        Colors.brown,
+        Colors.amber,
+        Colors.purpleAccent,
+      ],
+      test = List.generate(10, (index) => RandomColor().randomColor());
+
   late Color selectedColor;
 
   @override
@@ -54,8 +58,8 @@ class _OutletFormState extends State<OutletForm> {
         text: (widget.customMarker.name ?? '').isNotEmpty
             ? widget.customMarker.name
             : '');
-    categoryName = widget.customMarker.category;
-    sizeName = widget.customMarker.size;
+    categoryName = widget.customMarker.category ?? categories[0];
+    sizeName = widget.customMarker.size ?? size[1];
     if (list.contains(widget.customMarker.color)) {
       list.remove(widget.customMarker.color);
       list.insert(0, widget.customMarker.color);
@@ -92,8 +96,8 @@ class _OutletFormState extends State<OutletForm> {
                         const SizedBox(
                           height: 10,
                         ),
-                        Text("Category"),
-                        SizedBox(
+                        const Text("Category"),
+                        const SizedBox(
                           height: 5,
                         ),
                         DropdownSearch<String>(
@@ -190,8 +194,8 @@ class _OutletFormState extends State<OutletForm> {
                         const SizedBox(
                           height: 12,
                         ),
-                        Text("Shop Name"),
-                        SizedBox(
+                        const Text("Shop Name"),
+                        const SizedBox(
                           height: 5,
                         ),
                         TextFormField(
@@ -223,7 +227,7 @@ class _OutletFormState extends State<OutletForm> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   Scrollbar(
@@ -248,7 +252,7 @@ class _OutletFormState extends State<OutletForm> {
                                       padding: const EdgeInsets.all(6.0),
                                       child: Container(
                                         clipBehavior: Clip.hardEdge,
-                                        padding: EdgeInsets.all(5),
+                                        padding: const EdgeInsets.all(5),
                                         height: 30,
                                         width: 30,
                                         decoration: BoxDecoration(
@@ -265,13 +269,13 @@ class _OutletFormState extends State<OutletForm> {
                                         child: Container(
                                           height: 16,
                                           width: 16,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: Colors.blue,
                                           ),
-                                          child: FittedBox(
+                                          child: const FittedBox(
                                             fit: BoxFit.scaleDown,
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.done,
                                               size: 10,
                                             ),
@@ -295,7 +299,7 @@ class _OutletFormState extends State<OutletForm> {
                     width: double.infinity,
                     color: Colors.red,
                     child: ElevatedButton(
-                      style: ButtonStyle(),
+                      style: const ButtonStyle(),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           if ((widget.customMarker.category ?? "") ==

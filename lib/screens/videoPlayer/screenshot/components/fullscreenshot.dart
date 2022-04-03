@@ -131,11 +131,14 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                           width: double.infinity,
                           height: double.infinity,
                         ),
-                        Container(
-                          height: double.infinity,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: MemoryImage(widget.imageData))),
+                        Transform.rotate(
+                          angle: 0.5,
+                          child: Container(
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: MemoryImage(widget.imageData))),
+                          ),
                         ),
                         for (int i = 0; i < markers.length; i++)
                           Positioned(

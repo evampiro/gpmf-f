@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:gpmf/screens/videoPlayer/components/playbackspeed.dart';
 import 'package:gpmf/screens/videoPlayer/components/timeline.dart';
 import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
 import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
@@ -33,7 +34,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController _playController, _modeController;
   List<Outlets> outlet = [];
-  //final GlobalKey _globalKey = GlobalKey();
+  final GlobalKey _widgetKey = GlobalKey();
   double height1 = 0.7, height2 = 0.3;
   @override
   void initState() {
@@ -216,6 +217,24 @@ class _VideoState extends ConsumerState<VideoPlayer>
                                 progress: _playController),
                           ),
                         ),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: PopupMenuButton(
+                              offset: getOffset(),
+                              tooltip: '',
+                              itemBuilder: (context) {
+                                return [
+                                  PopupMenuItem(
+                                    enabled: false,
+                                    child: PlayBackSpeed(
+                                      key: _widgetKey,
+                                      player: widget.lefPlayer,
+                                    ),
+                                  )
+                                ];
+                              },
+                              child: Icon(Icons.slow_motion_video)),
+                        ),
                         const Spacer(),
                       ],
                     ),
@@ -268,5 +287,19 @@ class _VideoState extends ConsumerState<VideoPlayer>
         ],
       );
     });
+  }
+
+  Offset getOffset() {
+    // final RenderBox renderBox =
+    //     _widgetKey.currentContext!.findRenderObject() as RenderBox;
+    // print(_widgetKey.currentContext?.size);
+    if (_widgetKey.currentContext != null) {
+      final RenderBox renderBox =
+          _widgetKey.currentContext!.findRenderObject() as RenderBox;
+      print(_widgetKey.currentContext?.size);
+      return renderBox.localToGlobal(Offset.zero);
+    } else {
+      return Offset.zero;
+    }
   }
 }
