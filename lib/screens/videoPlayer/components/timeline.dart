@@ -270,17 +270,18 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                 width: constraint.maxWidth * .5,
                                 height: constraint.maxWidth * .5 * 0.5625,
                                 decoration: BoxDecoration(
-                                    color: widget
-                                        .outlets[currentHover]
-                                        .outlets[currentHoverSelected]
-                                        .detail
-                                        .color,
-                                    boxShadow: const [
-                                      BoxShadow(
-                                          spreadRadius: 2,
-                                          blurRadius: 10,
-                                          color: Colors.black54)
-                                    ],
+                                    // color: widget
+                                    //     .outlets[currentHover]
+                                    //     .outlets[currentHoverSelected]
+                                    //     .detail
+                                    //     .color,
+                                    color: Colors.transparent,
+                                    // boxShadow: const [
+                                    //   BoxShadow(
+                                    //       spreadRadius: 2,
+                                    //       blurRadius: 10,
+                                    //       color: Colors.black54)
+                                    // ],
                                     image: DecorationImage(
                                         image: MemoryImage(widget
                                             .outlets[currentHover]

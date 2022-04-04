@@ -39,6 +39,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
   Uint8List? modifiedImage;
   final GlobalKey _repaintKey = GlobalKey();
   int currentRender = 0;
+  double angle = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -122,17 +123,19 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                     });
                   }
                 },
-                child: InteractiveViewer(
-                  child: RepaintBoundary(
-                    key: _repaintKey,
+                child: RepaintBoundary(
+                  key: _repaintKey,
+                  child: InteractiveViewer(
                     child: Stack(
                       children: [
                         const SizedBox(
                           width: double.infinity,
                           height: double.infinity,
                         ),
-                        Transform.rotate(
-                          angle: 0.5,
+                        AnimatedRotation(
+                          //  angle: angle * 0.0174533,
+                          turns: angle / 360,
+                          duration: const Duration(milliseconds: 200),
                           child: Container(
                             height: double.infinity,
                             decoration: BoxDecoration(
@@ -299,6 +302,35 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                               ),
                             ),
                           ),
+                        Visibility(
+                          visible: true,
+                          child: Positioned(
+                            left: 0,
+                            // left: MediaQuery.of(context).size.width -
+                            //     MediaQuery.of(context).size.width * .8,
+                            top: MediaQuery.of(context).size.height -
+                                MediaQuery.of(context).size.height * .8,
+                            child: Container(
+                              // padding: EdgeInsets.all(50),
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.height * .65,
+                              decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  border:
+                                      Border.all(color: Colors.red, width: 2)),
+                              child: Visibility(
+                                visible: false,
+                                child: GridPaper(
+                                  interval: 100,
+                                  subdivisions: 1,
+                                  divisions: 1,
+                                  color: Colors.grey,
+                                  child: Container(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ),
@@ -331,67 +363,105 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
               Positioned(
                   left: (MediaQuery.of(context).size.width / 2) -
                       kBottomNavigationBarHeight,
-                  bottom: 30,
+                  bottom: 60,
                   child: SizedBox(
                     width: 200,
                     height: kBottomNavigationBarHeight,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(primary: Colors.green),
-                        onPressed: confirm
-                            ? () async {
-                                // widget.outlet.outlets.add(SingleOutlet(currentDuration: , imageData: widget.imageData, detail: detail));
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return const Center(
-                                          child: CircularProgressIndicator());
-                                    },
-                                    barrierDismissible: false);
-                                isScreenshotMode = true;
-                                Outlets outlet = Outlets(
-                                    outlets: [],
-                                    currentDuration: widget.duration);
-
-                                for (int i = 0; i < markers.length; i++) {
-                                  setState(() {
-                                    currentRender = i;
-                                  });
-                                  await Future.delayed(
-                                      Duration(milliseconds: 50), () async {
-                                    RenderRepaintBoundary boundary = _repaintKey
-                                            .currentContext!
-                                            .findRenderObject()!
-                                        as RenderRepaintBoundary;
-                                    ui.Image image = await boundary.toImage(
-                                        pixelRatio: MediaQuery.of(context)
-                                            .devicePixelRatio);
-                                    ByteData? byteData = await image.toByteData(
-                                        format: ui.ImageByteFormat.png);
-                                    outlet.outlets.add(SingleOutlet(
-                                        imageData:
-                                            (byteData?.buffer.asUint8List())!,
-                                        detail: markers[i]));
-                                  });
-                                }
-                                Navigator.pop(context);
-                                widget.outlet.add(outlet);
-                                isScreenshotMode = false;
-                                currentRender = 0;
-                                Navigator.pop(context);
-                                Future.delayed(Duration(milliseconds: 10), () {
-                                  IntentFunctions().isSpaceActive = true;
-                                  IntentFunctions().focus.requestFocus();
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onDoubleTap: () {
+                              setState(() {
+                                angle = 0;
+                              });
+                            },
+                            child: Slider(
+                              label: angle.toString(),
+                              value: angle,
+                              onChanged: (value) {
+                                setState(() {
+                                  print(angle.toString());
+                                  angle = value;
                                 });
-                                // setState(() {
-                                //   modifiedImage =
-                                //       byteData?.buffer.asUint8List();
-                                // });
-                              }
-                            : null,
-                        child: const Text(
-                          'Confirm',
-                          style: TextStyle(fontSize: 20),
-                        )),
+                              },
+                              min: -60,
+                              max: 60,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Expanded(
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colors.green),
+                              onPressed: confirm
+                                  ? () async {
+                                      // widget.outlet.outlets.add(SingleOutlet(currentDuration: , imageData: widget.imageData, detail: detail));
+                                      showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return const Center(
+                                                child:
+                                                    CircularProgressIndicator());
+                                          },
+                                          barrierDismissible: false);
+                                      isScreenshotMode = true;
+                                      Outlets outlet = Outlets(
+                                          outlets: [],
+                                          currentDuration: widget.duration);
+
+                                      // for (int i = 0; i < markers.length; i++) {
+                                      //   setState(() {
+                                      //     currentRender = i;
+                                      //   });
+                                      //   await Future.delayed(
+                                      //       Duration(milliseconds: 50),
+                                      //       () async {
+                                      //     RenderRepaintBoundary boundary =
+                                      //         _repaintKey.currentContext!
+                                      //                 .findRenderObject()!
+                                      //             as RenderRepaintBoundary;
+                                      //     ui.Image image =
+                                      //         await boundary.toImage(
+                                      //             pixelRatio:
+                                      //                 MediaQuery.of(context)
+                                      //                     .devicePixelRatio);
+                                      //     ByteData? byteData =
+                                      //         await image.toByteData(
+                                      //             format:
+                                      //                 ui.ImageByteFormat.png);
+                                      //     outlet.outlets.add(SingleOutlet(
+                                      //         imageData: (byteData?.buffer
+                                      //             .asUint8List())!,
+                                      //         detail: markers[i]));
+                                      //   });
+                                      // }
+                                      Navigator.pop(context);
+                                      widget.outlet.add(outlet);
+                                      isScreenshotMode = false;
+                                      currentRender = 0;
+                                      Navigator.pop(context);
+                                      Future.delayed(Duration(milliseconds: 10),
+                                          () {
+                                        IntentFunctions().isSpaceActive = true;
+                                        IntentFunctions().focus.requestFocus();
+                                      });
+                                      // setState(() {
+                                      //   modifiedImage =
+                                      //       byteData?.buffer.asUint8List();
+                                      // });
+                                    }
+                                  : null,
+                              child: const Text(
+                                'Confirm',
+                                style: TextStyle(fontSize: 20),
+                              )),
+                        ),
+                      ],
+                    ),
                   )),
               const Positioned(
                 right: 12,

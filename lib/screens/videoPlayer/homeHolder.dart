@@ -65,6 +65,26 @@ class _HomeHolderState extends ConsumerState<HomeHolder>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // body: Visibility(
+      //   visible: true,
+      //   child: Expanded(child: Consumer(builder: (context, ref, c) {
+      //     final index = ref.watch(currentPageIndexProvider.state).state;
+      //     return IndexedStack(
+      //       index: index,
+      //       children: [
+      //         const Home(
+      //           videoPlayer: true,
+      //         ),
+      //         const Home(
+      //           videoPlayer: false,
+      //         ),
+      //         const AIScreen2(),
+      //         Container(),
+      //         Container()
+      //       ],
+      //     );
+      //   })),
+      // ),
       body: WindowBorder(
         color: Colors.red.withOpacity(0.1),
         child: Column(
