@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:gpmf/screens/Components/DialogPrompt.dart';
 import 'package:gpmf/screens/Components/pixelcolor/colorpicker.dart';
 import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
+import 'package:gpmf/screens/videoPlayer/screenshot/components/imageClipper.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/outletform.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
 import 'package:gpmf/utilities/intents.dart';
@@ -20,13 +21,13 @@ class FullScreenShot extends ConsumerStatefulWidget {
       required this.imageData,
       required this.outlet,
       required this.duration,
-      this.singleOutlets})
+      this.currentOutlet})
       : super(key: key);
 
   final Uint8List imageData;
   final List<Outlets> outlet;
   final int duration;
-  final List<SingleOutlet>? singleOutlets;
+  final Outlets? currentOutlet;
   @override
   ConsumerState<FullScreenShot> createState() => _FullScreenShotState();
 }
@@ -35,11 +36,13 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
     with TickerProviderStateMixin {
   final List<CustomMarker> markers = [];
   late AnimationController controller;
-  bool confirm = false, isScreenshotMode = false;
+  bool confirm = false, isScreenshotMode = false, zoomed = false;
   Uint8List? modifiedImage;
   final GlobalKey _repaintKey = GlobalKey();
   int currentRender = 0;
   double angle = 0;
+  Offset blur = const Offset(5, 5);
+  var image;
   @override
   void initState() {
     // TODO: implement initState
@@ -47,8 +50,8 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
     controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 200));
     IntentFunctions().isSpaceActive = false;
-    if (widget.singleOutlets != null) {
-      for (SingleOutlet value in widget.singleOutlets ?? []) {
+    if (widget.currentOutlet != null) {
+      for (SingleOutlet value in widget.currentOutlet?.outlets ?? []) {
         markers.add(value.detail);
       }
     }
@@ -79,53 +82,68 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
             children: [
               GestureDetector(
                 onTapUp: (details) async {
-                  ColorPicker _colorPicker =
-                      ColorPicker(bytes: widget.imageData);
-                  var _color = await _colorPicker.getColor(
-                    pixelPosition: details.localPosition,
-                  );
-                  if (_color.computeLuminance() > 0.5) {
-                    _color = RandomColor().randomColor(
-                        colorSaturation: ColorSaturation.highSaturation,
-                        colorBrightness: ColorBrightness.dark);
-                  } else {
-                    _color = RandomColor().randomColor(
-                        colorSaturation: ColorSaturation.highSaturation,
-                        colorBrightness: ColorBrightness.light);
-                  }
-                  bool proceed = true;
-
-                  // Rect test = Rect.fromLTWH(
-                  //     details.localPosition.dx, details.localPosition.dy, 50, 50);
-                  if (markers.isNotEmpty) {
-                    for (int i = 0; i < markers.length; i++) {
-                      var dist = (details.localPosition - markers[i].position)
-                          .distance;
-                      // print(dist);
-                      if (dist < 50) {
-                        proceed = false;
-                      }
-                      markers[i].selected = false;
+                  if (!zoomed) {
+                    ColorPicker _colorPicker =
+                        ColorPicker(bytes: widget.imageData);
+                    var _color = await _colorPicker.getColor(
+                      pixelPosition: details.localPosition,
+                    );
+                    if (_color.computeLuminance() > 0.5) {
+                      _color = RandomColor().randomColor(
+                          colorSaturation: ColorSaturation.highSaturation,
+                          colorBrightness: ColorBrightness.dark);
+                    } else {
+                      _color = RandomColor().randomColor(
+                          colorSaturation: ColorSaturation.highSaturation,
+                          colorBrightness: ColorBrightness.light);
                     }
-                  }
+                    bool proceed = true;
 
-                  if (proceed) {
-                    setState(() {
-                      markers.add(CustomMarker(
-                          id: markers.isEmpty ? 0 : markers.length - 1,
-                          selected: true,
-                          position: Offset(
-                            details.localPosition.dx + 1,
-                            details.localPosition.dy + 5,
-                          ),
-                          color: _color));
-                      confirm = checkMarkers(markers);
-                    });
+                    // Rect test = Rect.fromLTWH(
+                    //     details.localPosition.dx, details.localPosition.dy, 50, 50);
+                    if (markers.isNotEmpty) {
+                      for (int i = 0; i < markers.length; i++) {
+                        var dist = (details.localPosition - markers[i].position)
+                            .distance;
+                        // print(dist);
+                        if (dist < 50) {
+                          proceed = false;
+                        }
+                        markers[i].selected = false;
+                      }
+                    }
+
+                    if (proceed) {
+                      setState(() {
+                        markers.add(CustomMarker(
+                            id: markers.isEmpty ? 0 : markers.length - 1,
+                            selected: true,
+                            position: Offset(
+                              details.localPosition.dx + 1,
+                              details.localPosition.dy + 5,
+                            ),
+                            color: _color));
+                        confirm = checkMarkers(markers);
+                      });
+                    }
                   }
                 },
                 child: RepaintBoundary(
                   key: _repaintKey,
                   child: InteractiveViewer(
+                    onInteractionStart: (details) {},
+                    onInteractionUpdate: (details) {
+                      // print(details.scale);
+                      if (details.scale > 1) {
+                        setState(() {
+                          zoomed = true;
+                        });
+                      } else {
+                        setState(() {
+                          zoomed = false;
+                        });
+                      }
+                    },
                     child: Stack(
                       children: [
                         const SizedBox(
@@ -133,14 +151,82 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                           height: double.infinity,
                         ),
                         AnimatedRotation(
-                          //  angle: angle * 0.0174533,
-                          turns: angle / 360,
-                          duration: const Duration(milliseconds: 200),
-                          child: Container(
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: MemoryImage(widget.imageData))),
+                            turns: angle / 360,
+                            duration: const Duration(milliseconds: 200),
+                            child: Container(
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: MemoryImage(widget.imageData)),
+                                ),
+                                child: BackdropFilter(
+                                  filter: ui.ImageFilter.blur(
+                                    sigmaX: isScreenshotMode ? 0 : blur.dx,
+                                    sigmaY: isScreenshotMode ? 0 : blur.dy,
+                                  ),
+                                  child: Container(),
+                                ))),
+                        Visibility(
+                          visible: !isScreenshotMode,
+                          child: Stack(
+                            children: [
+                              Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.height,
+                                  color: Colors.transparent,
+                                  child: ClipPath(
+                                    clipper: ImageClipper(),
+                                    child: AnimatedRotation(
+                                      turns: angle / 360,
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      child: Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        height:
+                                            MediaQuery.of(context).size.height,
+                                        decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            image: DecorationImage(
+                                                image: MemoryImage(
+                                                    widget.imageData))),
+                                      ),
+                                    ),
+                                  )),
+                              Positioned(
+                                left: 0,
+                                // left: MediaQuery.of(context).size.width -
+                                //     MediaQuery.of(context).size.width * .8,
+                                top: MediaQuery.of(context).size.height -
+                                    MediaQuery.of(context).size.height * .8,
+                                child: Container(
+                                  // padding: EdgeInsets.all(50),
+                                  width: MediaQuery.of(context).size.width,
+                                  height:
+                                      MediaQuery.of(context).size.height * .65,
+                                  decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      border: Border.all(
+                                          color: Colors.transparent, width: 2)),
+                                  child: Visibility(
+                                    visible: true,
+                                    child: GridPaper(
+                                      interval: 100,
+                                      subdivisions: 1,
+                                      divisions: 1,
+                                      color: Colors.grey,
+                                      child: Container(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              //   AnimatedRotation(
+                              //   //  angle: angle * 0.0174533,
+                              //   turns: angle / 360,
+                              //   duration: const Duration(milliseconds: 200),
+                              //   child: image,
+                              // ),
+                            ],
                           ),
                         ),
                         for (int i = 0; i < markers.length; i++)
@@ -152,56 +238,63 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                   !isScreenshotMode ? true : currentRender == i,
                               child: Listener(
                                 onPointerDown: (details) {
-                                  if (details.kind == PointerDeviceKind.mouse &&
-                                      details.buttons ==
-                                          kSecondaryMouseButton) {
-                                    // ignore: prefer_function_declarations_over_variables
-                                    Function markertest = () {
-                                      markers.removeAt(markers.indexWhere(
-                                          (element) => element == markers[i]));
-                                      setState(() {
-                                        confirm = checkMarkers(markers);
-                                      });
-                                    };
-                                    if (markers[i].category != null &&
-                                        markers[i].size != null) {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) {
-                                            return DialogPrompt(
-                                              onYes: () {
-                                                markertest();
-                                              },
-                                            );
-                                          });
-                                    } else {
-                                      markertest();
-                                    }
-                                  } else if (details.kind ==
-                                          PointerDeviceKind.mouse &&
-                                      details.buttons == kPrimaryMouseButton) {
-                                    for (int j = 0; j < markers.length; j++) {
-                                      markers[j].selected = false;
-                                    }
+                                  if (!zoomed) {
+                                    if (details.kind ==
+                                            PointerDeviceKind.mouse &&
+                                        details.buttons ==
+                                            kSecondaryMouseButton) {
+                                      // ignore: prefer_function_declarations_over_variables
+                                      Function markertest = () {
+                                        markers.removeAt(markers.indexWhere(
+                                            (element) =>
+                                                element == markers[i]));
+                                        setState(() {
+                                          confirm = checkMarkers(markers);
+                                        });
+                                      };
+                                      if (markers[i].category != null &&
+                                          markers[i].size != null) {
+                                        showDialog(
+                                            context: context,
+                                            builder: (_) {
+                                              return DialogPrompt(
+                                                onYes: () {
+                                                  markertest();
+                                                },
+                                              );
+                                            });
+                                      } else {
+                                        markertest();
+                                      }
+                                    } else if (details.kind ==
+                                            PointerDeviceKind.mouse &&
+                                        details.buttons ==
+                                            kPrimaryMouseButton) {
+                                      for (int j = 0; j < markers.length; j++) {
+                                        markers[j].selected = false;
+                                      }
 
-                                    setState(() {
-                                      markers[i].selected = true;
-                                    });
+                                      setState(() {
+                                        markers[i].selected = true;
+                                      });
+                                    }
                                   }
                                 },
                                 child: Draggable(
                                   rootOverlay: true,
                                   onDragEnd: (drag) {
-                                    if (drag.offset.dx > 0 &&
-                                        drag.offset.dy <
-                                            MediaQuery.of(context)
-                                                .size
-                                                .height) {
-                                      setState(() {
-                                        markers[i].position = Offset(
-                                            drag.offset.dx + 25,
-                                            drag.offset.dy + 50);
-                                      });
+                                    if (!zoomed) {
+                                      if (drag.offset.dx > 0 &&
+                                          drag.offset.dy <
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .height) {
+                                        setState(() {
+                                          markers[i].position = Offset(
+                                              drag.offset.dx + 25,
+                                              drag.offset.dy + 50);
+                                        });
+                                      }
                                     }
                                   },
                                   feedback: Icon(
@@ -302,35 +395,6 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                               ),
                             ),
                           ),
-                        Visibility(
-                          visible: true,
-                          child: Positioned(
-                            left: 0,
-                            // left: MediaQuery.of(context).size.width -
-                            //     MediaQuery.of(context).size.width * .8,
-                            top: MediaQuery.of(context).size.height -
-                                MediaQuery.of(context).size.height * .8,
-                            child: Container(
-                              // padding: EdgeInsets.all(50),
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height * .65,
-                              decoration: BoxDecoration(
-                                  color: Colors.transparent,
-                                  border:
-                                      Border.all(color: Colors.red, width: 2)),
-                              child: Visibility(
-                                visible: false,
-                                child: GridPaper(
-                                  interval: 100,
-                                  subdivisions: 1,
-                                  divisions: 1,
-                                  color: Colors.grey,
-                                  child: Container(),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
                       ],
                     ),
                   ),
@@ -361,11 +425,10 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                   ),
                 ),
               Positioned(
-                  left: (MediaQuery.of(context).size.width / 2) -
-                      kBottomNavigationBarHeight,
-                  bottom: 60,
+                  left: (MediaQuery.of(context).size.width / 2) - 80,
+                  bottom: 80,
                   child: SizedBox(
-                    width: 200,
+                    width: 250,
                     height: kBottomNavigationBarHeight,
                     child: Column(
                       children: [
@@ -394,6 +457,7 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                           height: 10,
                         ),
                         Expanded(
+                          flex: 3,
                           child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                   primary: Colors.green),
@@ -410,35 +474,55 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                           barrierDismissible: false);
                                       isScreenshotMode = true;
                                       Outlets outlet = Outlets(
+                                          mainImageData: widget.imageData,
                                           outlets: [],
                                           currentDuration: widget.duration);
+                                      setState(() {
+                                        currentRender = -1;
+                                      });
+                                      await Future.delayed(
+                                          Duration(milliseconds: 50), () async {
+                                        RenderRepaintBoundary boundary =
+                                            _repaintKey
+                                                    .currentContext!
+                                                    .findRenderObject()!
+                                                as RenderRepaintBoundary;
+                                        ui.Image image = await boundary.toImage(
+                                            pixelRatio: MediaQuery.of(context)
+                                                .devicePixelRatio);
+                                        ByteData? byteData =
+                                            await image.toByteData(
+                                                format: ui.ImageByteFormat.png);
+                                        outlet.mainImageData =
+                                            (byteData?.buffer.asUint8List())!;
+                                      });
 
-                                      // for (int i = 0; i < markers.length; i++) {
-                                      //   setState(() {
-                                      //     currentRender = i;
-                                      //   });
-                                      //   await Future.delayed(
-                                      //       Duration(milliseconds: 50),
-                                      //       () async {
-                                      //     RenderRepaintBoundary boundary =
-                                      //         _repaintKey.currentContext!
-                                      //                 .findRenderObject()!
-                                      //             as RenderRepaintBoundary;
-                                      //     ui.Image image =
-                                      //         await boundary.toImage(
-                                      //             pixelRatio:
-                                      //                 MediaQuery.of(context)
-                                      //                     .devicePixelRatio);
-                                      //     ByteData? byteData =
-                                      //         await image.toByteData(
-                                      //             format:
-                                      //                 ui.ImageByteFormat.png);
-                                      //     outlet.outlets.add(SingleOutlet(
-                                      //         imageData: (byteData?.buffer
-                                      //             .asUint8List())!,
-                                      //         detail: markers[i]));
-                                      //   });
-                                      // }
+                                      for (int i = 0; i < markers.length; i++) {
+                                        setState(() {
+                                          currentRender = i;
+                                        });
+                                        await Future.delayed(
+                                            const Duration(milliseconds: 50),
+                                            () async {
+                                          RenderRepaintBoundary boundary =
+                                              _repaintKey.currentContext!
+                                                      .findRenderObject()!
+                                                  as RenderRepaintBoundary;
+                                          ui.Image image =
+                                              await boundary.toImage(
+                                                  pixelRatio:
+                                                      MediaQuery.of(context)
+                                                          .devicePixelRatio);
+                                          ByteData? byteData =
+                                              await image.toByteData(
+                                                  format:
+                                                      ui.ImageByteFormat.png);
+                                          outlet.outlets.add(SingleOutlet(
+                                              imageData: (byteData?.buffer
+                                                  .asUint8List())!,
+                                              detail: markers[i]));
+                                        });
+                                      }
                                       Navigator.pop(context);
                                       widget.outlet.add(outlet);
                                       isScreenshotMode = false;
@@ -455,9 +539,11 @@ class _FullScreenShotState extends ConsumerState<FullScreenShot>
                                       // });
                                     }
                                   : null,
-                              child: const Text(
-                                'Confirm',
-                                style: TextStyle(fontSize: 20),
+                              child: const FittedBox(
+                                child: Text(
+                                  'Confirm',
+                                  style: TextStyle(fontSize: 20),
+                                ),
                               )),
                         ),
                       ],

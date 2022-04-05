@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:dart_vlc/dart_vlc.dart';
@@ -194,13 +193,12 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                           MaterialPageRoute(builder: (_) {
                                         widget.leftplayer.pause();
                                         return FullScreenShot(
-                                            imageData: widget.outlets[i]
-                                                .outlets[0].imageData,
+                                            imageData:
+                                                widget.outlets[i].mainImageData,
                                             outlet: widget.outlets,
                                             duration: widget
                                                 .outlets[i].currentDuration,
-                                            singleOutlets:
-                                                widget.outlets[i].outlets);
+                                            currentOutlet: widget.outlets[i]);
                                       }));
                                     });
                                   },
@@ -266,103 +264,125 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                             child: AnimatedOpacity(
                               opacity: isHovering ? 1 : 0,
                               duration: const Duration(milliseconds: 200),
-                              child: Container(
-                                width: constraint.maxWidth * .5,
-                                height: constraint.maxWidth * .5 * 0.5625,
-                                decoration: BoxDecoration(
-                                    // color: widget
-                                    //     .outlets[currentHover]
-                                    //     .outlets[currentHoverSelected]
-                                    //     .detail
-                                    //     .color,
-                                    color: Colors.transparent,
-                                    // boxShadow: const [
-                                    //   BoxShadow(
-                                    //       spreadRadius: 2,
-                                    //       blurRadius: 10,
-                                    //       color: Colors.black54)
-                                    // ],
-                                    image: DecorationImage(
-                                        image: MemoryImage(widget
-                                            .outlets[currentHover]
-                                            .outlets[currentHoverSelected]
-                                            .imageData))),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Positioned(
-                                        left: mapDouble(
-                                            x: widget
-                                                .outlets[currentHover]
-                                                .outlets[currentHoverSelected]
-                                                .detail
-                                                .position
-                                                .dx,
-                                            in_min: 0,
-                                            in_max: 1920,
-                                            out_min: 0,
-                                            out_max: constraint.maxWidth * .5),
-                                        top: mapDouble(
-                                            x: widget
-                                                .outlets[currentHover]
-                                                .outlets[currentHoverSelected]
-                                                .detail
-                                                .position
-                                                .dy,
-                                            in_min: 0,
-                                            in_max: 1080,
-                                            out_min: 0,
-                                            out_max: constraint.maxWidth *
-                                                .5 *
-                                                0.5625),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              color: Colors.black
-                                                  .withOpacity(0.35)),
-                                          child: Stack(
-                                            children: [
-                                              BackdropFilter(
-                                                filter: ImageFilter.blur(
-                                                    sigmaX: 5, sigmaY: 5),
-                                              ),
-                                              Text(generateToolTip(widget
-                                                  .outlets[currentHover]
-                                                  .outlets[currentHoverSelected]
-                                                  .detail))
-                                            ],
+                              child: Stack(
+                                children: [
+                                  // BackdropFilter(
+                                  //   filter:
+                                  //       ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                  //   child: Container(),
+                                  // ),
+                                  Container(
+                                    width: constraint.maxWidth * .5,
+                                    height: constraint.maxWidth * .5 * 0.5625,
+                                    decoration: widget.outlets[currentHover]
+                                            .outlets.isNotEmpty
+                                        ? BoxDecoration(
+                                            // color: widget
+                                            //     .outlets[currentHover]
+                                            //     .outlets[currentHoverSelected]
+                                            //     .detail
+                                            //     .color,
+                                            color: Colors.transparent,
+                                            // boxShadow: const [
+                                            //   BoxShadow(
+                                            //       spreadRadius: 2,
+                                            //       blurRadius: 10,
+                                            //       color: Colors.black54)
+                                            // ],
+
+                                            image: DecorationImage(
+                                                image: MemoryImage(widget
+                                                    .outlets[currentHover]
+                                                    .outlets[
+                                                        currentHoverSelected]
+                                                    .imageData)))
+                                        : const BoxDecoration(
+                                            color: Colors.transparent,
                                           ),
-                                        )),
-                                    Positioned(
-                                        bottom: 10,
-                                        left: constraint.maxWidth / 3.9,
-                                        child: Row(
-                                          children: widget
-                                              .outlets[currentHover].outlets
-                                              .map((e) {
-                                            int index = widget
-                                                .outlets[currentHover].outlets
-                                                .indexOf(e);
-                                            return Container(
-                                              width: 10,
-                                              height: 10,
-                                              margin:
-                                                  const EdgeInsets.symmetric(
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Positioned(
+                                            left: mapDouble(
+                                                x: widget
+                                                    .outlets[currentHover]
+                                                    .outlets[
+                                                        currentHoverSelected]
+                                                    .detail
+                                                    .position
+                                                    .dx,
+                                                in_min: 0,
+                                                in_max: 1920,
+                                                out_min: 0,
+                                                out_max:
+                                                    constraint.maxWidth * .5),
+                                            top: mapDouble(
+                                                x: widget
+                                                    .outlets[currentHover]
+                                                    .outlets[
+                                                        currentHoverSelected]
+                                                    .detail
+                                                    .position
+                                                    .dy,
+                                                in_min: 0,
+                                                in_max: 1080,
+                                                out_min: 0,
+                                                out_max: constraint.maxWidth *
+                                                    .5 *
+                                                    0.5625),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  color: Colors.black
+                                                      .withOpacity(0.35)),
+                                              child: Stack(
+                                                children: [
+                                                  BackdropFilter(
+                                                    filter: ImageFilter.blur(
+                                                        sigmaX: 5, sigmaY: 5),
+                                                  ),
+                                                  Text(generateToolTip(widget
+                                                      .outlets[currentHover]
+                                                      .outlets[
+                                                          currentHoverSelected]
+                                                      .detail))
+                                                ],
+                                              ),
+                                            )),
+                                        Positioned(
+                                            bottom: 10,
+                                            left: constraint.maxWidth / 3.9,
+                                            child: Row(
+                                              children: widget
+                                                  .outlets[currentHover].outlets
+                                                  .map((e) {
+                                                int index = widget
+                                                    .outlets[currentHover]
+                                                    .outlets
+                                                    .indexOf(e);
+                                                return Container(
+                                                  width: 10,
+                                                  height: 10,
+                                                  margin: const EdgeInsets
+                                                          .symmetric(
                                                       vertical: 10.0,
                                                       horizontal: 2.0),
-                                              decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: currentHoverSelected ==
-                                                          index
-                                                      ? Colors.blue
-                                                      : Colors.grey),
-                                            );
-                                          }).toList(),
-                                        ))
-                                  ],
-                                ),
+                                                  decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color:
+                                                          currentHoverSelected ==
+                                                                  index
+                                                              ? Colors.blue
+                                                              : Colors.grey),
+                                                );
+                                              }).toList(),
+                                            ))
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           )),
