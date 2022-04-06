@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/Components/DialogPrompt.dart';
+import 'package:gpmf/screens/videoPlayer/components/selectionPainter.dart';
 import 'package:gpmf/screens/videoPlayer/components/timeruler.dart';
 import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
@@ -29,9 +31,11 @@ class TimeLine extends ConsumerStatefulWidget {
 
 class _TimeLineState extends ConsumerState<TimeLine> {
   double currentPosition = 0;
-  bool isAnimated = true, isHovering = false;
+  bool isAnimated = true, isHovering = false, selectMode = false;
   int currentHover = 0;
   int currentHoverSelected = 0;
+  List<int> selected = [0];
+  Offset selectStart = Offset.zero, selectEnd = Offset.zero;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
@@ -70,7 +74,34 @@ class _TimeLineState extends ConsumerState<TimeLine> {
           ),
           GestureDetector(
             onTapUp: (detail) {
+              setState(() {
+                selected.clear();
+              });
               calculatePosition(detail.localPosition.dx, constraint.maxWidth);
+            },
+            onPanEnd: (details) {
+              setState(() {
+                selectMode = false;
+              });
+            },
+            onPanUpdate: (details) {
+              widget.outlets.forEach(
+                (element) => print(calclatePositionFromDuration(
+                    element.currentDuration.toDouble(),
+                    MediaQuery.of(context).size.width)),
+              );
+              setState(() {
+                selectEnd = details.localPosition;
+              });
+            },
+            onPanStart: (details) {
+              setState(() {
+                selectMode = true;
+                selectStart =
+                    Offset(details.localPosition.dx, details.localPosition.dy);
+                selectEnd =
+                    Offset(details.localPosition.dx, details.localPosition.dy);
+              });
             },
             child: TimeRuler(
               duration: widget.duration,
@@ -153,7 +184,46 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                 });
                               },
                               child: Listener(
-                                onPointerSignal: (details) {
+                                onPointerDown: (details) {
+                                  if (details.kind == PointerDeviceKind.mouse &&
+                                      details.buttons ==
+                                          kSecondaryMouseButton) {
+                                    print(details.position);
+
+                                    showMenu(
+                                        context: context,
+                                        position: RelativeRect.fromLTRB(
+                                            details.position.dx + 30,
+                                            details.position.dy,
+                                            MediaQuery.of(context).size.width,
+                                            0),
+                                        items: [
+                                          PopupMenuItem(
+                                              onTap: () async {
+                                                //  Navigator.pop(context);
+                                                Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 50), () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (_) {
+                                                        return DialogPrompt(
+                                                            onYes: () {
+                                                          setState(() {
+                                                            widget.outlets
+                                                                .removeAt(i);
+                                                          });
+                                                        });
+                                                      });
+                                                });
+                                              },
+                                              padding: EdgeInsets.zero,
+                                              child:
+                                                  Center(child: Text("Delete")))
+                                        ]);
+                                  }
+                                },
+                                onPointerSignal: (details) async {
                                   if (details is PointerScrollEvent) {
                                     final delta = details.scrollDelta;
                                     if (delta.dy < 0) {
@@ -207,6 +277,11 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                                     height: size.toDouble(),
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            width: 2,
+                                            color: selected.contains(i)
+                                                ? Colors.blue
+                                                : Colors.transparent),
                                         boxShadow: const [
                                           BoxShadow(
                                               spreadRadius: 1.5,
@@ -253,6 +328,15 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                           );
                         }),
                       ),
+                    Visibility(
+                      visible: selectMode,
+                      child: CustomPaint(
+                        painter: SelectionPainter(
+                            draw: selectMode,
+                            start: selectStart,
+                            end: selectEnd),
+                      ),
+                    ),
                     if (widget.outlets.isNotEmpty)
                       Positioned(
                           // right: -constraint.maxWidth * .5,
