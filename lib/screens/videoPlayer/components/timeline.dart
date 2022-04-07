@@ -10,6 +10,7 @@ import 'package:gpmf/screens/videoPlayer/models/outletholder.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/components/fullscreenshot.dart';
 import 'package:gpmf/screens/videoPlayer/screenshot/models/custommarker.dart';
 import 'package:gpmf/utilities/exporter.dart';
+import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class TimeLine extends ConsumerStatefulWidget {
@@ -36,6 +37,24 @@ class _TimeLineState extends ConsumerState<TimeLine> {
   int currentHoverSelected = 0;
   List<int> selected = [0];
   Offset selectStart = Offset.zero, selectEnd = Offset.zero;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    IntentFunctions().onControlAKey = () async {
+      if (widget.outlets.isNotEmpty) {
+        await Future.delayed(Duration(milliseconds: 20), () {
+          widget.outlets.forEach((element) {
+            selected.add(widget.outlets.indexOf(element));
+          });
+        });
+
+        setState(() {});
+      }
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
@@ -72,39 +91,65 @@ class _TimeLineState extends ConsumerState<TimeLine> {
               color: Colors.transparent,
             ),
           ),
-          GestureDetector(
-            onTapUp: (detail) {
-              setState(() {
-                selected.clear();
-              });
-              calculatePosition(detail.localPosition.dx, constraint.maxWidth);
+          Listener(
+            onPointerDown: (details) {
+              if (details.kind == PointerDeviceKind.mouse &&
+                  details.buttons == kSecondaryMouseButton) {
+                setState(() {
+                  selected.clear();
+                });
+              }
             },
-            onPanEnd: (details) {
-              setState(() {
-                selectMode = false;
-              });
-            },
-            onPanUpdate: (details) {
-              widget.outlets.forEach(
-                (element) => print(calclatePositionFromDuration(
-                    element.currentDuration.toDouble(),
-                    MediaQuery.of(context).size.width)),
-              );
-              setState(() {
-                selectEnd = details.localPosition;
-              });
-            },
-            onPanStart: (details) {
-              setState(() {
-                selectMode = true;
-                selectStart =
-                    Offset(details.localPosition.dx, details.localPosition.dy);
-                selectEnd =
-                    Offset(details.localPosition.dx, details.localPosition.dy);
-              });
-            },
-            child: TimeRuler(
-              duration: widget.duration,
+            child: GestureDetector(
+              onTapUp: (detail) {
+                setState(() {
+                  selected.clear();
+                });
+                calculatePosition(detail.localPosition.dx, constraint.maxWidth);
+              },
+              onPanEnd: (details) {
+                setState(() {
+                  selectMode = false;
+                });
+              },
+              onPanUpdate: (details) {
+                Rect selection = Rect.fromPoints(
+                    Offset(selectStart.dx, selectStart.dy - 40),
+                    Offset(details.localPosition.dx,
+                        details.localPosition.dy - 40));
+
+                widget.outlets.forEach(
+                  (element) {
+                    Rect current = Rect.fromLTWH(element.currentPosition.dx,
+                        element.currentPosition.dy, 30, 30);
+                    int index = widget.outlets.indexWhere((e) => e == element);
+                    if (selection.overlaps(current)) {
+                      if (!selected.contains(index)) selected.add(index);
+                    } else {
+                      if (selected.contains(index)) {
+                        setState(() {
+                          selected.remove(index);
+                        });
+                      }
+                    }
+                  },
+                );
+                setState(() {
+                  selectEnd = details.localPosition;
+                });
+              },
+              onPanStart: (details) {
+                setState(() {
+                  selectMode = true;
+                  selectStart = Offset(
+                      details.localPosition.dx, details.localPosition.dy);
+                  selectEnd = Offset(
+                      details.localPosition.dx, details.localPosition.dy);
+                });
+              },
+              child: TimeRuler(
+                duration: widget.duration,
+              ),
             ),
           ),
           if (widget.outlets.isNotEmpty)
@@ -158,176 +203,188 @@ class _TimeLineState extends ConsumerState<TimeLine> {
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height),
                     for (int i = 0; i < widget.outlets.length; i++)
-                      Positioned(
-                        left: calclatePositionFromDuration(
-                            widget.outlets[i].currentDuration.toDouble(),
-                            constraint.maxWidth),
-                        top: calculateTopOffset(i, constraint.maxHeight, 30),
-                        child: Builder(builder: (context) {
-                          int size = 30;
+                      Builder(builder: (context) {
+                        int size = 30;
+                        Offset position = Offset(
+                            calclatePositionFromDuration(
+                                widget.outlets[i].currentDuration.toDouble(),
+                                constraint.maxWidth),
+                            calculateTopOffset(i, constraint.maxHeight, size));
+                        widget.outlets[i].currentPosition = position;
+                        return Positioned(
+                          left: position.dx,
+                          top: position.dy,
+                          child: Builder(builder: (context) {
+                            return AnimatedScale(
+                              duration: const Duration(milliseconds: 200),
+                              scale: isHovering && currentHover == i ? 2 : 1,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                onHover: (v) {
+                                  setState(() {
+                                    isHovering = true;
+                                    currentHover = i;
+                                  });
+                                },
+                                onExit: (v) {
+                                  setState(() {
+                                    isHovering = false;
+                                    currentHoverSelected = 0;
+                                  });
+                                },
+                                child: Listener(
+                                  onPointerDown: (details) {
+                                    if (details.kind ==
+                                            PointerDeviceKind.mouse &&
+                                        details.buttons ==
+                                            kSecondaryMouseButton) {
+                                      print(details.position);
 
-                          return AnimatedScale(
-                            duration: const Duration(milliseconds: 200),
-                            scale: isHovering && currentHover == i ? 2 : 1,
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              onHover: (v) {
-                                setState(() {
-                                  isHovering = true;
-                                  currentHover = i;
-                                });
-                              },
-                              onExit: (v) {
-                                setState(() {
-                                  isHovering = false;
-                                  currentHoverSelected = 0;
-                                });
-                              },
-                              child: Listener(
-                                onPointerDown: (details) {
-                                  if (details.kind == PointerDeviceKind.mouse &&
-                                      details.buttons ==
-                                          kSecondaryMouseButton) {
-                                    print(details.position);
-
-                                    showMenu(
-                                        context: context,
-                                        position: RelativeRect.fromLTRB(
-                                            details.position.dx + 30,
-                                            details.position.dy,
-                                            MediaQuery.of(context).size.width,
-                                            0),
-                                        items: [
-                                          PopupMenuItem(
-                                              onTap: () async {
-                                                //  Navigator.pop(context);
-                                                Future.delayed(
-                                                    const Duration(
-                                                        milliseconds: 50), () {
-                                                  showDialog(
-                                                      context: context,
-                                                      builder: (_) {
-                                                        return DialogPrompt(
-                                                            onYes: () {
-                                                          setState(() {
-                                                            widget.outlets
-                                                                .removeAt(i);
+                                      showMenu(
+                                          context: context,
+                                          position: RelativeRect.fromLTRB(
+                                              details.position.dx + 30,
+                                              details.position.dy,
+                                              MediaQuery.of(context).size.width,
+                                              0),
+                                          items: [
+                                            PopupMenuItem(
+                                                onTap: () async {
+                                                  //  Navigator.pop(context);
+                                                  Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 50),
+                                                      () {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (_) {
+                                                          return DialogPrompt(
+                                                              onYes: () {
+                                                            setState(() {
+                                                              widget.outlets
+                                                                  .removeAt(i);
+                                                            });
                                                           });
                                                         });
-                                                      });
-                                                });
-                                              },
-                                              padding: EdgeInsets.zero,
-                                              child:
-                                                  Center(child: Text("Delete")))
-                                        ]);
-                                  }
-                                },
-                                onPointerSignal: (details) async {
-                                  if (details is PointerScrollEvent) {
-                                    final delta = details.scrollDelta;
-                                    if (delta.dy < 0) {
-                                      if (currentHoverSelected <
-                                          widget.outlets[currentHover].outlets
-                                                  .length -
-                                              1) {
-                                        setState(() {
-                                          currentHoverSelected++;
-                                        });
-                                      }
-                                    } else {
-                                      if (currentHoverSelected > 0) {
-                                        setState(() {
-                                          currentHoverSelected--;
-                                        });
+                                                  });
+                                                },
+                                                padding: EdgeInsets.zero,
+                                                child: const Center(
+                                                    child: Text("Delete")))
+                                          ]);
+                                    }
+                                  },
+                                  onPointerSignal: (details) async {
+                                    if (details is PointerScrollEvent) {
+                                      final delta = details.scrollDelta;
+                                      if (delta.dy < 0) {
+                                        if (currentHoverSelected <
+                                            widget.outlets[currentHover].outlets
+                                                    .length -
+                                                1) {
+                                          setState(() {
+                                            currentHoverSelected++;
+                                          });
+                                        }
+                                      } else {
+                                        if (currentHoverSelected > 0) {
+                                          setState(() {
+                                            currentHoverSelected--;
+                                          });
+                                        }
                                       }
                                     }
-                                  }
-                                },
-                                child: GestureDetector(
-                                  onTap: () {
-                                    widget.leftplayer.pause();
-                                    widget.leftplayer.seek(Duration(
-                                        milliseconds:
-                                            widget.outlets[i].currentDuration));
-                                    setState(() {
-                                      currentPosition =
-                                          calclatePositionFromDuration(
-                                              widget.outlets[i].currentDuration
-                                                  .toDouble(),
-                                              constraint.maxWidth);
-                                    });
-                                    Future.delayed(
-                                        const Duration(milliseconds: 1000), () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (_) {
-                                        widget.leftplayer.pause();
-                                        return FullScreenShot(
-                                            imageData:
-                                                widget.outlets[i].mainImageData,
-                                            outlet: widget.outlets,
-                                            duration: widget
-                                                .outlets[i].currentDuration,
-                                            currentOutlet: widget.outlets[i]);
-                                      }));
-                                    });
                                   },
-                                  child: Container(
-                                    width: size.toDouble(),
-                                    height: size.toDouble(),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                            width: 2,
-                                            color: selected.contains(i)
-                                                ? Colors.blue
-                                                : Colors.transparent),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                              spreadRadius: 1.5,
-                                              blurRadius: 10,
-                                              color: Colors.black54)
-                                        ],
-                                        color: Colors.red,
-                                        image: DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: MemoryImage(widget.outlets[i]
-                                                .outlets[0].imageData))),
-                                    child: Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Positioned(
-                                            right: -10,
-                                            top: -10,
-                                            child: CircleAvatar(
-                                              radius: 8,
-                                              backgroundColor: Colors.blue,
-                                              child: FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                child: Text(
-                                                  isHovering &&
-                                                          currentHover == i
-                                                      ? (currentHoverSelected +
-                                                              1)
-                                                          .toString()
-                                                      : widget.outlets[i]
-                                                          .outlets.length
-                                                          .toString(),
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 9),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      widget.leftplayer.pause();
+                                      widget.leftplayer.seek(Duration(
+                                          milliseconds: widget
+                                              .outlets[i].currentDuration));
+                                      setState(() {
+                                        currentPosition =
+                                            calclatePositionFromDuration(
+                                                widget
+                                                    .outlets[i].currentDuration
+                                                    .toDouble(),
+                                                constraint.maxWidth);
+                                      });
+                                      Future.delayed(
+                                          const Duration(milliseconds: 1000),
+                                          () {
+                                        Navigator.push(context,
+                                            MaterialPageRoute(builder: (_) {
+                                          widget.leftplayer.pause();
+                                          return FullScreenShot(
+                                              imageData: widget
+                                                  .outlets[i].mainImageData,
+                                              outlet: widget.outlets,
+                                              duration: widget
+                                                  .outlets[i].currentDuration,
+                                              currentOutlet: widget.outlets[i]);
+                                        }));
+                                      });
+                                    },
+                                    child: Container(
+                                      width: size.toDouble(),
+                                      height: size.toDouble(),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                              width: 2,
+                                              color: selected.contains(i)
+                                                  ? Colors.blue
+                                                  : Colors.transparent),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                spreadRadius: 1.5,
+                                                blurRadius: 10,
+                                                color: Colors.black54)
+                                          ],
+                                          color: Colors.red,
+                                          image: DecorationImage(
+                                              fit: BoxFit.cover,
+                                              image: MemoryImage(widget
+                                                  .outlets[i]
+                                                  .outlets[0]
+                                                  .imageData))),
+                                      child: Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          Positioned(
+                                              right: -10,
+                                              top: -10,
+                                              child: CircleAvatar(
+                                                radius: 8,
+                                                backgroundColor: Colors.blue,
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: Text(
+                                                    isHovering &&
+                                                            currentHover == i
+                                                        ? (currentHoverSelected +
+                                                                1)
+                                                            .toString()
+                                                        : widget.outlets[i]
+                                                            .outlets.length
+                                                            .toString(),
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 9),
+                                                  ),
                                                 ),
-                                              ),
-                                            )),
-                                      ],
+                                              )),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        }),
-                      ),
+                            );
+                          }),
+                        );
+                      }),
                     Visibility(
                       visible: selectMode,
                       child: CustomPaint(
@@ -498,6 +555,17 @@ class _TimeLineState extends ConsumerState<TimeLine> {
         ],
       );
     });
+  }
+
+  bool checkRects(Rect original, Rect check) {
+    if (original.left <= check.left &&
+        original.top <= check.top &&
+        (original.left + original.width) >= (check.left + check.width) &&
+        (original.top + original.height) >= (check.top + check.height)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   String generateToolTip(CustomMarker marker) {

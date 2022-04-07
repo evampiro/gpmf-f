@@ -56,6 +56,7 @@ class MyApp extends StatelessWidget {
                 arrowLeftKeySet: ArrowLeftIntent(),
                 controlTabKeySet: ControlTabIntent(),
                 sKeySet: SKeyIntent(),
+                controlAKeySet: ControlAIntent()
               },
               actions: {
                 SpaceIntent: CallbackAction(
@@ -74,6 +75,11 @@ class MyApp extends StatelessWidget {
                 SKeyIntent: CallbackAction(onInvoke: (intent) {
                   return IntentFunctions().onSKey();
                 }),
+                ControlAIntent: CallbackAction(
+                  onInvoke: (intent) {
+                    return IntentFunctions().onControlAKey();
+                  },
+                )
               },
               child: const HomeHolder())),
     );

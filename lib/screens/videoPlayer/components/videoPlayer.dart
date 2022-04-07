@@ -174,68 +174,84 @@ class _VideoState extends ConsumerState<VideoPlayer>
                     child: Row(
                       // mainAxisAlignment: MainAxisAlignment.,
                       crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Spacer(),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (widget.lefPlayer.position.position!
-                                      .inMilliseconds >
-                                  5000) {
-                                widget.lefPlayer.seek(Duration(
-                                    milliseconds: widget.lefPlayer.position
-                                            .position!.inMilliseconds -
-                                        5000));
-                                widget.rightPlayer.seek(Duration(
-                                    milliseconds: widget.lefPlayer.position
-                                            .position!.inMilliseconds -
-                                        5000));
-                              }
-                            },
-                            child: Icon(Icons.replay_5),
-                          ),
-                        ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (widget.lefPlayer.playback.isPlaying) {
-                                _playController.reverse();
-
-                                widget.lefPlayer.pause();
-                                widget.rightPlayer.pause();
-                              } else {
-                                _playController.forward();
-
-                                widget.lefPlayer.play();
-                                widget.rightPlayer.play();
-                              }
-                            },
-                            child: AnimatedIcon(
-                                icon: AnimatedIcons.play_pause,
-                                progress: _playController),
-                          ),
-                        ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: PopupMenuButton(
-                              offset: getOffset(),
-                              tooltip: '',
-                              itemBuilder: (context) {
-                                return [
-                                  PopupMenuItem(
-                                    enabled: false,
-                                    child: PlayBackSpeed(
-                                      key: _widgetKey,
-                                      player: widget.lefPlayer,
-                                    ),
-                                  )
-                                ];
+                        ...[
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (widget.lefPlayer.position.position!
+                                        .inMilliseconds >
+                                    5000) {
+                                  widget.lefPlayer.seek(Duration(
+                                      milliseconds: widget.lefPlayer.position
+                                              .position!.inMilliseconds -
+                                          5000));
+                                  widget.rightPlayer.seek(Duration(
+                                      milliseconds: widget.lefPlayer.position
+                                              .position!.inMilliseconds -
+                                          5000));
+                                }
                               },
-                              child: Icon(Icons.slow_motion_video)),
-                        ),
+                              child: Icon(Icons.replay_5),
+                            ),
+                          ),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (widget.lefPlayer.playback.isPlaying) {
+                                  _playController.reverse();
+
+                                  widget.lefPlayer.pause();
+                                  widget.rightPlayer.pause();
+                                } else {
+                                  _playController.forward();
+
+                                  widget.lefPlayer.play();
+                                  widget.rightPlayer.play();
+                                }
+                              },
+                              child: AnimatedIcon(
+                                  icon: AnimatedIcons.play_pause,
+                                  progress: _playController),
+                            ),
+                          ),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: PopupMenuButton(
+                                offset: getOffset(),
+                                tooltip: '',
+                                itemBuilder: (context) {
+                                  return [
+                                    PopupMenuItem(
+                                      enabled: false,
+                                      child: PlayBackSpeed(
+                                        key: _widgetKey,
+                                        player: widget.lefPlayer,
+                                      ),
+                                    )
+                                  ];
+                                },
+                                child: Icon(Icons.slow_motion_video)),
+                          ),
+                        ],
                         const Spacer(),
+                        StatefulBuilder(builder: (context, setStatemini) {
+                          var duration = Duration(minutes: 0);
+                          // widget.lefPlayer.playbackCont.listen(
+                          //   (event) {
+                          //     duration=event.
+                          //   },
+                          // );
+                          return SizedBox(
+                            width: 100,
+                            child: Text((widget.lefPlayer.position.position)
+                                .toString()),
+                          );
+                        })
                       ],
                     ),
                   ),
@@ -245,6 +261,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
           ),
           Container(
             height: height2 * constraints.maxHeight,
+            width: constraints.maxWidth * .95,
             child: Stack(
               children: [
                 TimeLine(

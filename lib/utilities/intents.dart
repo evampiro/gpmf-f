@@ -22,6 +22,14 @@ final controlTabKeySet = LogicalKeySet(
   // Replace with control on Windows
 );
 
+class ControlAIntent extends Intent {}
+
+final controlAKeySet = LogicalKeySet(
+  LogicalKeyboardKey.control,
+  LogicalKeyboardKey.keyA,
+  // Replace with control on Windows
+);
+
 class SKeyIntent extends Intent {}
 
 final sKeySet = LogicalKeySet(
@@ -40,16 +48,22 @@ final escKeySet = LogicalKeySet(
 
 class IntentFunctions {
   static final IntentFunctions _instance = IntentFunctions._internal(
-      onSpace: () {}, onArrowLeft: () {}, onControlTab: () {}, onSKey: () {});
+      onSpace: () {},
+      onArrowLeft: () {},
+      onControlTab: () {},
+      onSKey: () {},
+      onControlAKey: () {});
 
   factory IntentFunctions() => _instance;
   FocusNode focus = FocusNode();
   bool isSpaceActive = true;
-  IntentFunctions._internal(
-      {required this.onSpace,
-      required this.onArrowLeft,
-      required this.onControlTab,
-      required this.onSKey});
+  IntentFunctions._internal({
+    required this.onSpace,
+    required this.onArrowLeft,
+    required this.onControlTab,
+    required this.onSKey,
+    required this.onControlAKey,
+  });
 
-  Function onSpace, onArrowLeft, onControlTab, onSKey;
+  Function onSpace, onArrowLeft, onControlTab, onSKey, onControlAKey;
 }
