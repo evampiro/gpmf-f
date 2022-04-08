@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:process_run/cmd_run.dart';
 import 'package:process_run/shell.dart';
 
 class FileThumb {
@@ -135,30 +137,49 @@ class CompressScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           for (var element in files) {
                             // if (!element.filename.contains("-small"))
                             {
-                              Shell().run(
-                                "ffmpeg.exe -i ${element.file.path} -vf scale=320:-1 -map 0:0 -map 0:1 -map 0:3 -codec:v mpeg2video -codec:d copy -codec:a copy -y ${element.file.path.replaceAll(element.filename, "${element.filename.split(".")[0]}-small.${element.filename.split(".")[1]}")}",
-                                //     onProcess: (process) {
-                                //   var stream = process.outLines.asBroadcastStream;
-                                //   stream(
-                                //     onListen: (subscription) {
-                                //       subscription.onData((data) {
-                                //         print("data: $data");
-                                //         var l = ref
-                                //             .read(statusStringProvider.state)
-                                //             .state;
-                                //         l.add(data);
-                                //         ref
-                                //             .read(statusStringProvider.state)
-                                //             .state = l;
-                                //       });
-                                //     },
-                                //   );
-                                // }
-                              );
+                              try {
+                                String file = element.file.path.replaceAll(
+                                    element.filename,
+                                    "${element.filename.split(".")[0]}-small.${element.filename.split(".")[1]}");
+
+                                var process = await Process.run(
+                                  "ffmpeg.exe",
+                                  [
+                                    '-i',
+                                    element.file.path,
+                                    '-vf',
+                                    'scale=320:-1',
+                                    '-map',
+                                    '0:0',
+                                    '-map',
+                                    '0:1',
+                                    '-map',
+                                    '0:3',
+                                    '-codec:v',
+                                    'mpeg2video',
+                                    '-codec:d',
+                                    'copy',
+                                    '-codec:a',
+                                    'copy',
+                                    '-y',
+                                    file
+                                  ],
+                                );
+                                print(process.stdout);
+
+                                // var controller = StreamController<List<int>>();
+
+                                // controller.stream.listen((event) {
+                                //   print(event);
+                                // });
+
+                              } catch (e) {
+                                print(e);
+                              }
                             }
                           }
                         },

@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:gpmf/screens/videoPlayer/homeHolder.dart';
+import 'package:gpmf/utilities/exporter.dart';
 import 'package:gpmf/utilities/intents.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -20,6 +23,13 @@ void main() {
     win.show();
     win.maximize();
   });
+  Process.start(
+    getAssetDirectory().path + '\\telemetry.exe',
+    [],
+  );
+
+  // Shell(runInShell: true, verbose: false)
+  //     .runExecutableArguments(getAssetDirectory().path + '\\telemetry.exe', []);
   runApp(const MyApp());
 }
 

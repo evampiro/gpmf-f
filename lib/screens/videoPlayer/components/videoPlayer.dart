@@ -36,6 +36,7 @@ class _VideoState extends ConsumerState<VideoPlayer>
   List<Outlets> outlet = [];
   final GlobalKey _widgetKey = GlobalKey();
   double height1 = 0.7, height2 = 0.3;
+  Duration duration = Duration.zero;
   @override
   void initState() {
     super.initState();
@@ -240,16 +241,16 @@ class _VideoState extends ConsumerState<VideoPlayer>
                         ],
                         const Spacer(),
                         StatefulBuilder(builder: (context, setStatemini) {
-                          var duration = Duration(minutes: 0);
-                          // widget.lefPlayer.playbackCont.listen(
-                          //   (event) {
-                          //     duration=event.
-                          //   },
-                          // );
+                          widget.lefPlayer.positionStream.listen(
+                            (event) {
+                              setStatemini(() {
+                                duration = event.position!;
+                              });
+                            },
+                          );
                           return SizedBox(
                             width: 100,
-                            child: Text((widget.lefPlayer.position.position)
-                                .toString()),
+                            child: Text((duration.toString().split('.')[0])),
                           );
                         })
                       ],

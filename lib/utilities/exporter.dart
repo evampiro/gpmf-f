@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -32,4 +34,18 @@ double mapDouble(
   } else {
     return calc;
   }
+}
+
+Directory getAssetDirectory() {
+  // returns the abolute path of the executable file of your app:
+  String mainPath = Platform.resolvedExecutable;
+
+// remove from that path the name of the executable file of your app:
+  mainPath = mainPath.substring(0, mainPath.lastIndexOf("\\"));
+
+// concat the path with '\data\flutter_assets\assets\exe', where 'exe' is the
+// directory where are the executable files you want to run from your app:
+  Directory directory =
+      Directory("$mainPath\\data\\flutter_assets\\assets\\module");
+  return directory;
 }

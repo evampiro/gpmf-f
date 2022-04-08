@@ -1,5 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:gpmf/screens/compress/compress.dart';
 import 'package:gpmf/screens/duplicate/AIv2.dart';
 import 'package:gpmf/screens/videoPlayer/home.dart';
 import 'package:gpmf/utilities/exporter.dart';
@@ -179,7 +180,7 @@ class _HomeHolderState extends ConsumerState<HomeHolder>
                       videoPlayer: false,
                     ),
                     const AIScreen2(),
-                    Container(),
+                    CompressScreen(),
                     Container()
                   ],
                 );
